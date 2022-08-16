@@ -12255,7 +12255,87 @@ static int pc_read_statsdb(const char *basedir, int last_s, bool silent){
 		fclose(fp);
 		ShowStatus("Done reading '" CL_WHITE "%d" CL_RESET "' entries in '" CL_WHITE "%s/%s" CL_RESET "'.\n", entries, basedir,"statpoint.txt");
 	}
-	return max(last_s,i);
+// <<<<<<< HEAD
+// 	return max(last_s,i);
+// =======
+
+	if( !exists ){
+		this->put( level, entry );
+	}
+
+	return 1;
+}
+
+/**
+ * Generate the remaining parts of the db if necessary.
+ */
+void PlayerStatPointDatabase::loadingFinished(){
+	const uint16 trait_start_level = 200;
+	std::shared_ptr<s_statpoint_entry> level_one = this->find( 1 );
+
+	if( level_one == nullptr ){
+		if( battle_config.use_statpoint_table ){
+			ShowError( "Missing status points for Level 1\n" );
+		}
+
+		level_one = std::make_shared<s_statpoint_entry>();
+
+		level_one->level = 1;
+		level_one->statpoints = inter_config.start_status_points;
+		level_one->traitpoints = 0;
+
+		this->put( 1, level_one );
+	}else if( battle_config.use_statpoint_table ){
+		if( level_one->statpoints != inter_config.start_status_points ){
+			ShowError( "Status points for Level 1 (=%u) do not match inter_athena.conf value (=%u).\n", level_one->statpoints, inter_config.start_status_points );
+			level_one->statpoints = inter_config.start_status_points;
+		}
+	}else{
+		level_one->statpoints = inter_config.start_status_points;
+		level_one->traitpoints = 0;
+	}
+
+	std::shared_ptr<s_statpoint_entry> last_level = level_one;
+	for( uint16 level = 2; level <= MAX_LEVEL; level++ ){
+		std::shared_ptr<s_statpoint_entry> entry = this->find( level );
+		bool exists = entry != nullptr;
+
+		if( !exists ){
+			entry = std::make_shared<s_statpoint_entry>();
+			entry->level = level;
+			this->put( level, entry );
+		}
+
+		if( !battle_config.use_statpoint_table || !exists ){
+			if( battle_config.use_statpoint_table ){
+				ShowError("Missing status points for Level %hu\n", level);
+			}
+
+			if( level <= trait_start_level ){
+				entry->statpoints = last_level->statpoints + ( ( level - 1 + 15 ) / 5 );
+			}else{
+				entry->statpoints = last_level->statpoints;
+			}
+		}
+
+		if( !battle_config.use_traitpoint_table || !exists ){
+			if( battle_config.use_traitpoint_table && level > trait_start_level ){
+				ShowError( "Missing trait points for Level %hu\n", level );
+			}
+
+			if( level > trait_start_level ){
+				entry->traitpoints = ( level - trait_start_level ) * 3 + ( level - trait_start_level ) / 5 * 4;
+			}else{
+				entry->traitpoints = 0;
+			}
+		}
+
+		// Store it for next iteration
+		last_level = entry;
+	}
+
+	TypesafeCachedYamlDatabase::loadingFinished();
+//>>>>>>> 0ac52d0bb (Initial support for web service for newer clients (#5731))
 }
 
 /*==========================================
