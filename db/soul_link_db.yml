@@ -1,0 +1,7 @@
+Header:
+  Type: SOUL_LINK_DB
+  Version: 1
+
+Footer:
+  Imports:
+  - Path: db/import/soul_link_db.yml

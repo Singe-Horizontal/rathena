@@ -1,0 +1,77 @@
+Header:
+  Type: SOUL_LINK_DB
+  Version: 1
+
+Body:
+# Custom soul link buffs.
+# Author: Secret <Secret@rathena.org>
+# Rework : Singe Horizontal https://github.com/Singe-Horizontal/
+# You can code the script just like an item script.
+#
+# Use ONLY spaces to indent.
+# i.e. don't use tabs
+#########################################################################################
+#################### Soul link list #####################################################
+### case insensitive and ignore spaces, both Star Gladiator and stargladiator work
+# Alchemist
+# Monk
+# Star Gladiator
+# Sage
+# Crusader
+# Super Novice
+# Knight
+# Wizard
+# Priest
+# Bard Dancer
+# Rogue
+# Assassin
+# Blacksmith
+# Hunter
+# Soul Linker
+#################
+
+  - Soul: Alchemist
+    Script: |
+        bonus bStr,1;
+  - Soul: Monk
+    Script: |
+        bonus bStr,1;
+  - Soul: Star Gladiator
+    Script: |
+        bonus bStr,1;
+  - Soul: Sage
+    Script: |
+        bonus bStr,1;
+  - Soul: Crusader
+    Script: |
+        bonus bStr,1;
+  - Soul: Super Novice
+    Script: |
+        bonus bStr,1;
+  - Soul: Knight
+    Script: |
+        bonus bStr,1;
+  - Soul: Wizard
+    Script: |
+        bonus bStr,1;
+  - Soul: Priest
+    Script: |
+        bonus bStr,1;
+  - Soul: Bard Dancer
+    Script: |
+        bonus bStr,1;
+  - Soul: Rogue
+    Script: |
+        bonus bStr,1;
+  - Soul: Assassin
+    Script: |
+        bonus bStr,1;
+  - Soul: Blacksmith
+    Script: |
+        bonus bStr,1;
+  - Soul: Hunter
+    Script: |
+        bonus bStr,1;
+  - Soul: Soul Linker
+    Script: |
+        bonus bStr,1;

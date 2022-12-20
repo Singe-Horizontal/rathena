@@ -10365,6 +10365,8 @@ int skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, ui
 	case SL_STAR:
 	case SL_SUPERNOVICE:
 	case SL_WIZARD:
+	case SL_NINJA:
+	case SL_GUNNER:
 	case SL_HIGH:
 		if( sc_start2( src, bl, type, 100, skill_lv, skill_id, skill_get_time( skill_id, skill_lv ) ) ){
 			clif_skill_nodamage( src, bl, skill_id, skill_lv, 1 );

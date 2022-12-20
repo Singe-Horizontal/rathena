@@ -15550,8 +15550,18 @@ Body:
         Time: 350000
   - Id: 574
     Name: SL_NINJA
-    Description: SL_NINJA
+    Description: Spirit of the Ninja
     MaxLevel: 5
+    Type: Magic
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      NoTargetSelf: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    CastCancel: true
     CastTime: 1000
     AfterCastActDelay: 500
     Duration1:
@@ -15565,10 +15575,33 @@ Body:
         Time: 300000
       - Level: 5
         Time: 350000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 460
+        - Level: 2
+          Amount: 360
+        - Level: 3
+          Amount: 260
+        - Level: 4
+          Amount: 160
+        - Level: 5
+          Amount: 60
+    Status: Spirit
   - Id: 575
     Name: SL_GUNNER
-    Description: SL_GUNNER
+    Description: Spirit of the Gunslinger
     MaxLevel: 5
+    Type: Magic
+    TargetType: Support
+    DamageFlags:
+      NoDamage: true
+    Flags:
+      NoTargetSelf: true
+    Range: 9
+    Hit: Single
+    HitCount: 1
+    CastCancel: true
     CastTime: 1000
     AfterCastActDelay: 500
     Duration1:
@@ -15582,6 +15615,19 @@ Body:
         Time: 300000
       - Level: 5
         Time: 350000
+    Requires:
+      SpCost:
+        - Level: 1
+          Amount: 460
+        - Level: 2
+          Amount: 360
+        - Level: 3
+          Amount: 260
+        - Level: 4
+          Amount: 160
+        - Level: 5
+          Amount: 60
+    Status: Spirit
   - Id: 653
     Name: NPC_EARTHQUAKE
     Description: Earthquake
