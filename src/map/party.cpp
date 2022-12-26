@@ -1182,8 +1182,9 @@ int party_send_xy_clear(struct party_data *p)
  **/
 void party_exp_share(struct party_data* p, struct block_list* src, t_exp base_exp, t_exp job_exp, int zeny)
 {
-	map_session_data* sd[MAX_PARTY];
-	unsigned int i, c;
+	struct map_session_data* sd[MAX_PARTY];
+	unsigned int i, j, c;
+	unsigned int taps_count_per_type[]{ 0 , 0 , 0 , 0 };
 #ifdef RENEWAL_EXP
 	TBL_MOB *md = BL_CAST(BL_MOB, src);
 
@@ -1193,29 +1194,68 @@ void party_exp_share(struct party_data* p, struct block_list* src, t_exp base_ex
 
 	nullpo_retv(p);
 
+	TBL_MOB *md = BL_CAST(BL_MOB, src);
+	if (!md)
+		return;
+
+
 	// count the number of players eligible for exp sharing
 	for (i = c = 0; i < MAX_PARTY; i++) {
-		if( (sd[c] = p->data[i].sd) == NULL || sd[c]->bl.m != src->m || pc_isdead(sd[c]) || (battle_config.idle_no_share && pc_isidle_party(sd[c])) )
+
+		if ((sd[c] = p->data[i].sd) == NULL || sd[c]->bl.m != src->m || pc_isdead(sd[c]) || (battle_config.idle_no_share && pc_isidle_party(sd[c])))
 			continue;
+
+		for (j = 0;j < DAMAGELOG_SIZE && md->dmglog[j].id; j++) {
+			if (sd[c]->status.char_id == md->dmglog[j].id) {
+				taps_count_per_type[md->dmglog[j].flag]++;
+				if (md->get_bosstype() == BOSSTYPE_MVP) {
+					pc_damage_log_clear(p->data[i].sd, md->bl.id);
+
+				}
+			}
+		}
+
 		c++;
+
 	}
 	if (c < 1)
 		return;
-
-	base_exp/=c;
-	job_exp/=c;
-	zeny/=c;
-
+	int bonus = 100;
 	if (battle_config.party_even_share_bonus && c > 1) {
-		double bonus = 100 + battle_config.party_even_share_bonus*(c-1);
-
-		if (base_exp)
-			base_exp = (t_exp) cap_value(base_exp * bonus/100, 0, MAX_EXP);
-		if (job_exp)
-			job_exp = (t_exp) cap_value(job_exp * bonus/100, 0, MAX_EXP);
-		if (zeny)
-			zeny = (unsigned int) cap_value(zeny * bonus/100, INT_MIN, INT_MAX);
+		if (taps_count_per_type[MDLF_NORMAL] > c)
+			taps_count_per_type[MDLF_NORMAL] = c;
+		bonus += battle_config.party_even_share_bonus*(c - taps_count_per_type[MDLF_NORMAL]);
 	}
+	if (taps_count_per_type[MDLF_NORMAL] > 1 && battle_config.exp_bonus_attacker) {
+		if (taps_count_per_type[MDLF_NORMAL] > battle_config.exp_bonus_max_attacker)
+			taps_count_per_type[MDLF_NORMAL] = battle_config.exp_bonus_max_attacker;
+		bonus += battle_config.exp_bonus_attacker*(taps_count_per_type[MDLF_NORMAL] - 1);
+	}
+	if (taps_count_per_type[MDLF_NORMAL] > 0 && taps_count_per_type[MDLF_HOMUN] > 0 && battle_config.exp_bonus_homon_attacker) {
+		if (taps_count_per_type[MDLF_HOMUN] > battle_config.exp_bonus_homon_max_attacker)
+			taps_count_per_type[MDLF_HOMUN] = battle_config.exp_bonus_homon_max_attacker;
+		bonus += battle_config.exp_bonus_homon_attacker*(taps_count_per_type[MDLF_HOMUN]);
+	}
+
+	if (taps_count_per_type[MDLF_NORMAL] > 0 && taps_count_per_type[MDLF_PET] > 0 && battle_config.exp_bonus_pet_attacker) {
+		if (taps_count_per_type[MDLF_PET] > battle_config.exp_bonus_pet_max_attacker)
+			taps_count_per_type[MDLF_PET] = battle_config.exp_bonus_pet_max_attacker;
+		bonus += battle_config.exp_bonus_pet_attacker*(taps_count_per_type[MDLF_PET]);
+	}
+
+
+	if (bonus > 100) {
+		if (base_exp)
+			base_exp = (t_exp) cap_value(base_exp * bonus / 100, 0, MAX_EXP);
+		if (job_exp)
+			job_exp = (t_exp) cap_value(job_exp * bonus / 100, 0, MAX_EXP);
+		if (zeny)
+			zeny = (unsigned int) cap_value(zeny * bonus / 100, INT_MIN, INT_MAX);
+	}
+	base_exp /= c;
+	job_exp /= c;
+	zeny /= c;
+
 
 	for (i = 0; i < c; i++) {
 #ifdef RENEWAL_EXP

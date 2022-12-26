@@ -2585,7 +2585,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 			continue; // skip empty entries
 		if (tsd->bl.m != m)
 			continue; // skip players not on this map
-		count++; //Only logged into same map chars are counted for the total.
+		//count++; //Only logged into same map chars are counted for the total.
 		if (pc_isdead(tsd))
 			continue; // skip dead players
 		if (md->dmglog[i].flag == MDLF_HOMUN && !hom_is_active(tsd->hd))
@@ -2669,12 +2669,6 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 
 			//Exclude rebirth tap from this calculation
 			count -= md->state.rebirth;
-			if (count>1 && battle_config.exp_bonus_attacker) {
-				//Exp bonus per additional attacker.
-				if (count > battle_config.exp_bonus_max_attacker)
-					count = battle_config.exp_bonus_max_attacker;
-				per += per*((count-1)*battle_config.exp_bonus_attacker)/100.;
-			}
 
 			// change experience for different sized monsters [Valaris]
 			if (battle_config.mob_size_influence) {
@@ -2704,7 +2698,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 				double exp = apply_rate2(md->db->base_exp, per, 1);
 				exp = apply_rate(exp, bonus);
 				exp = apply_rate(exp, map_getmapflag(m, MF_BEXP));
-				base_exp = (t_exp)cap_value(exp, 1, MAX_EXP);
+				base_exp = (t_exp)cap_value(exp, 0, MAX_EXP);
 			}
 
 			if (map_getmapflag(m, MF_NOJOBEXP) || !md->db->job_exp
@@ -2717,7 +2711,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 				double exp = apply_rate2(md->db->job_exp, per, 1);
 				exp = apply_rate(exp, bonus);
 				exp = apply_rate(exp, map_getmapflag(m, MF_JEXP));
-				job_exp = (t_exp)cap_value(exp, 1, MAX_EXP);
+				job_exp = (t_exp)cap_value(exp, 0, MAX_EXP);
 			}
 
 			if ((base_exp > 0 || job_exp > 0) && md->dmglog[i].flag == MDLF_HOMUN && homkillonly && battle_config.hom_idle_no_share && pc_isidle_hom(tmpsd[i]))
@@ -2770,8 +2764,6 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 					pc_getzeny(tmpsd[i], zeny, LOG_TYPE_PICKDROP_MONSTER, NULL);
 			}
 
-			if( md->get_bosstype() == BOSSTYPE_MVP )
-				pc_damage_log_clear(tmpsd[i],md->bl.id);
 		}
 
 		for( i = 0; i < pnum; i++ ) //Party share.
@@ -2951,13 +2943,13 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 
 			log_mvp_exp = cap_value( apply_rate( log_mvp_exp, penalty ), 0, MAX_EXP );
 #endif
-
+			
 			if( battle_config.exp_bonus_attacker > 0 && count > 1 ){
-				if( count > battle_config.exp_bonus_max_attacker ){
-					count = battle_config.exp_bonus_max_attacker;
+				if( count > battle_config.exp_bonus_mvp_max_attacker ){
+					count = battle_config.exp_bonus_mvp_max_attacker;
 				}
 
-				log_mvp_exp += log_mvp_exp * ( battle_config.exp_bonus_attacker * ( count - 1 ) ) / 100;
+				log_mvp_exp += log_mvp_exp * ( battle_config.exp_bonus_mvp_attacker * ( count - 1 ) )/ 100;
 			}
 
 			log_mvp_exp = cap_value( log_mvp_exp, 1, MAX_EXP );

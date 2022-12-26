@@ -410,7 +410,13 @@ struct Battle_Config
 	int finding_ore_rate; // orn
 	int exp_calc_type;
 	int exp_bonus_attacker;
+	int exp_bonus_mvp_attacker;
+	int exp_bonus_homon_attacker;
+	int exp_bonus_pet_attacker;
 	int exp_bonus_max_attacker;
+	int exp_bonus_homon_max_attacker;
+	int exp_bonus_pet_max_attacker;
+	int exp_bonus_mvp_max_attacker;
 	int min_skill_delay_limit;
 	int default_walk_delay;
 	int no_skill_delay;

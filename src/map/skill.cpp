@@ -1341,6 +1341,8 @@ int skill_additional_effect(struct block_list* src, struct block_list *bl, uint1
 					clif_emotion(bl,ET_HUK);
 			}
 		}
+		if (dstmd)
+			mob_log_damage(dstmd, src, 0);
 	}
 
 	if( dmg_lv < ATK_DEF ) // no damage, return;
@@ -15046,7 +15048,9 @@ static int skill_unit_onplace(struct skill_unit *unit, struct block_list *bl, t_
 	nullpo_ret(ss = map_id2bl(sg->src_id));
 
 	tstatus = status_get_status_data(bl);
-
+	mob_data* dstmd = BL_CAST( BL_MOB,bl);
+	if(dstmd && ss)
+			mob_log_damage(dstmd,ss, 0);
 	if( (skill_get_type(sg->skill_id) == BF_MAGIC && ((battle_config.land_protector_behavior) ? map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR) : map_getcell(unit->bl.m, unit->bl.x, unit->bl.y, CELL_CHKLANDPROTECTOR)) && sg->skill_id != SA_LANDPROTECTOR) ||
 		map_getcell(bl->m, bl->x, bl->y, CELL_CHKMAELSTROM) )
 		return 0; //AoE skills are ineffective. [Skotlex]
@@ -16374,7 +16378,7 @@ static int skill_unit_effect(struct block_list* bl, va_list ap)
 	uint16 skill_id;
 	bool dissonance = false;
 	bool isTarget = false;
-
+	mob_data* dstmd = BL_CAST(BL_MOB, bl);
 	if( (!unit->alive && !(flag&4)) || bl->prev == NULL )
 		return 0;
 
@@ -16392,6 +16396,8 @@ static int skill_unit_effect(struct block_list* bl, va_list ap)
 	//Necessary in case the group is deleted after calling on_place/on_out [Skotlex]
 	skill_id = group->skill_id;
 	if( isTarget ){
+		if(dstmd && map_id2bl(unit->group->src_id))
+			mob_log_damage(dstmd, map_id2bl(unit->group->src_id), 0);
 		if( flag&1 )
 			skill_unit_onplace(unit,bl,tick);
 		else {
