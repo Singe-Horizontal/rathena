@@ -98,6 +98,20 @@ static char log_picktype2char(e_log_pick_type type)
 	return 'X';
 }
 
+static char log_killertype2char(e_log_killer_type type)
+{
+	switch( type )
+	{
+		case LOG_KILL_PC:		return 'C';
+		case LOG_KILL_MOB:		return 'M';
+		case LOG_KILL_NPC:		return 'N';
+		case LOG_KILL_SCRIPT:	return 'S';
+	}
+
+	// should not get here, fallback
+	ShowDebug("log_killertype2char: Unknown killer type %d.\n", type);
+	return 'O';
+}
 
 /// obtain log type character for chat logs
 static char log_chattype2char(e_log_chat_type type)
@@ -260,6 +274,45 @@ void log_pick(int id, int16 m, e_log_pick_type type, int amount, struct item* it
 		fprintf(logfp,"%s - %d\t%c\t%u,%d,%d,%u,%u,%u,%u,%s,'%" PRIu64 "',%d,%d\n", timestring, id, log_picktype2char(type), itm->nameid, amount, itm->refine, itm->card[0], itm->card[1], itm->card[2], itm->card[3], map_getmapdata(m)->name[0]?map_getmapdata(m)->name:"", itm->unique_id, itm->bound, itm->enchantgrade);
 		fclose(logfp);
 	}
+}
+
+/// logs mob kill
+void log_kill(int source_id, int16 m, e_log_killer_type type, int class_id, int monster_id)
+{
+
+
+	if( log_config.sql_logs )
+	{
+		int i;
+		SqlStmt* stmt = SqlStmt_Malloc(logmysql_handle);
+		StringBuf buf;
+		StringBuf_Init(&buf);
+
+		StringBuf_Printf(&buf, "%s INTO `%s` (`time`, `char_id`, `type`, `class_id`, `monster_id`, `map`", LOG_QUERY, log_config.log_kill);
+		StringBuf_Printf(&buf, ") VALUES(NOW(),'%u','%c','%u','%u','%s'",
+			source_id, log_killertype2char(type), class_id, monster_id, map_getmapdata(m)->name[0] ? map_getmapdata(m)->name : "");
+
+		StringBuf_Printf(&buf, ")");
+
+		if (SQL_SUCCESS != SqlStmt_PrepareStr(stmt, StringBuf_Value(&buf)) || SQL_SUCCESS != SqlStmt_Execute(stmt))
+			SqlStmt_ShowDebug(stmt);
+
+		SqlStmt_Free(stmt);
+		StringBuf_Destroy(&buf);
+	}
+	//else
+	//{
+	//	char timestring[255];
+	//	time_t curtime;
+	//	FILE* logfp;
+
+	//	if( ( logfp = fopen(log_config.log_pick, "a") ) == NULL )
+	//		return;
+	//	time(&curtime);
+	//	strftime(timestring, sizeof(timestring), log_timestamp_format, localtime(&curtime));
+	//	fprintf(logfp,"%s - %d\t%c\t%u,%d,%d,%u,%u,%u,%u,%s,'%" PRIu64 "',%d,%d\n", timestring, id, log_killertype2char(type), itm->nameid, amount, itm->refine, itm->card[0], itm->card[1], itm->card[2], itm->card[3], map_getmapdata(m)->name[0]?map_getmapdata(m)->name:"", itm->unique_id, itm->bound, itm->enchantgrade);
+	//	fclose(logfp);
+	//}
 }
 
 /// logs item transactions (players)
@@ -655,6 +708,8 @@ int log_config_read(const char* cfgName)
 				log_config.mvpdrop = config_switch(w2);
 			else if( strcmpi(w1, "log_feeding") == 0 )
 				log_config.feeding = config_switch(w2);
+			else if( strcmpi(w1, "log_kill") == 0 )
+				log_config.kill = config_switch(w2);
 			else if( strcmpi(w1, "log_chat_woe_disable") == 0 )
 				log_config.log_chat_woe_disable = config_switch(w2) > 0;
 			else if( strcmpi(w1, "log_branch_db") == 0 )
@@ -675,6 +730,8 @@ int log_config_read(const char* cfgName)
 				safestrncpy( log_config.log_cash, w2, sizeof( log_config.log_cash ) );
 			else if( strcmpi( w1, "log_feeding_db" ) == 0 )
 				safestrncpy( log_config.log_feeding, w2, sizeof( log_config.log_feeding ) );
+			else if( strcmpi( w1, "log_kill_db" ) == 0 )
+				safestrncpy( log_config.log_kill, w2, sizeof( log_config.log_kill ) );
 			// log file timestamp format
 			else if( strcmpi( w1, "log_timestamp_format" ) == 0 )
 				safestrncpy(log_timestamp_format, w2, sizeof(log_timestamp_format));
@@ -725,6 +782,9 @@ int log_config_read(const char* cfgName)
 		}
 		if( log_config.feeding ){
 			ShowInfo( "Logging Feeding items to %s '%s'.\n", target, log_config.log_feeding );
+		}
+		if( log_config.kill ){
+			ShowInfo( "Logging Kills to %s '%s'.\n", target, log_config.log_kill );
 		}
 	}
 

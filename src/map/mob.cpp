@@ -2562,6 +2562,12 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 		md->state.skillstate = MSS_DEAD;
 		mobskill_use(md,tick,-1);
 		md->status.hp = 0;
+		if(src->type == BL_PC)
+			log_kill( sd->status.char_id, sd->bl.m, LOG_KILL_PC, sd->status.class_,md->db->id);
+		else if (src->type == BL_MOB) {
+			mob_data* kmd = (mob_data*)src;
+			log_kill(kmd->db->id, src->m, LOG_KILL_MOB, kmd->db->id, md->db->id);
+		}
 	}
 
 	map_freeblock_lock();
