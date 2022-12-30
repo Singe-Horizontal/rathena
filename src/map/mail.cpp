@@ -363,7 +363,10 @@ void mail_getattachment(map_session_data* sd, struct mail_message* msg, int zeny
 int mail_openmail(map_session_data *sd)
 {
 	nullpo_ret(sd);
-
+	if( !map_getmapflag(sd->bl.m, MF_TOWN) ){
+		clif_Mail_send(sd, WRITE_MAIL_FAILED);
+		return 0;
+	}
 	if( sd->state.storage_flag || sd->state.vending || sd->state.buyingstore || sd->state.trading )
 		return 0;
 
@@ -427,7 +430,10 @@ void mail_send(map_session_data *sd, const char *dest_name, const char *title, c
 
 	if( sd->state.trading )
 		return;
-
+	if( !map_getmapflag(sd->bl.m, MF_TOWN) ){
+		clif_Mail_send(sd, WRITE_MAIL_FAILED);
+		return;
+	}
 	if( DIFF_TICK(sd->cansendmail_tick, gettick()) > 0 ) {
 		clif_displaymessage(sd->fd,msg_txt(sd,675)); //"Cannot send mails too fast!!."
 		clif_Mail_send(sd, WRITE_MAIL_FAILED); // fail
