@@ -12026,6 +12026,23 @@ void clif_parse_Broadcast(int fd, map_session_data* sd) {
 	is_atcommand(fd, sd, command, 1);
 }
 
+static int smaller_greed(struct block_list *bl, va_list ap)
+{
+	struct block_list *src;
+	map_session_data *sd = NULL;
+	struct flooritem_data *fitem = NULL;
+
+	nullpo_ret(bl);
+	nullpo_ret(src = va_arg(ap, struct block_list *));
+
+	uint32* count = va_arg(ap, unsigned int*);
+	if ((*count)++ < 1 && src->type == BL_PC && (sd = (map_session_data*)src) && bl->type == BL_ITEM && (fitem = (struct flooritem_data*)bl)) {
+		if(!pc_takeitem(sd, fitem))
+			clif_additem(sd,0,0,6);
+	}
+
+	return 0;
+}
 
 /// Request to pick up an item.
 /// 009f <id>.L (CZ_ITEM_PICKUP)
@@ -12051,9 +12068,11 @@ void clif_parse_TakeItem(int fd, map_session_data *sd)
 
 		if (pc_cant_act(sd))
 			break;
-
 		if (!pc_takeitem(sd, fitem))
 			break;
+		int count = 0;
+		map_foreachinallrange(smaller_greed, &sd->bl, 1, BL_ITEM, &sd->bl, &count);
+		
 
 		return;
 	} while (0);
