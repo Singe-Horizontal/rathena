@@ -6693,8 +6693,13 @@ void mob_reload_itemmob_data(void) {
 			id = itemdb_search(pair.second->dropitem[d].nameid);
 
 			for (k = 0; k < MAX_SEARCH; k++) {
-				if (id->mob[k].chance <= pair.second->dropitem[d].rate)
-					break;
+				if (id->mob[k].id) {
+					if (id->mob[k].id == pair.first) {
+						id->mob[k].chance = pair.second->dropitem[d].rate;
+					}
+					else if (id->mob[k].chance <= pair.second->dropitem[d].rate)
+							break;
+				}
 			}
 
 			if (k == MAX_SEARCH)
