@@ -6303,31 +6303,31 @@ static void mob_drop_ratio_adjust(void){
 				switch( id->type ){
 					case IT_HEALING:
 						rate_adjust = is_mvp ? battle_config.item_rate_heal_mvp : (is_boss ? battle_config.item_rate_heal_boss : battle_config.item_rate_heal);
-						ratemin = battle_config.item_drop_heal_min;
-						ratemax = battle_config.item_drop_heal_max;
+						ratemin = is_mvp ? battle_config.item_drop_heal_min_mvp : (is_boss ? battle_config.item_drop_heal_min_boss : battle_config.item_drop_heal_min);
+						ratemax = is_mvp ? battle_config.item_drop_heal_max_mvp : (is_boss ? battle_config.item_drop_heal_max_boss : battle_config.item_drop_heal_max);
 						break;
 					case IT_USABLE:
 					case IT_CASH:
 						rate_adjust = is_mvp ? battle_config.item_rate_use_mvp : (is_boss ? battle_config.item_rate_use_boss : battle_config.item_rate_use);
-						ratemin = battle_config.item_drop_use_min;
-						ratemax = battle_config.item_drop_use_max;
+						ratemin = is_mvp ? battle_config.item_drop_use_min_mvp : (is_boss ? battle_config.item_drop_use_min_boss : battle_config.item_drop_use_min);
+						ratemax = is_mvp ? battle_config.item_drop_use_max_mvp : (is_boss ? battle_config.item_drop_use_max_boss : battle_config.item_drop_use_max);
 						break;
 					case IT_WEAPON:
 					case IT_ARMOR:
 					case IT_PETARMOR:
 						rate_adjust = is_mvp ? battle_config.item_rate_equip_mvp : (is_boss ? battle_config.item_rate_equip_boss : battle_config.item_rate_equip);
-						ratemin = battle_config.item_drop_equip_min;
-						ratemax = battle_config.item_drop_equip_max;
+						ratemin = is_mvp ? battle_config.item_drop_equip_min_mvp : (is_boss ? battle_config.item_drop_equip_min_boss : battle_config.item_drop_equip_min);
+						ratemax = is_mvp ? battle_config.item_drop_equip_max_mvp : (is_boss ? battle_config.item_drop_equip_max_boss : battle_config.item_drop_equip_max);
 						break;
 					case IT_CARD:
 						rate_adjust = is_mvp ? battle_config.item_rate_card_mvp : (is_boss ? battle_config.item_rate_card_boss : battle_config.item_rate_card);
-						ratemin = battle_config.item_drop_card_min;
-						ratemax = battle_config.item_drop_card_max;
+						ratemin = is_mvp ? battle_config.item_drop_card_min_mvp : (is_boss ? battle_config.item_drop_card_min_boss : battle_config.item_drop_card_min);
+						ratemax = is_mvp ? battle_config.item_drop_card_max_mvp : (is_boss ? battle_config.item_drop_card_max_boss : battle_config.item_drop_card_max);
 						break;
 					default:
 						rate_adjust = is_mvp ? battle_config.item_rate_common_mvp : (is_boss ? battle_config.item_rate_common_boss : battle_config.item_rate_common);
-						ratemin = battle_config.item_drop_common_min;
-						ratemax = battle_config.item_drop_common_max;
+						ratemin = is_mvp ? battle_config.item_drop_common_min_mvp : (is_boss ? battle_config.item_drop_common_min_boss : battle_config.item_drop_common_min);
+						ratemax = is_mvp ? battle_config.item_drop_common_max_mvp : (is_boss ? battle_config.item_drop_common_max_boss : battle_config.item_drop_common_max);
 						break;
 				}
 			}
