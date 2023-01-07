@@ -279,6 +279,7 @@ struct Script_Config script_config = {
 	"OnInit", //init_event_name (is executed on all npcs when all npcs were loaded)
 	"OnInterIfInit", //inter_init_event_name (is executed on inter server connection)
 	"OnInterIfInitOnce", //inter_init_once_event_name (is only executed on the first inter server connection)
+	"OnMobDbReload", //mob_db_reload_event_name (is executed when mob db is load/reloaded)
 	// Guild related
 	"OnGuildBreak", //guild_break_event_name (is executed on all castles of the guild that is broken)
 	"OnAgitStart", //agit_start_event_name (is executed when WoE FE is started)

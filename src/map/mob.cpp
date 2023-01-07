@@ -6668,6 +6668,9 @@ void mob_db_load(bool is_reload){
 		item_drop_list_ers = ers_new(sizeof(struct item_drop_list),"mob.cpp::item_drop_list_ers",ERS_OPT_NONE);
 	}
 	mob_load();
+	if (is_reload) {
+		npc_event_runall(script_config.mob_db_reload_event_name);
+	}
 }
 
 /**

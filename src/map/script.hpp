@@ -180,6 +180,7 @@ struct Script_Config {
 	const char* init_event_name;
 	const char* inter_init_event_name;
 	const char* inter_init_once_event_name;
+	const char* mob_db_reload_event_name;
 
 	// Guild related
 	const char* guild_break_event_name;
