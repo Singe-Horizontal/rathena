@@ -1700,7 +1700,7 @@ static bool mob_ai_sub_hard(struct mob_data *md, t_tick tick)
 	md->last_thinktime = tick;
 
 	if (md->ud.skilltimer != INVALID_TIMER) {
-		md->attacked_id = 0;
+		md->attacked_id = md->norm_attacked_id = 0;
 		return false;
 	}
 
