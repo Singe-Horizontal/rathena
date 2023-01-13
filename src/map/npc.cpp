@@ -2153,10 +2153,10 @@ void run_tomb(map_session_data* sd, struct npc_data* nd)
 	char buffer[200];
 	char time[10];
 
-	strftime(time, sizeof(time), "%H:%M", localtime(&nd->u.tomb.kill_time));
+	strftime(time, sizeof(time), "%H:%M", localtime(&nd->tomb.kill_time));
 
 	// TODO: Find exact color?
-	snprintf( buffer, sizeof( buffer ), msg_txt( sd, 657 ), nd->u.tomb.md->db->name.c_str() ); // [ ^EE0000%s^000000 ]
+	snprintf( buffer, sizeof( buffer ), msg_txt( sd, 657 ), nd->tomb.md->db->name.c_str() ); // [ ^EE0000%s^000000 ]
 	clif_scriptmes( *sd, nd->bl.id, buffer );
 
 	clif_scriptmes( *sd, nd->bl.id, msg_txt( sd, 658 ) ); // Has met its demise
@@ -2164,10 +2164,22 @@ void run_tomb(map_session_data* sd, struct npc_data* nd)
 	snprintf( buffer, sizeof( buffer ), msg_txt( sd, 659 ), time ); // Time of death : ^EE0000%s^000000
 	clif_scriptmes( *sd, nd->bl.id, buffer );
 
-	clif_scriptmes( *sd, nd->bl.id, msg_txt( sd, 660 ) ); // Defeated by
+	
+	bool isMVP = true;
+	for (std::pair<unsigned int, std::string>& p : nd->tomb.killers) {
+		
+		if (p.second != "") {
+			if (isMVP) {
+				snprintf(buffer, sizeof(buffer), msg_txt(sd, 660), p.second.c_str(), p.first); // [^EE0000%s^000000]
+				isMVP = false;
+			}
+			else
+				snprintf(buffer, sizeof(buffer), msg_txt(sd, 661), p.second.c_str(), p.first); // [^EE0000%s^000000]
 
-	snprintf( buffer, sizeof( buffer ), msg_txt( sd, 661 ), nd->u.tomb.killer_name[0] ? nd->u.tomb.killer_name : "Unknown" ); // [^EE0000%s^000000]
-	clif_scriptmes( *sd, nd->bl.id, buffer );
+
+			clif_scriptmes(*sd, nd->bl.id, buffer);
+		}
+	}
 
 	clif_scriptclose(sd, nd->bl.id);
 }

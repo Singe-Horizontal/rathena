@@ -190,17 +190,17 @@ struct npc_data {
 			short x,y; // destination coords
 			unsigned short mapindex; // destination map
 		} warp;
-		struct {
-			struct mob_data *md;
-			time_t kill_time;
-			char killer_name[NAME_LENGTH];
-			int spawn_timer;
-		} tomb;
+
 		struct {
 			bool extended;
 		} barter;
 	} u;
-
+	struct {
+		struct mob_data* md;
+		time_t kill_time;
+		std::array<std::pair<unsigned int, std::string>, DAMAGELOG_SIZE> killers;
+		int spawn_timer;
+	}tomb;
 	struct sc_display_entry **sc_display;
 	unsigned char sc_display_count;
 

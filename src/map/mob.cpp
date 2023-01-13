@@ -152,9 +152,9 @@ bool mob_is_spotted(struct mob_data *md) {
  * @param nd: NPC data
  */
 int mvptomb_setdelayspawn(struct npc_data *nd) {
-	if (nd->u.tomb.spawn_timer != INVALID_TIMER)
-		delete_timer(nd->u.tomb.spawn_timer, mvptomb_delayspawn);
-	nd->u.tomb.spawn_timer = add_timer(gettick() + battle_config.mvp_tomb_delay, mvptomb_delayspawn, nd->bl.id, 0);
+	if (nd->tomb.spawn_timer != INVALID_TIMER)
+		delete_timer(nd->tomb.spawn_timer, mvptomb_delayspawn);
+	nd->tomb.spawn_timer = add_timer(gettick() + battle_config.mvp_tomb_delay, mvptomb_delayspawn, nd->bl.id, 0);
 	return 0;
 }
 
@@ -169,11 +169,11 @@ TIMER_FUNC(mvptomb_delayspawn){
 	struct npc_data *nd = BL_CAST(BL_NPC, map_id2bl(id));
 
 	if (nd) {
-		if (nd->u.tomb.spawn_timer != tid) {
-			ShowError("mvptomb_delayspawn: Timer mismatch: %d != %d\n", tid, nd->u.tomb.spawn_timer);
+		if (nd->tomb.spawn_timer != tid) {
+			ShowError("mvptomb_delayspawn: Timer mismatch: %d != %d\n", tid, nd->tomb.spawn_timer);
 			return 0;
 		}
-		nd->u.tomb.spawn_timer = INVALID_TIMER;
+		nd->tomb.spawn_timer = INVALID_TIMER;
 		clif_spawn(&nd->bl);
 	}
 	return 0;
@@ -208,15 +208,31 @@ void mvptomb_create(struct mob_data *md, char *killer, time_t time)
 	nd->class_ = 565;
 	nd->speed = 200;
 	nd->subtype = NPCTYPE_TOMB;
+	int pos_to_sort_from = 0;
+	auto& tomb = nd->tomb;
+	for (int i = 0; i < DAMAGELOG_SIZE; ++i) {
+		if (md->dmglog[i].dmg > 0 && md->dmglog[i].flag == 0) {
+			unsigned int pdamage = get_percentage(md->dmglog[i].dmg, status_get_max_hp(&md->bl));
+			map_session_data* sd = map_charid2sd(md->dmglog[i].id);
+			if (sd) {
+				std::string name = sd->status.name;
+				if (i > 0 && name == std::string(killer)) {
+					unsigned int tmpv = tomb.killers[0].first;
+					std::string tmps = tomb.killers[0].second;
+					tomb.killers[0]= { pdamage, name };
+					tomb.killers[i] = { tmpv, tmps };
+					pos_to_sort_from = 1;
+				}
+				else
+					tomb.killers[i]={ pdamage, name  };
+			}
+		}
+	}
 
-	nd->u.tomb.md = md;
-	nd->u.tomb.kill_time = time;
-	nd->u.tomb.spawn_timer = INVALID_TIMER;
-
-	if (killer)
-		safestrncpy(nd->u.tomb.killer_name, killer, NAME_LENGTH);
-	else
-		nd->u.tomb.killer_name[0] = '\0';
+	std::sort(tomb.killers.begin()+pos_to_sort_from, tomb.killers.end(),std::greater<>());
+	tomb.md = md;
+	tomb.kill_time = time;
+	tomb.spawn_timer = INVALID_TIMER;
 
 	map_addnpc(nd->bl.m, nd);
 	if(map_addblock(&nd->bl))
@@ -2608,6 +2624,9 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 			case MDLF_PET:    dmgbltypes|= BL_PET; break;
 		}
 	}
+		// MvP tomb [Various]
+	if (md->spawn && battle_config.mvp_tomb_enabled && md->spawn->state.boss && map_getmapflag(md->bl.m, MF_NOTOMB) != 1)
+		mvptomb_create(md, mvp_sd ? mvp_sd->status.name : NULL, time(NULL));
 
 	// determines, if the monster was killed by homunculus' damage only
 	homkillonly = (bool)( ( dmgbltypes&BL_HOM ) && !( dmgbltypes&~BL_HOM ) );
@@ -3160,9 +3179,6 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 		return ud->state.walk_script ? 3 : 5; // Note: Actually, it's 4. Oh well...
 	}
 
-	// MvP tomb [GreenBox]
-	if (battle_config.mvp_tomb_enabled && md->spawn->state.boss && map_getmapflag(md->bl.m, MF_NOTOMB) != 1)
-		mvptomb_create(md, mvp_sd ? mvp_sd->status.name : NULL, time(NULL));
 
 	if( !rebirth )
 		mob_setdelayspawn(md); //Set respawning.
