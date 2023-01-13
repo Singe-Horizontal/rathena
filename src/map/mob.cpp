@@ -229,7 +229,7 @@ void mvptomb_create(struct mob_data *md, char *killer, time_t time)
 		}
 	}
 
-	std::sort(tomb.killers.begin()+pos_to_sort_from, tomb.killers.end(),std::greater<>());
+	std::sort(tomb.killers.begin()+pos_to_sort_from, tomb.killers.end(),std::greater<std::pair<unsigned int,std::string>>());
 	tomb.md = md;
 	tomb.kill_time = time;
 	tomb.spawn_timer = INVALID_TIMER;
