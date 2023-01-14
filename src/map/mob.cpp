@@ -215,7 +215,7 @@ void mvptomb_create(struct mob_data *md, char *killer, time_t time)
 			unsigned int pdamage = get_percentage(md->dmglog[i].dmg, status_get_max_hp(&md->bl));
 			map_session_data* sd = map_charid2sd(md->dmglog[i].id);
 			if (sd) {
-				std::string name = sd->status.name;
+				const std::string& name = sd->status.name;
 				if (i > 0 && name == std::string(killer)) {
 					unsigned int tmpv = tomb.killers[0].first;
 					std::string tmps = tomb.killers[0].second;
