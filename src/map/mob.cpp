@@ -219,12 +219,15 @@ void mvptomb_create(struct mob_data *md, char *killer, time_t time)
 				if (i > 0 && name == std::string(killer)) {
 					unsigned int tmpv = tomb.killers[0].first;
 					std::string tmps = tomb.killers[0].second;
-					tomb.killers[0]= { pdamage, name };
-					tomb.killers[i] = { tmpv, tmps };
+					tomb.killers[0].first = pdamage;
+					tomb.killers[0].second = name;
+					tomb.killers[i].first = tmpv;
+					tomb.killers[i].second = tmps;
 					pos_to_sort_from = 1;
+				} else {
+					tomb.killers[i].first = pdamage;
+					tomb.killers[i].second = name;
 				}
-				else
-					tomb.killers[i]={ pdamage, name  };
 			}
 		}
 	}
