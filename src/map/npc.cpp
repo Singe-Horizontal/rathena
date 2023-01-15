@@ -2167,14 +2167,16 @@ void run_tomb(map_session_data* sd, struct npc_data* nd)
 	
 	bool isMVP = true;
 	for (std::pair<unsigned int, std::string>& p : nd->tomb.killers) {
-		
+		const std::string& name = p.second;
+		unsigned int damage = p.first;
+		unsigned int percent = get_percentage(damage, status_get_max_hp(&nd->tomb.md->bl));
 		if (p.second != "") {
 			if (isMVP) {
-				snprintf(buffer, sizeof(buffer), msg_txt(sd, 660), p.second.c_str(), p.first); // [^EE0000%s^000000]
+				snprintf(buffer, sizeof(buffer), msg_txt(sd, 660), name.c_str(), damage, percent); // [^EE0000%s^000000]
 				isMVP = false;
 			}
 			else
-				snprintf(buffer, sizeof(buffer), msg_txt(sd, 661), p.second.c_str(), p.first); // [^EE0000%s^000000]
+				snprintf(buffer, sizeof(buffer), msg_txt(sd, 661), name.c_str(), damage, percent); // [^EE0000%s^000000]
 
 
 			clif_scriptmes(*sd, nd->bl.id, buffer);

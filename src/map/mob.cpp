@@ -212,21 +212,21 @@ void mvptomb_create(struct mob_data *md, char *killer, time_t time)
 	auto& tomb = nd->tomb;
 	for (int i = 0; i < DAMAGELOG_SIZE; ++i) {
 		if (md->dmglog[i].dmg > 0 && md->dmglog[i].flag == 0) {
-			unsigned int pdamage = get_percentage(md->dmglog[i].dmg, status_get_max_hp(&md->bl));
+			unsigned int damage = md->dmglog[i].dmg;
 			map_session_data* sd = map_charid2sd(md->dmglog[i].id);
 			if (sd) {
-				const std::string& name = sd->status.name;
+				std::string name = std::string{ sd->status.name };
 				if (i > 0 && name == std::string(killer)) {
 					unsigned int tmpv = tomb.killers[0].first;
 					std::string tmps = tomb.killers[0].second;
-					tomb.killers[0].first = pdamage;
-					tomb.killers[0].second = name;
+					tomb.killers[0].first = damage;	
+					tomb.killers[0].second = std::string{ name };
 					tomb.killers[i].first = tmpv;
-					tomb.killers[i].second = tmps;
+					tomb.killers[i].second = std::string{ tmps };
 					pos_to_sort_from = 1;
 				} else {
-					tomb.killers[i].first = pdamage;
-					tomb.killers[i].second = name;
+					tomb.killers[i].first = damage;
+					tomb.killers[i].second = std::string{ sd->status.name };
 				}
 			}
 		}
