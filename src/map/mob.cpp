@@ -6340,8 +6340,13 @@ static void mob_drop_ratio_adjust(void){
 				mob->dropitem[j].rate = 0;
 				continue;
 			}
-
-			rate = mob_drop_adjust( rate, rate_adjust, ratemin, ratemax );
+			if (battle_config.item_rate_cap_adjust) {
+				if (rate < ratemax)
+					rate = mob_drop_adjust(rate, rate_adjust, ratemin, ratemax);
+				else
+					rate = mob_drop_adjust(rate, 100, ratemin, 10000);
+			}else
+				rate = mob_drop_adjust( rate, rate_adjust, ratemin, ratemax );
 
 			// calculate and store Max available drop chance of the item
 			// but skip treasure chests.

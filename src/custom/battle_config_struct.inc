@@ -12,3 +12,4 @@
  *	 <datatype> name;
  **/
 
+int item_rate_cap_adjust;

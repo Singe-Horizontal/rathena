@@ -11,3 +11,5 @@
  *	 { "name", &battle_config.<variable name>, <default value>, <minimum value>, <maximum value> },
  **/
 
+	{ "item_rate_cap_adjust",                  &battle_config.item_rate_cap_adjust,           0,      0,      1,          },
+
