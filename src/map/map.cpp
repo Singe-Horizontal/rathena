@@ -6,22 +6,22 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "../config/core.hpp"
+#include <config/core.hpp>
 
-#include "../common/cbasetypes.hpp"
-#include "../common/cli.hpp"
-#include "../common/core.hpp"
-#include "../common/ers.hpp"
-#include "../common/grfio.hpp"
-#include "../common/malloc.hpp"
-#include "../common/nullpo.hpp"
-#include "../common/random.hpp"
-#include "../common/showmsg.hpp"
-#include "../common/socket.hpp" // WFIFO*()
-#include "../common/strlib.hpp"
-#include "../common/timer.hpp"
-#include "../common/utilities.hpp"
-#include "../common/utils.hpp"
+#include <common/cbasetypes.hpp>
+#include <common/cli.hpp>
+#include <common/core.hpp>
+#include <common/ers.hpp>
+#include <common/grfio.hpp>
+#include <common/malloc.hpp>
+#include <common/nullpo.hpp>
+#include <common/random.hpp>
+#include <common/showmsg.hpp>
+#include <common/socket.hpp> // WFIFO*()
+#include <common/strlib.hpp>
+#include <common/timer.hpp>
+#include <common/utilities.hpp>
+#include <common/utils.hpp>
 
 #include "achievement.hpp"
 #include "atcommand.hpp"
@@ -181,8 +181,6 @@ const char *MSG_CONF_NAME_POR;
 const char *MSG_CONF_NAME_THA;
 
 char wisp_server_name[NAME_LENGTH] = "Server"; // can be modified in char-server configuration file
-
-struct s_map_default map_default;
 
 int console = 0;
 int enable_spy = 0; //To enable/disable @spy commands, which consume too much cpu time when sending packets. [Skotlex]
@@ -573,7 +571,7 @@ int map_count_oncell(int16 m, int16 x, int16 y, int type, int flag)
 			if(bl->x == x && bl->y == y && bl->type&type) {
 				if (bl->type == BL_NPC) {	// Don't count hidden or invisible npc. Cloaked npc are counted
 					npc_data *nd = BL_CAST(BL_NPC, bl);
-					if (nd->bl.m < 0 || nd->sc.option&(OPTION_HIDE|OPTION_INVISIBLE) || nd->dynamicnpc.owner_char_id != 0)
+					if (nd->bl.m < 0 || nd->sc.option&OPTION_HIDE || nd->dynamicnpc.owner_char_id != 0)
 						continue;
 				}
 				if(flag&1) {
@@ -2146,23 +2144,6 @@ int map_quit(map_session_data *sd) {
 
 	unit_remove_map_pc(sd,CLR_RESPAWN);
 
-	if( mapdata->instance_id > 0 ) { // Avoid map conflicts and warnings on next login
-		int16 m;
-		struct point *pt;
-		if( mapdata->save.map )
-			pt = &mapdata->save;
-		else
-			pt = &sd->status.save_point;
-
-		if( (m=map_mapindex2mapid(pt->map)) >= 0 )
-		{
-			sd->bl.m = m;
-			sd->bl.x = pt->x;
-			sd->bl.y = pt->y;
-			sd->mapindex = pt->map;
-		}
-	}
-
 	if (sd->state.vending)
 		idb_remove(vending_getdb(), sd->status.char_id);
 
@@ -2751,7 +2732,7 @@ static int map_instancemap_leave(struct block_list *bl, va_list ap)
 	nullpo_retr(0, bl);
 	nullpo_retr(0, sd = (map_session_data *)bl);
 
-	pc_setpos(sd, sd->status.save_point.map, sd->status.save_point.x, sd->status.save_point.y, CLR_TELEPORT);
+	pc_setpos_savepoint( *sd );
 
 	return 1;
 }
@@ -3796,6 +3777,8 @@ int map_readallmaps (void)
 
 	int maps_removed = 0;
 
+	ShowStatus("Loading %d maps.\n", map_num);
+
 	for (int i = 0; i < map_num; i++) {
 		size_t size;
 		bool success = false;
@@ -3803,8 +3786,10 @@ int map_readallmaps (void)
 		struct map_data *mapdata = &map[i];
 		char map_cache_decode_buffer[MAX_MAP_SIZE];
 
+#ifdef DETAILED_LOADING_OUTPUT
 		// show progress
 		ShowStatus("Loading maps [%i/%i]: %s" CL_CLL "\r", i, map_num, mapdata->name);
+#endif
 
 		if( enable_grf ){
 			// try to load the map
@@ -4860,10 +4845,12 @@ void MapServer::finalize(){
 	do_clear_npc();
 
 	// remove all objects on maps
+	ShowStatus("Cleaning up %d maps.\n", map_num);
 	for (int i = 0; i < map_num; i++) {
 		struct map_data *mapdata = map_getmapdata(i);
-
+#ifdef DEBUG
 		ShowStatus("Cleaning up maps [%d/%d]: %s..." CL_CLL "\r", i++, map_num, mapdata->name);
+#endif
 		map_foreachinmap(cleanup_sub, i, BL_ALL);
 		channel_delete(mapdata->channel,false);
 	}
@@ -5152,11 +5139,6 @@ bool MapServer::initialize( int argc, char *argv[] ){
 	MSG_CONF_NAME_POR = "conf/msg_conf/map_msg_por.conf";	// Brazilian Portuguese
 	MSG_CONF_NAME_THA = "conf/msg_conf/map_msg_tha.conf";	// Thai
 	/* Multilanguage */
-
-	// Default map
-	safestrncpy(map_default.mapname, "prontera", MAP_NAME_LENGTH);
-	map_default.x = 156;
-	map_default.y = 191;
 
 	// default inter_config
 	inter_config.start_status_points = 48;

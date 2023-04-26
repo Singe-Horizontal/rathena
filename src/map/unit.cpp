@@ -6,15 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../common/db.hpp"
-#include "../common/ers.hpp"  // ers_destroy
-#include "../common/malloc.hpp"
-#include "../common/nullpo.hpp"
-#include "../common/random.hpp"
-#include "../common/showmsg.hpp"
-#include "../common/socket.hpp"
-#include "../common/timer.hpp"
-#include "../common/utils.hpp"
+#include <common/db.hpp>
+#include <common/ers.hpp>  // ers_destroy
+#include <common/malloc.hpp>
+#include <common/nullpo.hpp>
+#include <common/random.hpp>
+#include <common/showmsg.hpp>
+#include <common/socket.hpp>
+#include <common/timer.hpp>
+#include <common/utils.hpp>
 
 #include "achievement.hpp"
 #include "battle.hpp"
@@ -554,7 +554,7 @@ static TIMER_FUNC(unit_walktoxy_timer)
 			}
 			break;
 		case BL_NPC:
-			if (nd->sc.option&OPTION_INVISIBLE)
+			if (nd->is_invisible)
 				break;
 
 			int xs = -1, ys = -1;
@@ -1603,7 +1603,7 @@ int unit_set_walkdelay(struct block_list *bl, t_tick tick, t_tick delay, int typ
  * @param castcancel: Whether or not the skill can be cancelled by interruption (hit)
  * @return Success(1); Fail(0);
  */
-int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel)
+int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range)
 {
 	struct unit_data *ud;
 	struct status_data *tstatus;
@@ -1748,7 +1748,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 		return 0;
 
 	// Fail if the targetted skill is near NPC [Cydh]
-	if(skill->inf2[INF2_DISABLENEARNPC] && skill_isNotOk_npcRange(src,skill_id,skill_lv,target->x,target->y)) {
+	if(skill->inf2[INF2_DISABLENEARNPC] && !ignore_range && skill_isNotOk_npcRange(src,skill_id,skill_lv,target->x,target->y)) {
 		if (sd)
 			clif_skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
 
@@ -1867,7 +1867,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 	if(ud->stepaction || ud->steptimer != INVALID_TIMER)
 		unit_stop_stepaction(src);
 	// Remember the skill request from the client while walking to the next cell
-	if(src->type == BL_PC && ud->walktimer != INVALID_TIMER && !battle_check_range(src, target, range-1)) {
+	if(src->type == BL_PC && ud->walktimer != INVALID_TIMER && (!battle_check_range(src, target, range-1) || ignore_range)) {
 		ud->stepaction = true;
 		ud->target_to = target_id;
 		ud->stepskill_id = skill_id;
@@ -1877,7 +1877,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 
 	// Check range when not using skill on yourself or is a combo-skill during attack
 	// (these are supposed to always have the same range as your attack)
-	if( src->type != BL_NPC && src->id != target_id && (!combo || ud->attacktimer == INVALID_TIMER) ) {
+	if( src->type != BL_NPC && !ignore_range && src->id != target_id && (!combo || ud->attacktimer == INVALID_TIMER) ) {
         if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
                 if( !unit_can_reach_bl(src, target, range + 1, 1, NULL, NULL) )
                         return 0; // Walk-path check failed.
@@ -2048,7 +2048,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 
 		mobskill_event(md, src, tick, -1); // Cast targetted skill event.
 
-		if ((status_has_mode(tstatus,MD_CASTSENSORIDLE) || status_has_mode(tstatus,MD_CASTSENSORCHASE)) && battle_check_target(target, src, BCT_ENEMY) > 0) {
+		if ((status_has_mode(tstatus,MD_CASTSENSORIDLE) || status_has_mode(tstatus,MD_CASTSENSORCHASE)) && battle_check_target(target, src, BCT_ENEMY) > 0 && !ignore_range) {
 			switch (md->state.skillstate) {
 				case MSS_RUSH:
 				case MSS_FOLLOW:
@@ -2099,7 +2099,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 
 			if (!src->prev)
 				return 0; // Warped away!
-		} else if( sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4&4) && skill_id != GC_CLOAKINGEXCEED && skill_id != SHC_SHADOW_STAB) {
+		} else if( sc->getSCE(SC_CLOAKINGEXCEED) && !(sc->getSCE(SC_CLOAKINGEXCEED)->val4&4) && skill_id != GC_CLOAKINGEXCEED && skill_id != SHC_SHADOW_STAB  && skill_id != SHC_SAVAGE_IMPACT ) {
 			status_change_end(src,SC_CLOAKINGEXCEED);
 
 			if (!src->prev)
@@ -2155,7 +2155,7 @@ int unit_skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint
  * @param castcancel: Whether or not the skill can be cancelled by interuption (hit)
  * @return Success(1); Fail(0);
  */
-int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel)
+int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range)
 {
 	map_session_data *sd = NULL;
 	struct unit_data        *ud = NULL;
@@ -2230,7 +2230,7 @@ int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, ui
 		return 0;
 
 	// Fail if the targetted skill is near NPC [Cydh]
-	if(skill_get_inf2(skill_id, INF2_DISABLENEARNPC) && skill_isNotOk_npcRange(src,skill_id,skill_lv,skill_x,skill_y)) {
+	if(skill_get_inf2(skill_id, INF2_DISABLENEARNPC) && !ignore_range && skill_isNotOk_npcRange(src,skill_id,skill_lv,skill_x,skill_y)) {
 		if (sd)
 			clif_skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
 
@@ -2252,7 +2252,7 @@ int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, ui
 	if(ud->stepaction || ud->steptimer != INVALID_TIMER)
 		unit_stop_stepaction(src);
 	// Remember the skill request from the client while walking to the next cell
-	if(src->type == BL_PC && ud->walktimer != INVALID_TIMER && !battle_check_range(src, &bl, range-1)) {
+	if(src->type == BL_PC && ud->walktimer != INVALID_TIMER && (!battle_check_range(src, &bl, range-1) || ignore_range)) {
 		struct map_data *md = &map[src->m];
 		// Convert coordinates to target_to so we can use it as target later
 		ud->stepaction = true;
@@ -2262,23 +2262,28 @@ int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, ui
 		return 0; // Attacking will be handled by unit_walktoxy_timer in this case
 	}
 
-	if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
-		if( !unit_can_reach_bl(src, &bl, range + 1, 1, NULL, NULL) )
-			return 0; // Walk-path check failed.
-	} else if (!battle_check_range(src, &bl, range)) {
-		if (src->type == BL_PC) { // Replace the client move command when lacking
-			struct map_data* md = &map[src->m];
-			unit_walktobl(src, &bl, range, 0);
-			ud->stepaction = true;
-			ud->target_to = (skill_x + skill_y*md->xs);
-			ud->stepskill_id = skill_id;
-			ud->stepskill_lv = skill_lv;
+	if (!ignore_range) {																															 
+		if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
+			if( !unit_can_reach_bl(src, &bl, range + 1, 1, NULL, NULL) )
+				return 0; // Walk-path check failed.
+		} else if (!battle_check_range(src, &bl, range)) {
+			if (src->type == BL_PC) { // Replace the client move command when lacking
+				struct map_data* md = &map[src->m];
+				unit_walktobl(src, &bl, range, 0);
+				ud->stepaction = true;
+				ud->target_to = (skill_x + skill_y*md->xs);
+				ud->stepskill_id = skill_id;
+				ud->stepskill_lv = skill_lv;
 
-			ud->steptimer = add_timer(tick + status_get_speed(src) / 2, unit_step_timer, src->id, 0);
+				ud->steptimer = add_timer(tick + status_get_speed(src) / 2, unit_step_timer, src->id, 0);
+			}
+			return 0; // Arrow-path check failed.
+			if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
+				if( !unit_can_reach_bl(src, &bl, range + 1, 1, NULL, NULL) )
+					return 0; // Walk-path check failed.
+			}else if( !battle_check_range(src, &bl, range) )
+				return 0; // Arrow-path check failed.
 		}
-		return 0; // Arrow-path check failed.
-
-
 	}
 	unit_stop_attack(src);
 
@@ -3573,6 +3578,7 @@ int unit_free(struct block_list *bl, clr_type clrtype)
 
 			skill_clear_unitgroup(bl);
 			status_change_clear(bl,1);
+			pd->~pet_data();
 			break;
 		}
 		case BL_MOB: {
@@ -3608,6 +3614,7 @@ int unit_free(struct block_list *bl, clr_type clrtype)
 						gc->temp_guardians[i] = 0;
 				}
 
+				md->guardian_data->~guardian_data();
 				aFree(md->guardian_data);
 				md->guardian_data = NULL;
 			}
@@ -3636,6 +3643,7 @@ int unit_free(struct block_list *bl, clr_type clrtype)
 
 			if( md->tomb_nid )
 				mvptomb_destroy(md);
+			md->~mob_data();
 			break;
 		}
 		case BL_HOM:
