@@ -5079,7 +5079,7 @@ TIMER_FUNC(macro_timer) {
 			break;
 		}
 		case Step::Type::EQUIPMENT: {
-			if (item_d = itemdb_exists(step.manipulated_object_id)) {
+			if (item_d = item_db.find((step.manipulated_object_id))) {
 				int j;
 				for (j = MAX_INVENTORY - 1; j >=0; j--) { //start looping from the end because unequipped items are placed last
 					if (sd->inventory.u.items_inventory[j].nameid == step.manipulated_object_id) {
