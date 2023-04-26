@@ -1885,6 +1885,7 @@ enum e_random_item_group {
 	IG_CLASS_SHADOW_EA_CUBE,
 	IG_ENCHANT_STONE_BOX30,
 	IG_NODELAYCHECK,
+	IG_MAX,
 };
 
 /// Enum for bound/sell restricted selling
