@@ -1881,7 +1881,16 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 		} else if( src->type == BL_MER && skill_id == MA_REMOVETRAP ) {
 			if( !battle_check_range(battle_get_master(src), target, range + 1) )
 				return 0; // Aegis calc remove trap based on Master position, ignoring mercenary O.O
-		} else if( !battle_check_range(src, target, range) )
+		} else if( !battle_check_range(src, target, range) ){
+			if ( src->type == BL_PC) { // Order the player to walk when client doesn't
+	                        unit_walktobl(src,target,range,0);
+	                        ud->stepaction = true;
+	                        ud->target_to = target_id;
+	                        ud->stepskill_id = skill_id;
+	                        ud->stepskill_lv = skill_lv;
+	                        ud->steptimer = add_timer(tick + status_get_speed(src)/2, unit_step_timer, src->id, 0);
+	                        return 0;
+			}
 			return 0; // Arrow-path check failed.
 	}
 
@@ -2206,8 +2215,17 @@ int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, ui
 		if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
 			if( !unit_can_reach_bl(src, &bl, range + 1, 1, NULL, NULL) )
 				return 0; // Walk-path check failed.
-		}else if( !battle_check_range(src, &bl, range) )
+		}else if( !battle_check_range(src, &bl, range) ){
+			if (src->type == BL_PC) { // Order the player to walk when client doesn't
+				unit_walktobl(src, &bl, range, 0);
+				ud->stepaction = true;
+				ud->target_to = (skill_x + skill_y*md->xs);
+				ud->stepskill_id = skill_id;
+				ud->stepskill_lv = skill_lv;
+				ud->steptimer = add_timer(tick + status_get_speed(src) / 2, unit_step_timer, src->id, 0);
+			}
 			return 0; // Arrow-path check failed.
+		}
 	}
 	unit_stop_attack(src);
 
