@@ -271,7 +271,7 @@ void log_pick_pc(map_session_data* sd, e_log_pick_type type, int amount, struct 
 
 
 /// logs item transactions (monsters)
-void log_pick_mob(struct mob_data* md, e_log_pick_type type, int amount, struct item* itm)
+void log_pick_mob(mobs::MobData* md, e_log_pick_type type, int amount, struct item* itm)
 {
 	nullpo_retv(md);
 	log_pick(md->mob_id, md->bl.m, type, amount, itm);

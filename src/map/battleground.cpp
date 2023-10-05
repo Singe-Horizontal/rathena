@@ -603,7 +603,7 @@ int bg_team_leave(map_session_data *sd, bool quit, bool deserter)
 		clif_bg_message(bgteam.get(), 0, "Server", output, strlen(output) + 1);
 
 		if (!bgteam->logout_event.empty() && quit)
-			npc_event(sd, bgteam->logout_event.c_str(), 0);
+			npc_event_process(sd, bgteam->logout_event.c_str(), 0);
 
 		if (deserter) {
 			std::shared_ptr<s_battleground_type> bg = battleground_db.find(bg_id);
@@ -692,7 +692,7 @@ int bg_team_get_id(struct block_list *bl)
 			break;
 		case BL_MOB: {
 			map_session_data *msd;
-			struct mob_data *md = (TBL_MOB*)bl;
+			mobs::MobData *md = (mobs::MobData*)bl;
 
 			if( md->special_state.ai && (msd = map_id2sd(md->master_id)) != nullptr )
 				return msd->bg_id;
@@ -1411,7 +1411,7 @@ void bg_join_active(map_session_data *sd, std::shared_ptr<s_battleground_queue> 
 
 		clif_bg_queue_entry_init(pl_sd);
 		bg_team_join(bg_id_team_1, pl_sd, true);
-		npc_event(pl_sd, bgteam_1->active_event.c_str(), 0);
+		npc_event_process(pl_sd, bgteam_1->active_event.c_str(), 0);
 		return;
 	}
 
@@ -1431,7 +1431,7 @@ void bg_join_active(map_session_data *sd, std::shared_ptr<s_battleground_queue> 
 
 		clif_bg_queue_entry_init(pl_sd);
 		bg_team_join(bg_id_team_2, pl_sd, true);
-		npc_event(pl_sd, bgteam_2->active_event.c_str(), 0);
+		npc_event_process(pl_sd, bgteam_2->active_event.c_str(), 0);
 		return;
 	}
 

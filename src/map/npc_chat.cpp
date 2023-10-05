@@ -12,7 +12,7 @@
 #include <common/strlib.hpp>
 #include <common/timer.hpp>
 
-#include "mob.hpp" // struct mob_data
+#include "mob.hpp" // class MobData
 #include "pc.hpp" // map_session_data
 
 /**

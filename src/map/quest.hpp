@@ -75,7 +75,7 @@ int quest_add(map_session_data *sd, int quest_id);
 int quest_delete(map_session_data *sd, int quest_id);
 int quest_change(map_session_data *sd, int qid1, int qid2);
 int quest_update_objective_sub(struct block_list *bl, va_list ap);
-void quest_update_objective(map_session_data *sd, struct mob_data* md);
+void quest_update_objective(map_session_data *sd, mobs::MobData* md);
 int quest_update_status(map_session_data *sd, int quest_id, e_quest_state status);
 int quest_check(map_session_data *sd, int quest_id, e_quest_check_type type);
 

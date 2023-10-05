@@ -276,7 +276,7 @@ int mercenary_delete(s_mercenary_data *md, int reply) {
 	mercenary_contract_stop(md);
 
 	if( !sd )
-		return unit_free(&md->bl, CLR_OUTSIGHT);
+		return units::free(&md->bl, CLR_OUTSIGHT);
 
 	if( md->devotion_flag )
 	{
@@ -350,13 +350,13 @@ bool mercenary_recv_data(s_mercenary *merc, bool flag)
 		memcpy(&md->mercenary, merc, sizeof(s_mercenary));
 		status_set_viewdata(&md->bl, md->mercenary.class_);
 		status_change_init(&md->bl);
-		unit_dataset(&md->bl);
+		units::dataset(&md->bl);
 		md->ud.dir = sd->ud.dir;
 
 		md->bl.m = sd->bl.m;
 		md->bl.x = sd->bl.x;
 		md->bl.y = sd->bl.y;
-		unit_calc_pos(&md->bl, sd->bl.x, sd->bl.y, sd->ud.dir);
+		units::calc_pos(&md->bl, sd->bl.x, sd->bl.y, sd->ud.dir);
 		md->bl.x = md->ud.to_x;
 		md->bl.y = md->ud.to_y;
 

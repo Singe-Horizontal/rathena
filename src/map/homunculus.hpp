@@ -11,7 +11,7 @@
 
 #include "mob.hpp"
 #include "status.hpp" // struct status_data, struct status_change
-#include "unit.hpp" // struct unit_data
+#include "unit.hpp" // units::UnitData
 
 #ifdef RENEWAL
 	#define	HOMUN_LEVEL_STATWEIGHT_VALUE 0
@@ -86,7 +86,7 @@ enum e_hom_state2 : uint8 {
 
 struct homun_data {
 	struct block_list bl;
-	struct unit_data  ud;
+	units::UnitData ud;
 	struct view_data *vd;
 	struct status_data base_status, battle_status;
 	status_change sc;
@@ -233,8 +233,8 @@ int hom_food(map_session_data *sd, struct homun_data *hd);
 int hom_hungry_timer_delete(struct homun_data *hd);
 int hom_change_name(map_session_data *sd,char *name);
 void hom_change_name_ack(map_session_data *sd, char* name, int flag);
-#define hom_stop_walking(hd, type) unit_stop_walking(&(hd)->bl, type)
-#define hom_stop_attack(hd) unit_stop_attack(&(hd)->bl)
+#define hom_stop_walking(hd, type) units::stop_walking(&(hd)->bl, type)
+#define hom_stop_attack(hd) units::stop_attack(&(hd)->bl)
 int hom_increase_intimacy(struct homun_data * hd, unsigned int value);
 int hom_decrease_intimacy(struct homun_data * hd, unsigned int value);
 int hom_skill_tree_get_max(int skill_id, int b_class);

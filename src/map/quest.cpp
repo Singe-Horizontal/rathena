@@ -123,7 +123,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(targetNode, "Mob", mob_name))
 					return 0;
 
-				std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+				std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(mob_name.c_str());
 
 				if (!mob) {
 					this->invalidWarning(targetNode["Mob"], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -298,7 +298,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 						std::string mob_name;
 						c4::from_chars(MapMobTargetsIt.key(), &mob_name);
 
-						std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+						std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(mob_name.c_str());
 
 						if (!mob) {
 							this->invalidWarning(MapMobTargetsNode[MapMobTargetsIt.key()], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -350,7 +350,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(dropNode, "Mob", mob_name))
 					return 0;
 
-				std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+				std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(mob_name.c_str());
 
 				if (!mob) {
 					this->invalidWarning(dropNode["Mob"], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -705,7 +705,7 @@ int quest_update_objective_sub(struct block_list *bl, va_list ap)
 	if( sd->status.party_id != va_arg(ap, int))
 		return 0;
 
-	quest_update_objective(sd, va_arg(ap, struct mob_data*));
+	quest_update_objective(sd, va_arg(ap, mobs::MobData*));
 
 	return 1;
 }
@@ -719,7 +719,7 @@ int quest_update_objective_sub(struct block_list *bl, va_list ap)
  * @param mob_size: Monster Size
  * @param mob_element: Monster Element
  */
-void quest_update_objective(map_session_data *sd, struct mob_data* md)
+void quest_update_objective(map_session_data *sd, mobs::MobData* md)
 {
 	nullpo_retv(sd);
 

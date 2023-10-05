@@ -14,7 +14,7 @@
 #include "clif.hpp" //
 #include "map.hpp" // struct block_list
 #include "status.hpp" // struct status_change
-#include "unit.hpp" // struct unit_data
+#include "unit.hpp" // units::UnitData
 #include "navi.hpp" // navi stuff
 
 struct block_list;
@@ -156,7 +156,7 @@ enum e_npcv_status : uint8 {
 
 struct npc_data {
 	struct block_list bl;
-	struct unit_data ud; //Because they need to be able to move....
+	units::UnitData ud; //Because they need to be able to move....
 	struct view_data vd;
 	status_change sc; //They can't have status changes, but.. they want the visual opt values.
 	struct npc_data *master_nd;
@@ -206,7 +206,7 @@ struct npc_data {
 			unsigned short mapindex; // destination map
 		} warp;
 		struct {
-			struct mob_data *md;
+			mobs::MobData *md;
 			time_t kill_time;
 			char killer_name[NAME_LENGTH];
 			int spawn_timer;
@@ -1511,10 +1511,10 @@ enum npce_event : uint8 {
 struct view_data* npc_get_viewdata(int class_);
 int npc_chat_sub(struct block_list* bl, va_list ap);
 int npc_event_dequeue(map_session_data* sd,bool free_script_stack=true);
-int npc_event(map_session_data* sd, const char* eventname, int ontouch);
+int npc_event_process(map_session_data* sd, const char* eventname, int ontouch);
 int npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, struct npc_data* nd);
 int npc_touch_area_allnpc(map_session_data* sd, int16 m, int16 x, int16 y);
-int npc_touch_areanpc2(struct mob_data *md); // [Skotlex]
+int npc_touch_areanpc2(mobs::MobData *md); // [Skotlex]
 int npc_check_areanpc(int flag, int16 m, int16 x, int16 y, int16 range);
 int npc_touchnext_areanpc(map_session_data* sd,bool leavemap);
 int npc_click(map_session_data* sd, struct npc_data* nd);
@@ -1525,7 +1525,7 @@ e_purchase_result npc_buylist(map_session_data* sd, std::vector<s_npc_buy_list>&
 static int npc_buylist_sub(map_session_data* sd, std::vector<s_npc_buy_list>& item_list, struct npc_data* nd);
 uint8 npc_selllist(map_session_data* sd, int list_length, PACKET_CZ_PC_SELL_ITEMLIST_sub* item_list);
 e_purchase_result npc_barter_purchase( map_session_data& sd, std::shared_ptr<s_npc_barter> barter, std::vector<s_barter_purchase>& purchases );
-void npc_parse_mob2(struct spawn_data* mob);
+void npc_parse_mob2(struct SpawnData* mob);
 struct npc_data* npc_add_warp(char* name, short from_mapid, short from_x, short from_y, short xs, short ys, unsigned short to_mapindex, short to_x, short to_y);
 int npc_globalmessage(const char* name,const char* mes);
 const char *npc_get_script_event_name(int npce_index);

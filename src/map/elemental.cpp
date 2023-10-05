@@ -203,7 +203,7 @@ int elemental_delete(s_elemental_data *ed) {
 	elemental_summon_stop(ed);
 
 	if( !sd )
-		return unit_free(&ed->bl, CLR_OUTSIGHT);
+		return units::free(&ed->bl, CLR_OUTSIGHT);
 
 	sd->ed = NULL;
 	sd->status.ele_id = 0;
@@ -250,13 +250,13 @@ int elemental_data_received(s_elemental *ele, bool flag) {
 		status_set_viewdata(&ed->bl, ed->elemental.class_);
 		ed->vd->head_mid = 10; // Why?
 		status_change_init(&ed->bl);
-		unit_dataset(&ed->bl);
+		units::dataset(&ed->bl);
 		ed->ud.dir = sd->ud.dir;
 
 		ed->bl.m = sd->bl.m;
 		ed->bl.x = sd->bl.x;
 		ed->bl.y = sd->bl.y;
-		unit_calc_pos(&ed->bl, sd->bl.x, sd->bl.y, sd->ud.dir);
+		units::calc_pos(&ed->bl, sd->bl.x, sd->bl.y, sd->ud.dir);
 		ed->bl.x = ed->ud.to_x;
 		ed->bl.y = ed->ud.to_y;
 
@@ -330,7 +330,7 @@ int elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick) {
 	// Not in skill range.
 	if( !battle_check_range(&ed->bl,bl,skill_get_range(skill_id,skill_lv)) ) {
 		// Try to walk to the target.
-		if( !unit_walktobl(&ed->bl, bl, skill_get_range(skill_id,skill_lv), 2) )
+		if( !units::walktobl(&ed->bl, bl, skill_get_range(skill_id,skill_lv), 2) )
 			elemental_unlocktarget(ed);
 		else {
 			// Walking, waiting to be in range. Client don't handle it, then we must handle it here.
@@ -361,9 +361,9 @@ int elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick) {
 
 	//Otherwise, just cast the skill.
 	if( skill_get_inf(skill_id) & INF_GROUND_SKILL )
-		unit_skilluse_pos(&ed->bl, bl->x, bl->y, skill_id, skill_lv);
+		units::skilluse_pos(&ed->bl, bl->x, bl->y, skill_id, skill_lv);
 	else
-		unit_skilluse_id(&ed->bl, bl->id, skill_id, skill_lv);
+		units::skilluse_id(&ed->bl, bl->id, skill_id, skill_lv);
 
 	// Reset target.
 	ed->target_id = 0;
@@ -401,9 +401,9 @@ int elemental_change_mode_ack(s_elemental_data *ed, e_elemental_skillmode skill_
 	ed->last_thinktime = gettick();
 
 	if( skill_get_inf(skill_id) & INF_GROUND_SKILL )
-		unit_skilluse_pos(&ed->bl, bl->x, bl->y, skill_id, skill_lv);
+		units::skilluse_pos(&ed->bl, bl->x, bl->y, skill_id, skill_lv);
 	else
-		unit_skilluse_id(&ed->bl,bl->id,skill_id,skill_lv);
+		units::skilluse_id(&ed->bl,bl->id,skill_id,skill_lv);
 
 	ed->target_id = 0;	// Reset target after casting the skill  to avoid continious attack.
 
@@ -592,7 +592,7 @@ static int elemental_ai_sub_timer(s_elemental_data *ed, map_session_data *sd, t_
 	master_dist = distance_bl(&sd->bl, &ed->bl);
 	if( master_dist > AREA_SIZE ) {	// Master out of vision range.
 		elemental_unlocktarget(ed);
-		unit_warp(&ed->bl,sd->bl.m,sd->bl.x,sd->bl.y,CLR_TELEPORT);
+		units::warp(&ed->bl,sd->bl.m,sd->bl.x,sd->bl.y,CLR_TELEPORT);
 		clif_elemental_updatestatus(sd,SP_HP);
 		clif_elemental_updatestatus(sd,SP_SP);
 		return 0;
@@ -605,7 +605,7 @@ static int elemental_ai_sub_timer(s_elemental_data *ed, map_session_data *sd, t_
 		if( DIFF_TICK(tick, ed->ud.canmove_tick) < 0 )
 			return 0; //Can't move yet.
 		if( map_search_freecell(&ed->bl, sd->bl.m, &x, &y, MIN_ELEDISTANCE, MIN_ELEDISTANCE, 1)
-		   && unit_walktoxy(&ed->bl, x, y, 0) )
+		   && units::walktoxy(&ed->bl, x, y, 0) )
 			return 0;
 	}
 
@@ -633,12 +633,12 @@ static int elemental_ai_sub_timer(s_elemental_data *ed, map_session_data *sd, t_
 			return 1;
 
 		if( battle_check_range(&ed->bl, target, ed->base_status.rhw.range) ) {//Target within range, engage
-			unit_attack(&ed->bl,target->id,1);
+			units::attack(&ed->bl,target->id,1);
 			return 1;
 		}
 
 		//Follow up if possible.
-		if( !unit_walktobl(&ed->bl, target, ed->base_status.rhw.range, 2) )
+		if( !units::walktobl(&ed->bl, target, ed->base_status.rhw.range, 2) )
 			elemental_unlocktarget(ed);
 	}
 

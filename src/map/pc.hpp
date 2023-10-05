@@ -23,8 +23,8 @@
 #include "pc_groups.hpp" // s_player_group
 #include "script.hpp" // struct script_reg, struct script_regstr
 #include "searchstore.hpp"  // struct s_search_store_info
-#include "status.hpp" // unit_data
-#include "unit.hpp" // unit_data
+#include "status.hpp" // units::UnitData
+#include "unit.hpp" // units::UnitData
 #include "vending.hpp" // struct s_vending
 
 enum AtCommandType : uint8;
@@ -377,7 +377,7 @@ struct s_qi_display {
 class map_session_data {
 public:
 	struct block_list bl;
-	struct unit_data ud;
+	units::UnitData ud;
 	struct view_data vd;
 	struct status_data base_status, battle_status;
 	status_change sc;
@@ -1197,8 +1197,8 @@ enum e_mado_type : uint16 {
 // Rune Knight Dragon
 #define pc_isridingdragon(sd) ( (sd)->sc.option&OPTION_DRAGON )
 
-#define pc_stop_walking(sd, type) unit_stop_walking(&(sd)->bl, type)
-#define pc_stop_attack(sd) unit_stop_attack(&(sd)->bl)
+#define pc_stop_walking(sd, type) units::stop_walking(&(sd)->bl, type)
+#define pc_stop_attack(sd) units::stop_attack(&(sd)->bl)
 
 //Weapon check considering dual wielding.
 #define pc_check_weapontype(sd, type) ((type)&((sd)->status.weapon < MAX_WEAPON_TYPE? \
@@ -1726,7 +1726,7 @@ void pc_show_questinfo_reinit(map_session_data *sd);
 bool pc_job_can_entermap(enum e_job jobid, int m, int group_lv);
 
 #if defined(RENEWAL_DROP) || defined(RENEWAL_EXP)
-uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::shared_ptr<s_mob_db> mob, mob_data* md = nullptr );
+uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::shared_ptr<mobs::s_mob_db> mob, mobs::MobData* md = nullptr );
 #endif
 
 bool pc_attendance_enabled();

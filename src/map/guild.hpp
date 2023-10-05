@@ -15,7 +15,7 @@ struct guild_member;
 struct guild_position;
 struct guild_castle;
 class map_session_data;
-struct mob_data;
+class MobData;
 
 //For quick linking to a guardian's info. [Skotlex]
 struct guardian_data {

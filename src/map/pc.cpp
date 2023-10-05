@@ -62,7 +62,7 @@
 #include "searchstore.hpp"  // struct s_search_store_info
 #include "status.hpp" // OPTION_*, struct weapon_atk
 #include "storage.hpp"
-#include "unit.hpp" // unit_stop_attack(), unit_stop_walking()
+#include "unit.hpp" // units::stop_attack(), stop_walking()
 #include "vending.hpp" // struct s_vending
 
 using namespace rathena;
@@ -2118,7 +2118,7 @@ bool pc_authok(map_session_data *sd, uint32 login_id2, time_t expiration_time, i
 
 	sd->sc.option = sd->status.option; //This is the actual option used in battle.
 
-	unit_dataset(&sd->bl);
+	units::dataset(&sd->bl);
 
 	sd->guild_x = -1;
 	sd->guild_y = -1;
@@ -6647,12 +6647,12 @@ bool pc_steal_item(map_session_data *sd,struct block_list *bl, uint16 skill_lv)
 	double rate;
 	unsigned char flag = 0;
 	struct status_data *sd_status, *md_status;
-	struct mob_data *md;
+	mobs::MobData *md;
 
 	if(!sd || !bl || bl->type!=BL_MOB)
 		return false;
 
-	md = (TBL_MOB *)bl;
+	md = (mobs::MobData *)bl;
 
 	if(md->state.steal_flag == UCHAR_MAX || ( md->sc.opt1 && md->sc.opt1 != OPT1_BURNING ) ) //already stolen from / status change check
 		return false;
@@ -6698,7 +6698,7 @@ bool pc_steal_item(map_session_data *sd,struct block_list *bl, uint16 skill_lv)
 	tmp_item.amount = 1;
 	tmp_item.identify = itemdb_isidentified(itemid);
 	if( battle_config.skill_steal_random_options ){
-		mob_setdropitem_option( &tmp_item, &md->db->dropitem[i] );
+		mobs::setdropitem_option( &tmp_item, &md->db->dropitem[i] );
 	}
 	flag = pc_additem(sd,&tmp_item,1,LOG_TYPE_PICKDROP_PLAYER);
 
@@ -6737,12 +6737,12 @@ bool pc_steal_item(map_session_data *sd,struct block_list *bl, uint16 skill_lv)
 int pc_steal_coin(map_session_data *sd,struct block_list *target)
 {
 	int rate, target_lv;
-	struct mob_data *md;
+	mobs::MobData *md;
 
 	if(!sd || !target || target->type != BL_MOB)
 		return 0;
 
-	md = (TBL_MOB*)target;
+	md = (mobs::MobData*)target;
 	target_lv = status_get_lv(target);
 
 	if (md->state.steal_coin_flag || md->sc.getSCE(SC_STONE) || md->sc.getSCE(SC_FREEZE) || md->sc.getSCE(SC_HANDICAPSTATE_FROSTBITE) || 
@@ -6900,7 +6900,7 @@ enum e_setpos pc_setpos(map_session_data* sd, unsigned short mapindex, int x, in
 
 		npc_script_event(sd, NPCE_LOGOUT);
 		//remove from map, THEN change x/y coordinates
-		unit_remove_map_pc(sd,clrtype);
+		units::remove_map_pc(sd,clrtype);
 		sd->mapindex = mapindex;
 		sd->bl.x=x;
 		sd->bl.y=y;
@@ -6909,10 +6909,10 @@ enum e_setpos pc_setpos(map_session_data* sd, unsigned short mapindex, int x, in
 		chrif_changemapserver(sd, ip, (short)port);
 
 		//Free session data from this map server [Kevin]
-		unit_free_pc(sd);
+		units::free_pc(sd);
 
 		if( st ){
-			// Has to be done here, because otherwise unit_free_pc will free the stack already
+			// Has to be done here, because otherwise units::free_pc will free the stack already
 			st->state = END;
 		}
 
@@ -6950,7 +6950,7 @@ enum e_setpos pc_setpos(map_session_data* sd, unsigned short mapindex, int x, in
 	}
 
 	if(sd->bl.prev != NULL){
-		unit_remove_map_pc(sd,clrtype);
+		units::remove_map_pc(sd,clrtype);
 		clif_changemap(sd,m,x,y); // [MouseJstr]
 	} else if(sd->state.active) //Tag player for rewarping after map-loading is done. [Skotlex]
 		sd->state.rewarp = 1;
@@ -8024,9 +8024,9 @@ TIMER_FUNC(pc_follow_timer){
 	if (sd->bl.prev != NULL && tbl->prev != NULL &&
 		sd->ud.skilltimer == INVALID_TIMER && sd->ud.attacktimer == INVALID_TIMER && sd->ud.walktimer == INVALID_TIMER)
 	{
-		if((sd->bl.m == tbl->m) && unit_can_reach_bl(&sd->bl,tbl, AREA_SIZE, 0, NULL, NULL)) {
+		if((sd->bl.m == tbl->m) && units::can_reach_bl(&sd->bl,tbl, AREA_SIZE, 0, NULL, NULL)) {
 			if (!check_distance_bl(&sd->bl, tbl, 5))
-				unit_walktobl(&sd->bl, tbl, 5, 0);
+				units::walktobl(&sd->bl, tbl, 5, 0);
 		} else
 			pc_setpos(sd, map_id2index(tbl->m), tbl->x, tbl->y, CLR_TELEPORT);
 	}
@@ -8047,7 +8047,7 @@ int pc_stop_following (map_session_data *sd)
 	sd->followtarget = -1;
 	sd->ud.target_to = 0;
 
-	unit_stop_walking(&sd->bl, 1);
+	units::stop_walking(&sd->bl, 1);
 
 	return 0;
 }
@@ -9724,9 +9724,9 @@ int pc_dead(map_session_data *sd,struct block_list *src)
 	switch (src->type) {
 		case BL_MOB:
 		{
-			struct mob_data *md=(struct mob_data *)src;
+			mobs::MobData *md=(mobs::MobData *)src;
 			if(md->target_id==sd->bl.id)
-				mob_unlocktarget(md,tick);
+				md->unlock_target(tick);
 			if(battle_config.mobs_level_up && md->status.hp &&
 				(unsigned int)md->level < pc_maxbaselv(sd) &&
 				!md->guardian_data && !md->special_state.ai// Guardians/summons should not level. [Skotlex]
@@ -10628,9 +10628,9 @@ int pc_percentheal(map_session_data *sd,int hp,int sp)
 
 static int jobchange_killclone(struct block_list *bl, va_list ap)
 {
-	struct mob_data *md;
+	mobs::MobData *md;
 		int flag;
-	md = (struct mob_data *)bl;
+	md = (mobs::MobData *)bl;
 	nullpo_ret(md);
 	flag = va_arg(ap, int);
 
@@ -11490,7 +11490,7 @@ static TIMER_FUNC(pc_eventtimer){
 	{
 		sd->eventtimer[i] = INVALID_TIMER;
 		sd->eventcount--;
-		npc_event(sd,p,0);
+		npc_event_process(sd,p,0);
 	}
 	else
 		ShowError("pc_eventtimer: no such event timer\n");
@@ -12235,7 +12235,7 @@ bool pc_unequipitem(map_session_data *sd, int n, int flag) {
 	}
 	if(pos & EQP_HAND_L) {
 		if (sd->status.shield && battle_getcurrentskill(&sd->bl) == LG_SHIELDSPELL)
-			unit_skillcastcancel(&sd->bl, 0); // Cancel Shield Spell if player swaps shields.
+			units::skillcastcancel(&sd->bl, 0); // Cancel Shield Spell if player swaps shields.
 
 		sd->status.shield = sd->weapontype2 = W_FIST;
 		pc_calcweapontype(sd);
@@ -13123,7 +13123,7 @@ void pc_delspiritcharm(map_session_data *sd, int count, int type)
  * @param type: 1 - EXP, 2 - Item Drop
  * @return Penalty rate
  */
-uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::shared_ptr<s_mob_db> mob, mob_data* md ){
+uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::shared_ptr<mobs::s_mob_db> mob, mobs::MobData* md ){
 	// No player was attached, we don't use any modifier (100 = rates are not touched)
 	if( sd == nullptr ){
 		return 100;
@@ -14434,7 +14434,7 @@ uint8 pc_itemcd_check(map_session_data *sd, struct item_data *id, t_tick tick, u
 * @param sd
 * @param md
 **/
-static void pc_clear_log_damage_sub(uint32 char_id, struct mob_data *md)
+static void pc_clear_log_damage_sub(uint32 char_id, mobs::MobData *md)
 {
 	uint8 i;
 	ARR_FIND(0,DAMAGELOG_SIZE,i,md->dmglog[i].id == char_id);
@@ -14478,7 +14478,7 @@ void pc_damage_log_add(map_session_data *sd, int id)
 void pc_damage_log_clear(map_session_data *sd, int id)
 {
 	uint8 i;
-	struct mob_data *md = NULL;
+	mobs::MobData *md = NULL;
 
 	if (!sd)
 		return;

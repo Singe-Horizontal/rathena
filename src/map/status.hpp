@@ -19,7 +19,7 @@
 
 enum e_race2 : uint8;
 struct block_list;
-struct mob_data;
+class MobData;
 struct pet_data;
 struct homun_data;
 struct s_mercenary_data;
@@ -3439,7 +3439,7 @@ TIMER_FUNC(status_clear_lastEffect_timer);
 bool status_calc_weight(map_session_data *sd, enum e_status_calc_weight_opt flag);
 bool status_calc_cart_weight(map_session_data *sd, enum e_status_calc_weight_opt flag);
 void status_calc_bl_(struct block_list *bl, std::bitset<SCB_MAX> flag, uint8 opt = SCO_NONE);
-int status_calc_mob_(struct mob_data* md, uint8 opt);
+int status_calc_mob_(mobs::MobData* md, uint8 opt);
 void status_calc_pet_(struct pet_data* pd, uint8 opt);
 int status_calc_pc_(map_session_data* sd, uint8 opt);
 int status_calc_homunculus_(struct homun_data *hd, uint8 opt);
@@ -3463,7 +3463,7 @@ void status_calc_regen(struct block_list *bl, struct status_data *status, struct
 void status_calc_regen_rate(struct block_list *bl, struct regen_data *regen, status_change *sc);
 void status_calc_state(struct block_list *bl, status_change *sc, std::bitset<SCS_MAX> flag, bool start);
 
-void status_calc_slave_mode(struct mob_data *md, struct mob_data *mmd);
+void status_calc_slave_mode(mobs::MobData*md, mobs::MobData*mmd);
 
 bool status_check_skilluse(struct block_list *src, struct block_list *target, uint16 skill_id, int flag);
 int status_check_visibility(struct block_list *src, struct block_list *target);

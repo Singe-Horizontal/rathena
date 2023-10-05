@@ -1551,7 +1551,7 @@ int guild_emblem_changed(int len,int guild_id,int emblem_id,const char *data) {
 			// update permanent guardians
 			for( i = 0; i < ARRAYLENGTH(it.second->guardian); ++i )
 			{
-				TBL_MOB* md = (it.second->guardian[i].id ? map_id2md(it.second->guardian[i].id) : NULL);
+				mobs::MobData* md = (it.second->guardian[i].id ? map_id2md(it.second->guardian[i].id) : NULL);
 				if( md == NULL || md->guardian_data == NULL )
 					continue;
 				md->guardian_data->emblem_id = emblem_id;
@@ -1560,7 +1560,7 @@ int guild_emblem_changed(int len,int guild_id,int emblem_id,const char *data) {
 			// update temporary guardians
 			for( i = 0; i < it.second->temp_guardians_max; ++i )
 			{
-				TBL_MOB* md = (it.second->temp_guardians[i] ? map_id2md(it.second->temp_guardians[i]) : NULL);
+				mobs::MobData* md = (it.second->temp_guardians[i] ? map_id2md(it.second->temp_guardians[i]) : NULL);
 				if( md == NULL || md->guardian_data == NULL )
 					continue;
 				md->guardian_data->emblem_id = emblem_id;
@@ -2199,7 +2199,7 @@ int guild_gm_changed(int guild_id, uint32 account_id, uint32 char_id, time_t tim
 * @param name Guild name
 */
 int guild_break(map_session_data *sd,char *name) {
-	struct unit_data *ud;
+	units::UnitData *ud;
 	int i;
 #ifdef BOUND_ITEMS
 	int j;
@@ -2231,7 +2231,7 @@ int guild_break(map_session_data *sd,char *name) {
 		instance_destroy(g->instance_id);
 
 	/* Regardless of char server allowing it, we clear the guild master's auras */
-	if ((ud = unit_bl2ud(&sd->bl))) {
+	if ((ud = units::bl2ud(&sd->bl))) {
 		std::vector<std::shared_ptr<s_skill_unit_group>> group;
 
 		for (const auto su : ud->skillunits) {
@@ -2299,9 +2299,9 @@ int guild_castledatasave(int castle_id, int index, int value) {
 		int i;
 		gc->guild_id = value;
 		for (i = 0; i < MAX_GUARDIANS; i++){
-			struct mob_data *gd;
+			mobs::MobData *gd;
 			if (gc->guardian[i].visible && (gd = map_id2md(gc->guardian[i].id)) != NULL)
-				mob_guardian_guildchange(gd);
+				gd->guardian_guild_change();
 		}
 		break;
 	}
@@ -2312,7 +2312,7 @@ int guild_castledatasave(int castle_id, int index, int value) {
 		int i;
 		gc->defense = value;
 		for (i = 0; i < MAX_GUARDIANS; i++){
-			struct mob_data *gd;
+			mobs::MobData *gd;
 			if (gc->guardian[i].visible && (gd = map_id2md(gc->guardian[i].id)) != NULL)
 				status_calc_mob(gd, SCO_NONE);
 		}

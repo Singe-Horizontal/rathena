@@ -211,7 +211,6 @@ bool process( const std::string& type, uint32 version, const std::vector<std::st
 
 	return true;
 }
-
 bool Csv2YamlTool::initialize( int argc, char* argv[] ){
 	const std::string path_db = std::string( db_path );
 	const std::string path_db_mode = path_db + "/" + DBPATH;

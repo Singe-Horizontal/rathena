@@ -6974,6 +6974,7 @@
 	export_constant(IG_DUN_VOUCHER_BOX2);
 	export_constant(IG_BLUEBOXOFQUESTIONS);
 
+
 	/* unit stop walking */
 	export_constant(USW_NONE);
 	export_constant(USW_FIXPOS);

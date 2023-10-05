@@ -361,7 +361,7 @@ static inline unsigned char clif_bl_type(struct block_list *bl, bool walking) {
 		if( pcdb_checkid( status_get_viewdata( bl )->class_ ) ){
 			return 0x0; //PC_TYPE
 		}else{
-			switch( ( (mob_data*)bl )->special_state.ai ){
+			switch( ( (mobs::MobData*)bl )->special_state.ai ){
 				case AI_ABR:
 					return 0xd; //NPC_ABR_TYPE
 				case AI_BIONIC:
@@ -377,7 +377,7 @@ static inline unsigned char clif_bl_type(struct block_list *bl, bool walking) {
 #if PACKETVER >= 20170726
 		if (pcdb_checkid( status_get_viewdata( bl )->class_ ) && walking)
 			return 0x0;
-		else if (mobdb_checkid( status_get_viewdata( bl )->class_ ))	// FIXME: categorize NPCs able to walk
+		else if (mobs::mobdb_checkid( status_get_viewdata( bl )->class_ ))	// FIXME: categorize NPCs able to walk
 			return 0xC;
 		else
 			return 0x6;
@@ -1129,7 +1129,7 @@ static void clif_set_unit_idle( struct block_list* bl, bool walking, send_target
 		p.virtue = ( sc ) ? sc->opt3 : 0;
 		p.isPKModeON = ( sd && sd->status.karma ) ? 1 : 0;
 		p.sex = vd->sex;
-		WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, unit_getdir( bl ) );
+		WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, units::getdir( bl ) );
 		p.xSize = p.ySize = ( sd ) ? 5 : 0;
 		p.state = vd->dead_sit;
 		p.clevel = clif_setlevel( bl );
@@ -1201,7 +1201,7 @@ static void clif_set_unit_idle( struct block_list* bl, bool walking, send_target
 	p.virtue = (sc) ? sc->opt3 : 0;
 	p.isPKModeON = (sd && sd->status.karma) ? 1 : 0;
 	p.sex = vd->sex;
-	WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, unit_getdir( bl ) );
+	WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, units::getdir( bl ) );
 	p.xSize = p.ySize = (sd) ? 5 : 0;
 	p.state = vd->dead_sit;
 	p.clevel = clif_setlevel( bl );
@@ -1218,7 +1218,7 @@ static void clif_set_unit_idle( struct block_list* bl, bool walking, send_target
 	}
 
 	if( bl->type == BL_MOB ){
-		p.isBoss = ( (mob_data*)bl )->get_bosstype();
+		p.isBoss = ( (mobs::MobData*)bl )->get_bosstype();
 	}else if( bl->type == BL_PET ){
 		p.isBoss = ( (pet_data*)bl )->db->get_bosstype();
 	}else{
@@ -1290,7 +1290,7 @@ static void clif_spawn_unit( struct block_list *bl, enum send_target target ){
 		p.headDir = ( sd ) ? sd->head_dir : 0;
 		p.isPKModeON = ( sd && sd->status.karma ) ? 1 : 0;
 		p.sex = vd->sex;
-		WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, unit_getdir( bl ) );
+		WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, units::getdir( bl ) );
 		p.xSize = p.ySize = ( sd ) ? 5 : 0;
 
 		clif_send( &p, sizeof( p ), bl, target );
@@ -1343,7 +1343,7 @@ static void clif_spawn_unit( struct block_list *bl, enum send_target target ){
 	p.virtue = (sc) ? sc->opt3 : 0;
 	p.isPKModeON = (sd && sd->status.karma) ? 1 : 0;
 	p.sex = vd->sex;
-	WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, unit_getdir( bl ) );
+	WBUFPOS( &p.PosDir[0], 0, bl->x, bl->y, units::getdir( bl ) );
 	p.xSize = p.ySize = (sd) ? 5 : 0;
 	p.clevel = clif_setlevel( bl );
 #if PACKETVER >= 20080102
@@ -1359,7 +1359,7 @@ static void clif_spawn_unit( struct block_list *bl, enum send_target target ){
 	}
 
 	if( bl->type == BL_MOB ){
-		p.isBoss = ( (mob_data*)bl )->get_bosstype();
+		p.isBoss = ( (mobs::MobData*)bl )->get_bosstype();
 	}else if( bl->type == BL_PET ){
 		p.isBoss = ( (pet_data*)bl )->db->get_bosstype();
 	}else{
@@ -1400,7 +1400,7 @@ static void clif_spawn_unit( struct block_list *bl, enum send_target target ){
 /*==========================================
  * Prepares 'unit walking' packet
  *------------------------------------------*/
-static void clif_set_unit_walking( struct block_list *bl, map_session_data *tsd, struct unit_data *ud, enum send_target target ){
+static void clif_set_unit_walking( struct block_list *bl, map_session_data *tsd, units::UnitData *ud, enum send_target target ){
 	nullpo_retv( bl );
 	nullpo_retv( ud );
 
@@ -1467,7 +1467,7 @@ static void clif_set_unit_walking( struct block_list *bl, map_session_data *tsd,
 	}
 
 	if( bl->type == BL_MOB ){
-		p.isBoss = ( (mob_data*)bl )->get_bosstype();
+		p.isBoss = ( (mobs::MobData*)bl )->get_bosstype();
 	}else if( bl->type == BL_PET ){
 		p.isBoss = ( (pet_data*)bl )->db->get_bosstype();
 	}else{
@@ -1596,7 +1596,7 @@ static void clif_spiritcharm_single(int fd, map_session_data *sd)
 /*==========================================
  * Enchanting Shadow / Shadow Scar Spirit
  *------------------------------------------*/
-void clif_enchantingshadow_spirit(unit_data &ud) {
+void clif_enchantingshadow_spirit(units::UnitData &ud) {
 #if PACKETVER_MAIN_NUM >= 20191120 || PACKETVER_RE_NUM >= 20191120 || PACKETVER_ZERO_NUM >= 20191127
 	PACKET_ZC_TARGET_SPIRITS p = {};
 
@@ -1738,7 +1738,7 @@ int clif_spawn( struct block_list *bl, bool walking ){
 		break;
 	case BL_MOB:
 		{
-			TBL_MOB *md = ((TBL_MOB*)bl);
+			mobs::MobData *md = ((mobs::MobData*)bl);
 			if(md->special_state.size==SZ_BIG) // tiny/big mobs [Valaris]
 				clif_specialeffect(&md->bl,EF_GIANTBODY2,AREA);
 			else if(md->special_state.size==SZ_MEDIUM)
@@ -1978,7 +1978,7 @@ void clif_walkok(map_session_data *sd)
 }
 
 
-static void clif_move2( struct block_list *bl, struct view_data *vd, struct unit_data *ud ){
+static void clif_move2( struct block_list *bl, struct view_data *vd, units::UnitData *ud ){
 	status_change *sc = NULL;
 
 	if ((sc = status_get_sc(bl)) && sc->option&(OPTION_HIDE|OPTION_CLOAK|OPTION_INVISIBLE|OPTION_CHASEWALK))
@@ -2006,7 +2006,7 @@ static void clif_move2( struct block_list *bl, struct view_data *vd, struct unit
 		break;
 	case BL_MOB:
 		{
-			TBL_MOB *md = ((TBL_MOB*)bl);
+			mobs::MobData *md = ((mobs::MobData*)bl);
 			if(md->special_state.size==SZ_BIG) // tiny/big mobs [Valaris]
 				clif_specialeffect(&md->bl,EF_GIANTBODY2,AREA);
 			else if(md->special_state.size==SZ_MEDIUM)
@@ -2025,7 +2025,7 @@ static void clif_move2( struct block_list *bl, struct view_data *vd, struct unit
 /// Notifies clients in an area, that an other visible object is walking (ZC_NOTIFY_PLAYERMOVE).
 /// 0086 <id>.L <walk data>.6B <walk start time>.L
 /// Note: unit must not be self
-void clif_move(struct unit_data *ud)
+void clif_move(units::UnitData *ud)
 {
 	unsigned char buf[16];
 	struct view_data* vd;
@@ -4048,7 +4048,7 @@ void clif_changelook(struct block_list *bl, int type, int val) {
 		} else
 			clif_sprite_change(bl, bl->id, type, val, val2, target);
 	} else
-		unit_refresh(bl);
+		units::refresh(bl);
 #endif
 }
 
@@ -5052,7 +5052,7 @@ static void clif_getareachar_pc(map_session_data* sd,map_session_data* dstsd)
 }
 
 void clif_getareachar_unit( map_session_data* sd,struct block_list *bl ){
-	struct unit_data *ud;
+	units::UnitData *ud;
 	struct view_data *vd;
 	bool option = false;
 	unsigned int option_val = 0;
@@ -5070,7 +5070,7 @@ void clif_getareachar_unit( map_session_data* sd,struct block_list *bl ){
 		return;
 	}
 
-	ud = unit_bl2ud(bl);
+	ud = units::bl2ud(bl);
 
 	if( ud && ud->walktimer != INVALID_TIMER ){
 		clif_set_unit_walking( bl, sd, ud, SELF );
@@ -5121,7 +5121,7 @@ void clif_getareachar_unit( map_session_data* sd,struct block_list *bl ){
 		break;
 	case BL_MOB:
 		{
-			TBL_MOB* md = (TBL_MOB*)bl;
+			mobs::MobData* md = (mobs::MobData*)bl;
 			if(md->special_state.size==SZ_BIG) // tiny/big mobs [Valaris]
 				clif_specialeffect_single(bl,EF_GIANTBODY2,sd->fd);
 			else if(md->special_state.size==SZ_MEDIUM)
@@ -5291,7 +5291,7 @@ int clif_damage(struct block_list* src, struct block_list* dst, t_tick tick, int
 	}
 
 	if(src == dst) {
-		unit_setdir(src, unit_getdir(src));
+		units::setdir(src, units::getdir(src));
 	}
 
 	// In case this assignment is bypassed by DMG_MULTI_HIT_CRITICAL
@@ -10116,7 +10116,7 @@ void clif_name( struct block_list* src, struct block_list *bl, send_target targe
 			}
 
 #if PACKETVER_MAIN_NUM >= 20180207 || PACKETVER_RE_NUM >= 20171129 || PACKETVER_ZERO_NUM >= 20171130
-			unit_data *ud = unit_bl2ud(bl);
+			units::UnitData *ud = units::bl2ud(bl);
 
 			if (ud != nullptr) {
 				memcpy(packet.title, ud->title, NAME_LENGTH);
@@ -10128,7 +10128,7 @@ void clif_name( struct block_list* src, struct block_list *bl, send_target targe
 		}
 			break;
 		case BL_MOB: {
-			mob_data *md = (mob_data *)bl;
+			mobs::MobData *md = (mobs::MobData *)bl;
 
 			if( md->guardian_data && md->guardian_data->guild_id ){
 				PACKET_ZC_ACK_REQNAMEALL packet = { 0 };
@@ -10176,7 +10176,7 @@ void clif_name( struct block_list* src, struct block_list *bl, send_target targe
 				safestrncpy(packet.name, md->name, NAME_LENGTH);
 
 #if PACKETVER_MAIN_NUM >= 20180207 || PACKETVER_RE_NUM >= 20171129 || PACKETVER_ZERO_NUM >= 20171130
-				unit_data *ud = unit_bl2ud(bl);
+				units::UnitData *ud = units::bl2ud(bl);
 
 				if (ud != nullptr) {
 					memcpy(packet.title, ud->title, NAME_LENGTH);
@@ -10357,8 +10357,8 @@ void clif_hate_info(map_session_data *sd, unsigned char hate_level,int class_, u
 {
 	if( pcdb_checkid(class_) ) {
 		clif_starskill(sd, job_name(class_), class_, hate_level, type ? 10 : 11);
-	} else if( mobdb_checkid(class_) ) {
-		clif_starskill(sd, mob_db.find(class_)->jname.c_str(), class_, hate_level, type ? 10 : 11);
+	} else if( mobs::mobdb_checkid(class_) ) {
+		clif_starskill(sd, mobs::mob_db.find(class_)->jname.c_str(), class_, hate_level, type ? 10 : 11);
 	} else {
 		ShowWarning("clif_hate_info: Received invalid class %d for this packet (char_id=%d, hate_level=%u, type=%u).\n", class_, sd->status.char_id, (unsigned int)hate_level, (unsigned int)type);
 	}
@@ -10369,7 +10369,7 @@ void clif_hate_info(map_session_data *sd, unsigned char hate_level,int class_, u
  *------------------------------------------*/
 void clif_mission_info(map_session_data *sd, int mob_id, unsigned char progress)
 {
-	clif_starskill(sd, mob_db.find(mob_id)->jname.c_str(), mob_id, progress, 20);
+	clif_starskill(sd, mobs::mob_db.find(mob_id)->jname.c_str(), mob_id, progress, 20);
 }
 
 /*==========================================
@@ -11064,7 +11064,7 @@ void clif_parse_LoadEndAck(int fd,map_session_data *sd)
 
 		// Set facing direction before check below to update client
 		if (battle_config.spawn_direction)
-			unit_setdir(&sd->bl, sd->status.body_direction, false);
+			units::setdir(&sd->bl, sd->status.body_direction, false);
 	} else {
 		//For some reason the client "loses" these on warp/map-change.
 		clif_updatestatus(sd,SP_STR);
@@ -11492,7 +11492,7 @@ void clif_parse_WalkToXY(int fd, map_session_data *sd)
 	if (battle_config.mer_idle_no_share && sd->md && battle_config.idletime_mer_option&IDLE_WALK)
 		sd->idletime_mer = last_tick;
 
-	unit_walktoxy(&sd->bl, x, y, 4);
+	units::walktoxy(&sd->bl, x, y, 4);
 }
 
 
@@ -11656,7 +11656,7 @@ void clif_changed_dir(struct block_list *bl, enum send_target target)
 	WBUFW(buf,0) = 0x9c;
 	WBUFL(buf,2) = bl->id;
 	WBUFW(buf,6) = bl->type==BL_PC?((TBL_PC*)bl)->head_dir:0;
-	WBUFB(buf,8) = unit_getdir(bl);
+	WBUFB(buf,8) = units::getdir(bl);
 
 	clif_send(buf, packet_len(0x9c), bl, target);
 
@@ -11790,7 +11790,7 @@ void clif_parse_ActionRequest_sub(map_session_data *sd, int action_type, int tar
 			sd->idletime_hom = last_tick;
 		if (battle_config.mer_idle_no_share && sd->md && battle_config.idletime_mer_option&IDLE_ATTACK)
 			sd->idletime_mer = last_tick;
-		unit_attack(&sd->bl, target_id, action_type != 0);
+		units::attack(&sd->bl, target_id, action_type != 0);
 		break;
 	case 0x02: // sitdown
 		if (battle_config.basic_skill_check && pc_checkskill(sd, NV_BASIC) < 3 && pc_checkskill(sd, SU_BASIC_SKILL) < 1) {
@@ -11958,7 +11958,7 @@ void clif_parse_WisMessage(int fd, map_session_data* sd)
 			}
 
 			safesnprintf(event,sizeof(event),"%s::%s", npc->exname,script_config.onwhisper_event_name);
-			npc_event(sd,event,0); // Calls the NPC label
+			npc_event_process(sd,event,0); // Calls the NPC label
 
 			return;
 		}
@@ -12816,7 +12816,7 @@ static void clif_parse_UseSkillToId_homun(struct homun_data *hd, map_session_dat
 	if( skill_lv > lv )
 		skill_lv = lv;
 	if( skill_lv )
-		unit_skilluse_id(&hd->bl, target_id, skill_id, skill_lv);
+		units::skilluse_id(&hd->bl, target_id, skill_id, skill_lv);
 }
 
 static void clif_parse_UseSkillToPos_homun(struct homun_data *hd, map_session_data *sd, t_tick tick, uint16 skill_id, uint16 skill_lv, short x, short y, int skillmoreinfo)
@@ -12847,7 +12847,7 @@ static void clif_parse_UseSkillToPos_homun(struct homun_data *hd, map_session_da
 	if( skill_lv > lv )
 		skill_lv = lv;
 	if( skill_lv )
-		unit_skilluse_pos(&hd->bl, x, y, skill_id, skill_lv);
+		units::skilluse_pos(&hd->bl, x, y, skill_id, skill_lv);
 }
 
 static void clif_parse_UseSkillToId_mercenary(s_mercenary_data *md, map_session_data *sd, t_tick tick, uint16 skill_id, uint16 skill_lv, int target_id)
@@ -12871,7 +12871,7 @@ static void clif_parse_UseSkillToId_mercenary(s_mercenary_data *md, map_session_
 	if( skill_lv > lv )
 		skill_lv = lv;
 	if( skill_lv )
-		unit_skilluse_id(&md->bl, target_id, skill_id, skill_lv);
+		units::skilluse_id(&md->bl, target_id, skill_id, skill_lv);
 }
 
 static void clif_parse_UseSkillToPos_mercenary(s_mercenary_data *md, map_session_data *sd, t_tick tick, uint16 skill_id, uint16 skill_lv, short x, short y, int skillmoreinfo)
@@ -12900,7 +12900,7 @@ static void clif_parse_UseSkillToPos_mercenary(s_mercenary_data *md, map_session
 	if( skill_lv > lv )
 		skill_lv = lv;
 	if( skill_lv )
-		unit_skilluse_pos(&md->bl, x, y, skill_id, skill_lv);
+		units::skilluse_pos(&md->bl, x, y, skill_id, skill_lv);
 }
 
 void clif_parse_skill_toid( map_session_data* sd, uint16 skill_id, uint16 skill_lv, int target_id ){
@@ -12995,7 +12995,7 @@ void clif_parse_skill_toid( map_session_data* sd, uint16 skill_id, uint16 skill_
 			skill_lv = sd->skillitemlv;
 		if( !(inf&INF_SELF_SKILL) )
 			pc_delinvincibletimer(sd); // Target skills thru items cancel invincibility. [Inkfish]
-		unit_skilluse_id(&sd->bl, target_id, skill_id, skill_lv);
+		units::skilluse_id(&sd->bl, target_id, skill_id, skill_lv);
 		return;
 	}
 	sd->skillitem = sd->skillitemlv = 0;
@@ -13014,7 +13014,7 @@ void clif_parse_skill_toid( map_session_data* sd, uint16 skill_id, uint16 skill_
 	pc_delinvincibletimer(sd);
 
 	if( skill_lv )
-		unit_skilluse_id(&sd->bl, target_id, skill_id, skill_lv);
+		units::skilluse_id(&sd->bl, target_id, skill_id, skill_lv);
 }
 
 
@@ -13111,14 +13111,14 @@ static void clif_parse_UseSkillToPosSub(int fd, map_session_data *sd, uint16 ski
 	if( sd->skillitem == skill_id ) {
 		if( skill_lv != sd->skillitemlv )
 			skill_lv = sd->skillitemlv;
-		unit_skilluse_pos(&sd->bl, x, y, skill_id, skill_lv);
+		units::skilluse_pos(&sd->bl, x, y, skill_id, skill_lv);
 	} else {
 		int lv;
 		sd->skillitem = sd->skillitemlv = 0;
 		if( (lv = pc_checkskill(sd, skill_id)) > 0 ) {
 			if( skill_lv > lv )
 				skill_lv = lv;
-			unit_skilluse_pos(&sd->bl, x, y, skill_id,skill_lv);
+			units::skilluse_pos(&sd->bl, x, y, skill_id,skill_lv);
 		}
 	}
 }
@@ -14911,10 +14911,10 @@ void clif_parse_GM_Item_Monster(int fd, map_session_data *sd)
 	}
 
 	// Monster
-	if ((mob_id = mobdb_searchname(str)) == 0)
-		mob_id = mobdb_checkid(atoi(str));
+	if ((mob_id = mobs::mobdb_searchname(str)) == 0)
+		mob_id = mobs::mobdb_checkid(atoi(str));
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 
 	if( mob != nullptr ) {
 		StringBuf_Init(&command);
@@ -15589,7 +15589,7 @@ void clif_parse_ChangeHomunculusName(int fd, map_session_data *sd){
 void clif_parse_HomMoveToMaster(int fd, map_session_data *sd){
 	int id = RFIFOL(fd,packet_db[RFIFOW(fd,0)].pos[0]); // Mercenary or Homunculus
 	struct block_list *bl = NULL;
-	struct unit_data *ud = NULL;
+	units::UnitData *ud = NULL;
 
 	if( sd->md && sd->md->bl.id == id )
 		bl = &sd->md->bl;
@@ -15598,9 +15598,9 @@ void clif_parse_HomMoveToMaster(int fd, map_session_data *sd){
 	else
 		return;
 
-	unit_calc_pos(bl, sd->bl.x, sd->bl.y, sd->ud.dir);
-	ud = unit_bl2ud(bl);
-	unit_walktoxy(bl, ud->to_x, ud->to_y, 4);
+	units::calc_pos(bl, sd->bl.x, sd->bl.y, sd->ud.dir);
+	ud = units::bl2ud(bl);
+	units::walktoxy(bl, ud->to_x, ud->to_y, 4);
 }
 
 
@@ -15621,7 +15621,7 @@ void clif_parse_HomMoveTo(int fd, map_session_data *sd){
 	else
 		return;
 
-	unit_walktoxy(bl, x, y, 4);
+	units::walktoxy(bl, x, y, 4);
 }
 
 
@@ -15643,8 +15643,8 @@ void clif_parse_HomAttack(int fd,map_session_data *sd)
 		bl = &sd->md->bl;
 	else return;
 
-	unit_stop_attack(bl);
-	unit_attack(bl, target_id, action_type != 0);
+	units::stop_attack(bl);
+	units::attack(bl, target_id, action_type != 0);
 }
 
 
@@ -17519,7 +17519,7 @@ void clif_parse_Adopt_reply(int fd, map_session_data *sd){
 ///     BOSS_INFO_ALIVE = Boss is alive (position update).
 ///     BOSS_INFO_ALIVE_WITHMSG = Boss is alive (initial announce).
 ///     BOSS_INFO_DEAD = Boss is dead.
-void clif_bossmapinfo(map_session_data *sd, struct mob_data *md, enum e_bossmap_info flag)
+void clif_bossmapinfo(map_session_data *sd, mobs::MobData *md, enum e_bossmap_info flag)
 {
 	int fd = sd->fd;
 
@@ -17787,10 +17787,10 @@ void clif_quest_send_list(map_session_data *sd)
 		offset += 2;
 		
 		if (!qi->objectives.empty()) {
-			std::shared_ptr<s_mob_db> mob;
+			std::shared_ptr<mobs::s_mob_db> mob;
 
 			for (int j = 0; j < qi->objectives.size(); j++) {
-				mob = mob_db.find(qi->objectives[j]->mob_id);
+				mob = mobs::mob_db.find(qi->objectives[j]->mob_id);
 
 				e_race race = qi->objectives[j]->race;
 				e_size size = qi->objectives[j]->size;
@@ -17868,7 +17868,7 @@ void clif_quest_send_mission(map_session_data *sd)
 		WFIFOW(fd, i*104+20) = static_cast<uint16>(qi->objectives.size());
 
 		for (int j = 0 ; j < qi->objectives.size(); j++) {
-			std::shared_ptr<s_mob_db> mob = mob_db.find(qi->objectives[j]->mob_id);
+			std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(qi->objectives[j]->mob_id);
 
 			WFIFOL(fd, i*104+22+j*30) = (mob ? qi->objectives[j]->mob_id : MOBID_PORING);
 			WFIFOW(fd, i*104+26+j*30) = sd->quest_log[i].count[j];
@@ -17911,7 +17911,7 @@ void clif_quest_add(map_session_data *sd, struct quest *qd)
 	WFIFOW(fd, 15) = static_cast<uint16>(qi->objectives.size());
 
 	for (int i = 0, offset = 17; i < qi->objectives.size(); i++) {
-		std::shared_ptr<s_mob_db> mob = mob_db.find(qi->objectives[i]->mob_id);
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(qi->objectives[i]->mob_id);
 		e_race race = qi->objectives[i]->race;
 		e_size size = qi->objectives[i]->size;
 		e_element element = qi->objectives[i]->element;
@@ -19802,7 +19802,7 @@ void clif_snap( struct block_list *bl, short x, short y ) {
 }
 
 /// 0977 <id>.L <HP>.L <maxHP>.L (ZC_HP_INFO).
-void clif_monster_hp_bar( struct mob_data* md, int fd ) {
+void clif_monster_hp_bar( mobs::MobData* md, int fd ) {
 #if PACKETVER >= 20120404
 	WFIFOHEAD(fd,packet_len(0x977));
 
@@ -21078,7 +21078,7 @@ void clif_broadcast_obtain_special_item( const char *char_name, t_itemid nameid,
 				safestrncpy( p.Name, name, sizeof( p.Name ) );
 
 				if( type == ITEMOBTAIN_TYPE_MONSTER_ITEM ){
-					std::shared_ptr<s_mob_db> db = mob_db.find( container );
+					std::shared_ptr<mobs::s_mob_db> db = mobs::mob_db.find( container );
 
 					p.monsterNameLen = NAME_LENGTH;
 					safestrncpy( p.monsterName, db->name.c_str(), NAME_LENGTH );
@@ -23186,7 +23186,7 @@ void clif_parse_barter_extended_buy( int fd, map_session_data* sd ){
 #endif
 }
 
-void clif_summon_init(struct mob_data& md) {
+void clif_summon_init(mobs::MobData& md) {
 #if PACKETVER_MAIN_NUM >= 20200916 || PACKETVER_RE_NUM >= 20200724
 	struct block_list* master_bl = battle_get_master(&md.bl);
 
@@ -23205,7 +23205,7 @@ void clif_summon_init(struct mob_data& md) {
 #endif
 }
 
-void clif_summon_hp_bar(struct mob_data& md) {
+void clif_summon_hp_bar(mobs::MobData& md) {
 #if PACKETVER_MAIN_NUM >= 20200916 || PACKETVER_RE_NUM >= 20200724
 	struct block_list* master_bl = battle_get_master(&md.bl);
 

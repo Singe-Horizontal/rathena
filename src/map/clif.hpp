@@ -20,13 +20,18 @@ struct Channel;
 struct clan;
 struct item;
 struct s_storage;
-//#include "map.hpp"
+#include "map.hpp"
+#include "unit.hpp"
 struct block_list;
-struct unit_data;
+namespace units{
+class UnitData;
+}
 class map_session_data;
 struct homun_data;
 struct pet_data;
-struct mob_data;
+namespace mobs{
+class MobData;
+}
 struct npc_data;
 struct chat_data;
 struct flooritem_data;
@@ -637,7 +642,7 @@ void clif_clearunit_area(struct block_list* bl, clr_type type);
 void clif_clearunit_delayed(struct block_list* bl, clr_type type, t_tick tick);
 int clif_spawn(struct block_list *bl, bool walking = false);	//area
 void clif_walkok(map_session_data *sd);	// self
-void clif_move(struct unit_data *ud); //area
+void clif_move(units::UnitData *ud); //area
 void clif_changemap(map_session_data *sd, short m, int x, int y);	//self
 void clif_changemapserver( map_session_data* sd, const char* map, int x, int y, uint32 ip, uint16 port );
 void clif_blown(struct block_list *bl); // area
@@ -1015,7 +1020,7 @@ void clif_Auction_message(int fd, unsigned char flag);
 void clif_Auction_close(int fd, unsigned char flag);
 void clif_parse_Auction_cancelreg(int fd, map_session_data *sd);
 
-void clif_bossmapinfo(map_session_data *sd, struct mob_data *md, enum e_bossmap_info flag);
+void clif_bossmapinfo(map_session_data *sd, mobs::MobData *md, enum e_bossmap_info flag);
 void clif_cashshop_show(map_session_data *sd, struct npc_data *nd);
 
 // ADOPTION
@@ -1109,7 +1114,7 @@ void clif_elemental_updatestatus(map_session_data *sd, int type);
 void clif_spiritcharm(map_session_data *sd);
 
 void clif_snap( struct block_list *bl, short x, short y );
-void clif_monster_hp_bar( struct mob_data* md, int fd );
+void clif_monster_hp_bar( mobs::MobData* md, int fd );
 
 // Clan System
 void clif_clan_basicinfo( map_session_data *sd );
@@ -1213,8 +1218,8 @@ void clif_inventory_expansion_info( map_session_data* sd );
 void clif_barter_open( map_session_data& sd, struct npc_data& nd );
 void clif_barter_extended_open( map_session_data& sd, struct npc_data& nd );
 
-void clif_summon_init(struct mob_data& md);
-void clif_summon_hp_bar(struct mob_data& md);
+void clif_summon_init(mobs::MobData& md);
+void clif_summon_hp_bar(mobs::MobData& md);
 
 // Laphine System
 void clif_laphine_synthesis_open( map_session_data *sd, std::shared_ptr<s_laphine_synthesis> synthesis );
@@ -1231,7 +1236,7 @@ void clif_item_reform_open( map_session_data& sd, t_itemid item );
 void clif_enchantwindow_open( map_session_data& sd, uint64 clientLuaIndex );
 
 // Enchanting Shadow / Shadow Scar Spirit
-void clif_enchantingshadow_spirit(unit_data &ud);
+void clif_enchantingshadow_spirit(units::UnitData &ud);
 
 void clif_broadcast_refine_result(map_session_data& sd, t_itemid itemId, int8 level, bool success);
 

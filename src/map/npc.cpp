@@ -792,7 +792,7 @@ void BarterDatabase::loadingFinished(){
 			}
 			
 			status_change_init( &nd->bl );
-			unit_dataset( &nd->bl );
+			units::dataset( &nd->bl );
 			nd->ud.dir = barter->dir;
 
 			if( nd->class_ != JT_FAKENPC ){
@@ -925,7 +925,7 @@ int npc_ontouch_event(map_session_data *sd, struct npc_data *nd)
 	if( nd->touching_id )
 		return 0; // Attached a player already. Can't trigger on anyone else.
 
-	// pc_ishiding moved in npc_event for now.
+	// pc_ishiding moved in npc_event_process for now.
 	// If OnTouch_ event exists hiding player doesn't click the npc.
 	// if( pc_ishiding(sd) )
 		// return 1; // Can't trigger 'OnTouch_'.
@@ -934,7 +934,7 @@ int npc_ontouch_event(map_session_data *sd, struct npc_data *nd)
 		return 0;
 
 	safesnprintf(name, ARRAYLENGTH(name), "%s::%s", nd->exname, script_config.ontouch_event_name);
-	return npc_event(sd,name,1);
+	return npc_event_process(sd,name,1);
 }
 
 int npc_ontouch2_event(map_session_data *sd, struct npc_data *nd)
@@ -945,7 +945,7 @@ int npc_ontouch2_event(map_session_data *sd, struct npc_data *nd)
 		return 0;
 
 	safesnprintf(name, ARRAYLENGTH(name), "%s::%s", nd->exname, script_config.ontouch2_event_name);
-	return npc_event(sd,name,2);
+	return npc_event_process(sd,name,2);
 }
 
 int npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, struct npc_data *nd);
@@ -1721,7 +1721,7 @@ int npc_event_sub(map_session_data* sd, struct event_data* ev, const char* event
 			return 0;
 		}
 
-		ShowWarning("npc_event: player's event queue is full, can't add event '%s' !\n", eventname);
+		ShowWarning("npc_event_process: player's event queue is full, can't add event '%s' !\n", eventname);
 		return 1;
 	}
 	if( ev->nd->is_invisible )
@@ -1757,7 +1757,7 @@ int npc_event_sub(map_session_data* sd, struct event_data* ev, const char* event
 /*==========================================
  * NPC processing event type
  *------------------------------------------*/
-int npc_event(map_session_data* sd, const char* eventname, int ontouch)
+int npc_event_process(map_session_data* sd, const char* eventname, int ontouch)
 {
 	struct event_data* ev = (struct event_data*)strdb_get(ev_db, eventname);
 	struct npc_data *nd;
@@ -1767,7 +1767,7 @@ int npc_event(map_session_data* sd, const char* eventname, int ontouch)
 	if( ev == NULL || (nd = ev->nd) == NULL )
 	{
 		if( !ontouch )
-			ShowError("npc_event: event not found [%s]\n", eventname);
+			ShowError("npc_event_process: event not found [%s]\n", eventname);
 		return ontouch;
 	}
 
@@ -1812,7 +1812,7 @@ int npc_touch_areanpc_sub(struct block_list *bl, va_list ap)
 	if( pc_id == sd->bl.id )
 		return 0;
 
-	npc_event(sd,name,1);
+	npc_event_process(sd,name,1);
 
 	return 1;
 }
@@ -1960,7 +1960,7 @@ int npc_touch_area_allnpc(map_session_data* sd, int16 m, int16 x, int16 y)
 
 // OnTouch NPC or Warp for Mobs
 // Return 1 if Warped
-int npc_touch_areanpc2(struct mob_data *md)
+int npc_touch_areanpc2(mobs::MobData *md)
 {
 	int i, x = md->bl.x, y = md->bl.y, id;
 	char eventname[EVENT_NAME_LENGTH];
@@ -2004,7 +2004,7 @@ int npc_touch_areanpc2(struct mob_data *md)
 
 					if( warp_m < 0 )
 						break; // Cannot Warp between map servers
-					if( unit_warp(&md->bl, warp_m, mapdata->npc[i]->u.warp.x, mapdata->npc[i]->u.warp.y, CLR_OUTSIGHT) == 0 )
+					if( units::warp(&md->bl, warp_m, mapdata->npc[i]->u.warp.x, mapdata->npc[i]->u.warp.y, CLR_OUTSIGHT) == 0 )
 						return 1; // Warped
 				}
 					break;
@@ -2746,7 +2746,7 @@ static int npc_buylist_sub(map_session_data* sd, std::vector<s_npc_buy_list>& it
 
 	// invoke event
 	snprintf(npc_ev, ARRAYLENGTH(npc_ev), "%s::%s", nd->exname, script_config.onbuy_event_name);
-	npc_event(sd, npc_ev, 0);
+	npc_event_process(sd, npc_ev, 0);
 
 	return 0;
 }
@@ -2988,7 +2988,7 @@ static int npc_selllist_sub(map_session_data* sd, int list_length, PACKET_CZ_PC_
 
 	// invoke event
 	snprintf(npc_ev, ARRAYLENGTH(npc_ev), "%s::%s", nd->exname, script_config.onsell_event_name);
-	npc_event(sd, npc_ev, 0);
+	npc_event_process(sd, npc_ev, 0);
 	return 0;
 }
 
@@ -3739,7 +3739,7 @@ int npc_parseview(const char* w4, const char* start, const char* buffer, const c
 
 		// Check if constant exists and get its value.
 		if(!script_get_constant(viewid, &val_tmp)) {
-			std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(viewid);
+			std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(viewid);
 			if (mob != nullptr)
 				val = static_cast<int>(mob->id);
 			else {
@@ -3839,7 +3839,7 @@ struct npc_data* npc_add_warp(char* name, short from_mapid, short from_x, short 
 		return NULL;
 	status_set_viewdata(&nd->bl, nd->class_);
 	status_change_init(&nd->bl);
-	unit_dataset(&nd->bl);
+	units::dataset(&nd->bl);
 	if( map_getmapdata(nd->bl.m)->users )
 		clif_spawn(&nd->bl);
 	strdb_put(npcname_db, nd->exname, nd);
@@ -3920,7 +3920,7 @@ static const char* npc_parse_warp(char* w1, char* w2, char* w3, char* w4, const 
 		return strchr(start,'\n');
 	status_set_viewdata(&nd->bl, nd->class_);
 	status_change_init(&nd->bl);
-	unit_dataset(&nd->bl);
+	units::dataset(&nd->bl);
 	if( map_getmapdata(nd->bl.m)->users )
 		clif_spawn(&nd->bl);
 	strdb_put(npcname_db, nd->exname, nd);
@@ -4198,7 +4198,7 @@ static const char* npc_parse_shop(char* w1, char* w2, char* w3, char* w4, const 
 		if(map_addblock(&nd->bl))
 			return strchr(start,'\n');
 		status_change_init(&nd->bl);
-		unit_dataset(&nd->bl);
+		units::dataset(&nd->bl);
 		nd->ud.dir = (uint8)dir;
 		if( nd->class_ != JT_FAKENPC ){
 			status_set_viewdata(&nd->bl, nd->class_);
@@ -4430,7 +4430,7 @@ static const char* npc_parse_script(char* w1, char* w2, char* w3, char* w4, cons
 	{
 		map_addnpc(m, nd);
 		status_change_init(&nd->bl);
-		unit_dataset(&nd->bl);
+		units::dataset(&nd->bl);
 		nd->ud.dir = (uint8)dir;
 		npc_setcells(nd);
 		if(map_addblock(&nd->bl))
@@ -4608,7 +4608,7 @@ const char* npc_parse_duplicate( char* w1, char* w2, char* w3, char* w4, const c
 	if( m >= 0 ) {
 		map_addnpc(m, nd);
 		status_change_init(&nd->bl);
-		unit_dataset(&nd->bl);
+		units::dataset(&nd->bl);
 		nd->ud.dir = (uint8)dir;
 		npc_setcells(nd);
 		if(map_addblock(&nd->bl))
@@ -4705,7 +4705,7 @@ int npc_duplicate4instance(struct npc_data *snd, int16 m) {
 			return 1;
 		status_set_viewdata(&wnd->bl, wnd->class_);
 		status_change_init(&wnd->bl);
-		unit_dataset(&wnd->bl);
+		units::dataset(&wnd->bl);
 		if( map_getmapdata(wnd->bl.m)->users )
 			clif_spawn(&wnd->bl);
 		strdb_put(npcname_db, wnd->exname, wnd);
@@ -5062,7 +5062,7 @@ void npc_setclass(struct npc_data* nd, short class_)
 
 	nd->class_ = class_;
 	status_set_viewdata(&nd->bl, class_);
-	unit_refresh(&nd->bl);
+	units::refresh(&nd->bl);
 }
 
 // @commands (script based)
@@ -5077,7 +5077,7 @@ int npc_do_atcmd_event(map_session_data* sd, const char* command, const char* me
 	nullpo_ret(sd);
 
 	if( ev == NULL || (nd = ev->nd) == NULL ) {
-		ShowError("npc_event: event not found [%s]\n", eventname);
+		ShowError("npc_event_process: event not found [%s]\n", eventname);
 		return 0;
 	}
 
@@ -5089,7 +5089,7 @@ int npc_do_atcmd_event(map_session_data* sd, const char* command, const char* me
 			return 0;
 		}
 
-		ShowWarning("npc_event: player's event queue is full, can't add event '%s' !\n", eventname);
+		ShowWarning("npc_event_process: player's event queue is full, can't add event '%s' !\n", eventname);
 		return 1;
 	}
 
@@ -5174,16 +5174,16 @@ static const char* npc_parse_function(char* w1, char* w2, char* w3, char* w4, co
  * Parse Mob 2 - Actually Spawns Mob
  * [Wizputer]
  *------------------------------------------*/
-void npc_parse_mob2(struct spawn_data* mob)
+void npc_parse_mob2(struct SpawnData* mob)
 {
 	int i;
 
 	for( i = mob->active; i < mob->num; ++i )
 	{
-		struct mob_data* md = mob_spawn_dataset(mob);
-		md->spawn = mob;
-		md->spawn->active++;
-		mob_spawn(md);
+		mobs::MobData* md = mobs::spawn_dataset(mob);
+		md->spawn_data = mob;
+		md->spawn_data->active++;
+		md->spawn();
 	}
 }
 
@@ -5192,10 +5192,10 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 	int num, mob_id, mob_lv = -1, delay = 5000, size = -1, w1count, w4count;
 	short m, x = 0, y = 0, xs = -1, ys = -1;
 	char mapname[MAP_NAME_LENGTH_EXT], mobname[NAME_LENGTH], sprite[NAME_LENGTH];
-	struct spawn_data mob, *data;
+	struct SpawnData mob, *data;
 	int ai = AI_NONE; // mob_ai
 
-	memset(&mob, 0, sizeof(struct spawn_data));
+	memset(&mob, 0, sizeof(struct SpawnData));
 
 	mob.state.boss = !strcmpi(w2,"boss_monster");
 
@@ -5233,7 +5233,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 	mob_id = strtol(sprite, &pid, 0);
 
 	if (pid != nullptr && *pid != '\0') {
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(sprite);
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(sprite);
 
 		if (mob == nullptr) {
 			ShowError("npc_parse_mob: Unknown mob name %s (file '%s', line '%d').\n", sprite, filepath, strline(buffer,start-buffer));
@@ -5241,7 +5241,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 		}
 		mob_id = mob->id;
 	}
-	else if (mobdb_checkid(mob_id) == 0) {	// check monster ID if exists!
+	else if (mobs::mobdb_checkid(mob_id) == 0) {	// check monster ID if exists!
 		ShowError("npc_parse_mob: Unknown mob ID %d (file '%s', line '%d').\n", mob_id, filepath, strline(buffer,start-buffer));
 		return strchr(start,'\n');// skip and continue
 	}
@@ -5322,7 +5322,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 	}
 
 	if(mob.delay1>0xfffffff || mob.delay2>0xfffffff) {
-		ShowError("npc_parse_mob: Invalid spawn delays %u %u (file '%s', line '%d').\n", mob.delay1, mob.delay2, filepath, strline(buffer,start-buffer));
+		ShowError("npc_parse_mob: Invalid spawn_data delays %u %u (file '%s', line '%d').\n", mob.delay1, mob.delay2, filepath, strline(buffer,start-buffer));
 		return strchr(start,'\n');// skip and continue
 	}
 
@@ -5335,19 +5335,19 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 		safestrncpy(mob.name, mobname, sizeof(mob.name));
 
 	//Verify dataset.
-	if( !mob_parse_dataset(&mob) )
+	if( !mobs::parse_dataset(&mob) )
 	{
 		ShowError("npc_parse_mob: Invalid dataset for monster ID %d (file '%s', line '%d').\n", mob_id, filepath, strline(buffer,start-buffer));
 		return strchr(start,'\n');// skip and continue
 	}
 
 	//Update mob spawn lookup database
-	struct spawn_info spawn = { mapdata->index, mob.num };
-	mob_add_spawn(mob_id, spawn);
+	mobs::spawn_info spawn_data = { mapdata->index, mob.num };
+	mobs::add_spawn(mob_id, spawn_data);
 
 	//Now that all has been validated. We allocate the actual memory that the re-spawn data will use.
-	data = (struct spawn_data*)aMalloc(sizeof(struct spawn_data));
-	memcpy(data, &mob, sizeof(struct spawn_data));
+	data = (struct SpawnData*)aMalloc(sizeof(struct SpawnData));
+	memcpy(data, &mob, sizeof(struct SpawnData));
 
 	// spawn / cache the new mobs
 	if( battle_config.dynamic_mobs && map_addmobtolist(data->m, data) >= 0 )
@@ -6018,7 +6018,7 @@ int npc_reload(void) {
 				npc_unload((struct npc_data *)bl, false);
 			break;
 		case BL_MOB:
-			unit_free(bl,CLR_OUTSIGHT);
+			units::free(bl,CLR_OUTSIGHT);
 			break;
 		}
 	}
@@ -6048,7 +6048,7 @@ int npc_reload(void) {
 	}
 
 	// clear mob spawn lookup index
-	mob_clear_spawninfo();
+	mobs::clear_spawninfo();
 
 	npc_warp = npc_shop = npc_script = 0;
 	npc_mob = npc_cache_mob = npc_delay_mob = 0;

@@ -9,7 +9,7 @@
 #include <common/timer.hpp>
 
 #include "status.hpp" // struct status_data, struct status_change
-#include "unit.hpp" // struct unit_data
+#include "unit.hpp" // units::UnitData
 
 const t_tick MIN_ELETHINKTIME = 100;
 #define MIN_ELEDISTANCE 2
@@ -74,7 +74,7 @@ struct s_elemental_db {
 
 struct s_elemental_data {
 	block_list bl;
-	unit_data ud;
+	units::UnitData ud;
 	view_data *vd;
 	status_data base_status, battle_status;
 	status_change sc;
@@ -129,8 +129,8 @@ int elemental_clean_effect(s_elemental_data *ed);
 int elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick);
 struct s_skill_condition elemental_skill_get_requirements(uint16 skill_id, uint16 skill_lv);
 
-#define elemental_stop_walking(ed, type) unit_stop_walking(&(ed)->bl, type)
-#define elemental_stop_attack(ed) unit_stop_attack(&(ed)->bl)
+#define elemental_stop_walking(ed, type) units::stop_walking(&(ed)->bl, type)
+#define elemental_stop_attack(ed) units::stop_attack(&(ed)->bl)
 
 void do_init_elemental(void);
 void do_final_elemental(void);

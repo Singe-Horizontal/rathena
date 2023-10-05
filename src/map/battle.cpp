@@ -49,14 +49,14 @@ int battle_get_misc_element(struct block_list* src, struct block_list* target, u
  */
 uint16 battle_getcurrentskill(struct block_list *bl)
 {
-	struct unit_data *ud;
+	units::UnitData *ud;
 
 	if( bl->type == BL_SKILL ) {
 		struct skill_unit *su = (struct skill_unit*)bl;
 		return (su && su->group?su->group->skill_id:0);
 	}
 
-	ud = unit_bl2ud(bl);
+	ud = units::bl2ud(bl);
 
 	return (ud?ud->skill_id:0);
 }
@@ -70,7 +70,7 @@ uint16 battle_getcurrentskill(struct block_list *bl)
 static int battle_gettargeted_sub(struct block_list *bl, va_list ap)
 {
 	struct block_list **bl_list;
-	struct unit_data *ud;
+	units::UnitData *ud;
 	int target_id;
 	int *c;
 
@@ -84,7 +84,7 @@ static int battle_gettargeted_sub(struct block_list *bl, va_list ap)
 	if (*c >= 24)
 		return 0;
 
-	if ( !(ud = unit_bl2ud(bl)) )
+	if ( !(ud = units::bl2ud(bl)) )
 		return 0;
 
 	if (ud->target == target_id || ud->skilltarget == target_id) {
@@ -126,7 +126,7 @@ int battle_gettarget(struct block_list* bl)
 
 	switch (bl->type) {
 		case BL_PC:  return ((map_session_data*)bl)->ud.target;
-		case BL_MOB: return ((struct mob_data*)bl)->target_id;
+		case BL_MOB: return ((mobs::MobData*)bl)->target_id;
 		case BL_PET: return ((struct pet_data*)bl)->target_id;
 		case BL_HOM: return ((struct homun_data*)bl)->ud.target;
 		case BL_MER: return ((s_mercenary_data*)bl)->ud.target;
@@ -280,15 +280,15 @@ void battle_damage(struct block_list *src, struct block_list *target, int64 dama
 		skill_counter_additional_effect(src, target, skill_id, skill_lv, attack_type, tick);
 	// This is the last place where we have access to the actual damage type, so any monster events depending on type must be placed here
 	if (target->type == BL_MOB) {
-		mob_data *md = BL_CAST(BL_MOB, target);
+		mobs::MobData *md = BL_CAST(BL_MOB, target);
 
 		if (md != nullptr) {
 			// Trigger monster skill condition for non-skill attacks.
 			if (!status_isdead(target) && src != target) {
 				if (damage > 0)
-					mobskill_event(md, src, tick, attack_type, damage);
+					md->mobskill_event(src, tick, attack_type, damage);
 				if (skill_id > 0)
-					mobskill_event(md, src, tick, MSC_SKILLUSED | (skill_id << 16));
+					md->mobskill_event(src, tick, MSC_SKILLUSED | (skill_id << 16));
 			}
 
 			// Monsters differentiate whether they have been attacked by a skill or a normal attack
@@ -1369,12 +1369,12 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 			check_distance_bl(target, d_bl, sce_d->val3))
 		{ //If player is target of devotion, show guard effect on the devotion caster rather than the target
 			clif_skill_nodamage(d_bl, d_bl, CR_AUTOGUARD, sce->val1, 1);
-			unit_set_walkdelay(d_bl, gettick(), delay, 1);
+			units::set_walkdelay(d_bl, gettick(), delay, 1);
 			d->dmg_lv = ATK_MISS;
 			return false;
 		} else {
 			clif_skill_nodamage(target, target, CR_AUTOGUARD, sce->val1, 1);
-			unit_set_walkdelay(target, gettick(), delay, 1);
+			units::set_walkdelay(target, gettick(), delay, 1);
 #ifdef RENEWAL
 			if (sc->getSCE(SC_SHRINK))
 				sc_start(src, target, SC_STUN, 50, skill_lv, skill_get_time2(skill_id, skill_lv));
@@ -1402,9 +1402,9 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 		const int dy[8] = { 1,1,0,-1,-1,-1,0,1 };
 		uint8 dir = map_calc_dir(target, src->x, src->y);
 
-		if (unit_movepos(target, src->x - dx[dir], src->y - dy[dir], 1, 1)) {
+		if (units::movepos(target, src->x - dx[dir], src->y - dy[dir], 1, 1)) {
 			clif_blown(target);
-			unit_setdir(target, dir);
+			units::setdir(target, dir);
 		}
 		d->dmg_lv = ATK_DEF;
 		status_change_end(target, SC_LIGHTNINGWALK);
@@ -1421,7 +1421,7 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 		clif_skill_nodamage(target, target, LK_PARRYING, sce->val1, 1);
 
 		if (skill_id == LK_PARRYING) {
-			unit_data *ud = unit_bl2ud(target);
+			units::UnitData *ud = units::bl2ud(target);
 
 			if (ud != nullptr) // Delay the next attack
 				ud->attackabletime = gettick() + status_get_adelay(target);
@@ -1511,7 +1511,7 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 
 	if( !damage )
 		return 0;
-	if( battle_config.ksprotection && mob_ksprotected(src, bl) )
+	if( battle_config.ksprotection && mobs::ksprotected(src, bl) )
 		return 0;
 
 	if( map_getcell(bl->m, bl->x, bl->y, CELL_CHKMAELSTROM) && skill_id && skill_get_type(skill_id) != BF_MISC
@@ -1940,10 +1940,10 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 	}
 
 	if (bl->type == BL_MOB) { // Reduces damage received for Green Aura MVP
-		mob_data *md = BL_CAST(BL_MOB, bl);
+		mobs::MobData *md = BL_CAST(BL_MOB, bl);
 
-		if (md && md->damagetaken != 100)
-			damage = i64max(damage * md->damagetaken / 100, 1);
+		if (md && md->damage_taken != 100)
+			damage = i64max(damage * md->damage_taken / 100, 1);
 	}
 	
 	if (tsc && tsc->count) {
@@ -1964,8 +1964,8 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
  */
 bool battle_can_hit_bg_target(struct block_list *src, struct block_list *bl, uint16 skill_id, int flag)
 {
-	struct mob_data* md = BL_CAST(BL_MOB, bl);
-	struct unit_data *ud = unit_bl2ud(bl);
+	mobs::MobData* md = BL_CAST(BL_MOB, bl);
+	units::UnitData *ud = units::bl2ud(bl);
 
 	if (ud && ud->immune_attack)
 		return false;
@@ -2034,8 +2034,8 @@ int64 battle_calc_bg_damage(struct block_list *src, struct block_list *bl, int64
  */
 bool battle_can_hit_gvg_target(struct block_list *src,struct block_list *bl,uint16 skill_id,int flag)
 {
-	struct mob_data* md = BL_CAST(BL_MOB, bl);
-	struct unit_data *ud = unit_bl2ud(bl);
+	mobs::MobData* md = BL_CAST(BL_MOB, bl);
+	units::UnitData *ud = units::bl2ud(bl);
 	int class_ = status_get_class(bl);
 
 	if (ud && ud->immune_attack)
@@ -2043,7 +2043,7 @@ bool battle_can_hit_gvg_target(struct block_list *src,struct block_list *bl,uint
 	if(md && (md->guardian_data || md->special_state.ai == AI_GUILD)) {
 		if ((status_bl_has_mode(bl,MD_SKILLIMMUNE) || (class_ == MOBID_EMPERIUM && !skill_get_inf2(skill_id, INF2_TARGETEMPERIUM))) && flag&BF_SKILL) //Skill immunity.
 			return false;
-		if( src->type != BL_MOB || mob_is_clone( ((struct mob_data*)src)->mob_id ) ){
+		if( src->type != BL_MOB || mobs::is_clone( ((mobs::MobData*)src)->mob_id ) ){
 			auto g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild_search(status_get_guild_id(src));
 
 			if (class_ == MOBID_EMPERIUM && (!g || guild_checkskill(g->guild, GD_APPROVAL) <= 0 ))
@@ -3071,7 +3071,7 @@ static bool is_attack_hitting(struct Damage* wd, struct block_list *src, struct 
 #endif
 
 	if(battle_config.agi_penalty_type && battle_config.agi_penalty_target&target->type) {
-		unsigned char attacker_count = unit_counttargeted(target); //256 max targets should be a sane max
+		unsigned char attacker_count = units::counttargeted(target); //256 max targets should be a sane max
 
 		if(attacker_count >= battle_config.agi_penalty_count) {
 			if (battle_config.agi_penalty_type == 1)
@@ -6055,7 +6055,7 @@ static void battle_calc_defense_reduction(struct Damage* wd, struct block_list *
 		unsigned char target_count; //256 max targets should be a sane max
 
 		//Official servers limit the count to 22 targets
-		target_count = min(unit_counttargeted(target), (100 / battle_config.vit_penalty_num) + (battle_config.vit_penalty_count - 1));
+		target_count = min(units::counttargeted(target), (100 / battle_config.vit_penalty_num) + (battle_config.vit_penalty_count - 1));
 		if(target_count >= battle_config.vit_penalty_count) {
 			if(battle_config.vit_penalty_type == 1) {
 				if( !tsc || !tsc->getSCE(SC_STEELBODY) )
@@ -6471,7 +6471,7 @@ static void battle_calc_weapon_final_atk_modifiers(struct Damage* wd, struct blo
 		if (ratio > 5000) ratio = 5000; // Maximum of 5000% ATK
 		rdamage = battle_calc_base_damage(target,tstatus,&tstatus->rhw,tsc,sstatus->size,0);
 		rdamage = (int64)rdamage * ratio / 100 + wd->damage * (10 + tsc->getSCE(SC_CRESCENTELBOW)->val1 * 20 / 10) / 10;
-		skill_blown(target, src, skill_get_blewcount(SR_CRESCENTELBOW_AUTOSPELL, tsc->getSCE(SC_CRESCENTELBOW)->val1), unit_getdir(src), BLOWN_NONE);
+		skill_blown(target, src, skill_get_blewcount(SR_CRESCENTELBOW_AUTOSPELL, tsc->getSCE(SC_CRESCENTELBOW)->val1), units::getdir(src), BLOWN_NONE);
 		clif_skill_damage(target, src, gettick(), status_get_amotion(src), 0, rdamage,
 			1, SR_CRESCENTELBOW_AUTOSPELL, tsc->getSCE(SC_CRESCENTELBOW)->val1, DMG_SINGLE); // This is how official does
 		clif_damage(src, target, gettick(), status_get_amotion(src)+1000, 0, rdamage/10, 1, DMG_NORMAL, 0, false);
@@ -6729,7 +6729,7 @@ void battle_do_reflect(int attack_type, struct Damage *wd, struct block_list* sr
 		map_session_data *tsd = BL_CAST(BL_PC, target);
 		status_change *tsc = status_get_sc(target);
 		struct status_data *sstatus = status_get_status_data(src);
-		struct unit_data *ud = unit_bl2ud(target);
+		units::UnitData *ud = units::bl2ud(target);
 		t_tick tick = gettick(), rdelay = 0;
 
 		if (!tsc)
@@ -8316,7 +8316,7 @@ struct Damage battle_calc_misc_attack(struct block_list *src,struct block_list *
 	short i, s_ele;
 
 	map_session_data *sd, *tsd;
-	struct Damage md; //DO NOT CONFUSE with md of mob_data!
+	struct Damage md; //DO NOT CONFUSE with md of MobData!
 	struct status_data *sstatus = status_get_status_data(src);
 	struct status_data *tstatus = status_get_status_data(target);
 	status_change *ssc = status_get_sc(src);
@@ -8595,7 +8595,7 @@ struct Damage battle_calc_misc_attack(struct block_list *src,struct block_list *
 #endif
 
 			if(battle_config.agi_penalty_type && battle_config.agi_penalty_target&target->type) {
-				unsigned char attacker_count = unit_counttargeted(target); //256 max targets should be a sane max
+				unsigned char attacker_count = units::counttargeted(target); //256 max targets should be a sane max
 
 				if(attacker_count >= battle_config.agi_penalty_count) {
 					if (battle_config.agi_penalty_type == 1)
@@ -8831,12 +8831,12 @@ int64 battle_calc_return_damage(struct block_list* tbl, struct block_list *src, 
 			}
 
 			if (tsc->getSCE(SC_DEATHBOUND) && skill_id != WS_CARTTERMINATION && skill_id != GN_HELLS_PLANT_ATK && !status_bl_has_mode(src,MD_STATUSIMMUNE)) {
-				if (distance_bl(src,tbl) <= 0 || !map_check_dir(map_calc_dir(tbl,src->x,src->y), unit_getdir(tbl))) {
+				if (distance_bl(src,tbl) <= 0 || !map_check_dir(map_calc_dir(tbl,src->x,src->y), units::getdir(tbl))) {
 					int64 rd1 = i64min(damage, status_get_max_hp(tbl)) * tsc->getSCE(SC_DEATHBOUND)->val2 / 100; // Amplify damage.
 
 					*dmg = rd1 * 30 / 100; // Received damage = 30% of amplified damage.
 					clif_skill_damage(src, tbl, gettick(), status_get_amotion(src), 0, -30000, 1, RK_DEATHBOUND, tsc->getSCE(SC_DEATHBOUND)->val1, DMG_SINGLE);
-					skill_blown(tbl, src, skill_get_blewcount(RK_DEATHBOUND, tsc->getSCE(SC_DEATHBOUND)->val1), unit_getdir(src), BLOWN_NONE);
+					skill_blown(tbl, src, skill_get_blewcount(RK_DEATHBOUND, tsc->getSCE(SC_DEATHBOUND)->val1), units::getdir(src), BLOWN_NONE);
 					status_change_end(tbl, SC_DEATHBOUND);
 					rdamage += rd1 * 70 / 100; // Target receives 70% of the amplified damage. [Rytech]
 				}
@@ -9045,7 +9045,7 @@ int battle_damage_area(struct block_list *bl, va_list ap) {
  */
 void battle_autocast_aftercast(struct block_list* src, uint16 skill_id, uint16 skill_lv, t_tick tick)
 {
-	unit_data *ud = unit_bl2ud(src);
+	units::UnitData *ud = units::bl2ud(src);
 
 	if (ud) {
 		int autocast_tick = skill_delayfix(src, skill_id, skill_lv);
@@ -9082,7 +9082,7 @@ void battle_autocast_elembuff_skill(map_session_data* sd, struct block_list* tar
 }
 
 /*==========================================
- * Do a basic physical attack (call through unit_attack_timer)
+ * Do a basic physical attack (call through units::attack_timer)
  *------------------------------------------*/
 enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* target, t_tick tick, int flag) {
 	map_session_data *sd = NULL, *tsd = NULL;
@@ -9169,7 +9169,7 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 	}
 	if (tsc && tsc->getSCE(SC_AUTOCOUNTER) && status_check_skilluse(target, src, KN_AUTOCOUNTER, 1)) {
 		uint8 dir = map_calc_dir(target,src->x,src->y);
-		int t_dir = unit_getdir(target);
+		int t_dir = units::getdir(target);
 		int dist = distance_bl(src, target);
 
 		if (dist <= 0 || (!map_check_dir(dir,t_dir) && dist <= tstatus->rhw.range+1)) {
@@ -9433,7 +9433,7 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 		sp = skill_get_sp(skill_id,skill_lv) * 2 / 3;
 
 		if (status_charge(src, 0, sp)) {
-			struct unit_data *ud = unit_bl2ud(src);
+			units::UnitData *ud = units::bl2ud(src);
 
 			switch (skill_get_casttype(skill_id)) {
 				case CAST_GROUND:
@@ -9479,7 +9479,7 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 					if( BL_PC&battle_config.land_skill_limit &&
 						(maxcount = skill_get_maxcount(r_skill, r_lv)) > 0
 					  ) {
-						unit_skillunit_maxcount(sd->ud, r_skill, maxcount);
+						sd->ud.skillunit_maxcount(r_skill, maxcount);
 
 						if( maxcount == 0 )
 							type = -1;
@@ -9653,8 +9653,8 @@ struct block_list* battle_get_master(struct block_list *src)
 					src = (struct block_list*)((TBL_PET*)src)->master;
 				break;
 			case BL_MOB:
-				if (((TBL_MOB*)src)->master_id)
-					src = map_id2bl(((TBL_MOB*)src)->master_id);
+				if (((mobs::MobData*)src)->master_id)
+					src = map_id2bl(((mobs::MobData*)src)->master_id);
 				break;
 			case BL_HOM:
 				if (((TBL_HOM*)src)->master)
@@ -9699,12 +9699,12 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 	int state = 0; //Initial state none
 	int strip_enemy = 1; //Flag which marks whether to remove the BCT_ENEMY status if it's also friend/ally.
 	struct block_list *s_bl = src, *t_bl = target;
-	struct unit_data *ud = NULL;
+	units::UnitData *ud = NULL;
 
 	nullpo_ret(src);
 	nullpo_ret(target);
 
-	ud = unit_bl2ud(target);
+	ud = units::bl2ud(target);
 	m = target->m;
 
 	//t_bl/s_bl hold the 'master' of the attack, while src/target are the actual
@@ -9746,7 +9746,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 			break;
 		case BL_MOB:
 		{
-			struct mob_data *md = ((TBL_MOB*)target);
+			mobs::MobData *md = ((mobs::MobData*)target);
 
 			if (ud && ud->immune_attack)
 				return 0;
@@ -9846,7 +9846,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 		}
 		case BL_MOB:
 		{
-			struct mob_data *md = BL_CAST(BL_MOB, t_bl);
+			mobs::MobData *md = BL_CAST(BL_MOB, t_bl);
 
 			if( md->guardian_data && md->guardian_data->guild_id && !mapdata_flag_gvg(mapdata) )
 				return 0; // Disable guardians/emperiums owned by Guilds on non-woe times.
@@ -9860,7 +9860,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 			if (t_bl->type != BL_MOB && flag&BCT_ENEMY)
 				return 0; //Pet may not attack non-mobs.
 			if (t_bl->type == BL_MOB && flag & BCT_ENEMY) {
-				mob_data *md = BL_CAST(BL_MOB, t_bl);
+				mobs::MobData *md = BL_CAST(BL_MOB, t_bl);
 
 				if (md->guardian_data || md->special_state.ai == AI_GUILD)
 					return 0; //pet may not attack Guardians/Emperium
@@ -9888,7 +9888,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 			}
 			break;
 		case BL_MER:
-			if (t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->mob_id == MOBID_EMPERIUM && flag&BCT_ENEMY)
+			if (t_bl->type == BL_MOB && ((mobs::MobData*)t_bl)->mob_id == MOBID_EMPERIUM && flag&BCT_ENEMY)
 				return 0; //mercenary may not attack Emperium
 			break;
     } //end switch actual src
@@ -9913,7 +9913,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 						return 0; // You can't target anything out of your duel
 				}
 			}
-			if( !sd->status.guild_id && t_bl->type == BL_MOB && ((TBL_MOB*)t_bl)->mob_id == MOBID_EMPERIUM && mapdata_flag_gvg(mapdata) )
+			if( !sd->status.guild_id && t_bl->type == BL_MOB && ((mobs::MobData*)t_bl)->mob_id == MOBID_EMPERIUM && mapdata_flag_gvg(mapdata) )
 				return 0; //If you don't belong to a guild, can't target emperium.
 			if( t_bl->type != BL_PC )
 				state |= BCT_ENEMY; //Natural enemy.
@@ -9921,15 +9921,15 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 		}
 		case BL_MOB:
 		{
-			struct mob_data *md = BL_CAST(BL_MOB, s_bl);
+			mobs::MobData *md = BL_CAST(BL_MOB, s_bl);
 			if( md->guardian_data && md->guardian_data->guild_id && !mapdata_flag_gvg(mapdata) )
 				return 0; // Disable guardians/emperium owned by Guilds on non-woe times.
 
 			if( !md->special_state.ai )
 			{ //Normal mobs
 				if(
-					( target->type == BL_MOB && t_bl->type == BL_PC && ( ((TBL_MOB*)target)->special_state.ai != AI_ZANZOU && ((TBL_MOB*)target)->special_state.ai != AI_ATTACK ) ) ||
-					( t_bl->type == BL_MOB && (((TBL_MOB*)t_bl)->special_state.ai == AI_NONE || ((TBL_MOB*)t_bl)->special_state.ai == AI_WAVEMODE ))
+					( target->type == BL_MOB && t_bl->type == BL_PC && ( ((mobs::MobData*)target)->special_state.ai != AI_ZANZOU && ((mobs::MobData*)target)->special_state.ai != AI_ATTACK ) ) ||
+					( t_bl->type == BL_MOB && (((mobs::MobData*)t_bl)->special_state.ai == AI_NONE || ((mobs::MobData*)t_bl)->special_state.ai == AI_WAVEMODE ))
 				  )
 					state |= BCT_PARTY; //Normal mobs with no ai or with AI_WAVEMODE are friends.
 				else
@@ -9937,7 +9937,7 @@ int battle_check_target( struct block_list *src, struct block_list *target,int f
 			}
 			else
 			{
-				if( t_bl->type == BL_MOB && !((TBL_MOB*)t_bl)->special_state.ai )
+				if( t_bl->type == BL_MOB && !((mobs::MobData*)t_bl)->special_state.ai )
 					state |= BCT_ENEMY; //Natural enemy for AI mobs are normal mobs.
 			}
 			break;

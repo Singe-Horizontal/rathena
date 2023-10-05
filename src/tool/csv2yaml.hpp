@@ -138,7 +138,7 @@ struct s_item_group_db_csv2yaml {
 
 std::map<std::string, s_item_group_db_csv2yaml> item_group;
 
-struct s_mob_drop_csv : s_mob_drop {
+struct s_mob_drop_csv : mobs::s_mob_drop {
 	std::string group_string;
 	bool mvp;
 };

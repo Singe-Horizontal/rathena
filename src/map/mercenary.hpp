@@ -7,7 +7,7 @@
 #include <common/cbasetypes.hpp>
 
 #include "status.hpp" // struct status_data, struct status_change
-#include "unit.hpp" // struct unit_data
+#include "unit.hpp" // units::UnitData
 
 // number of cells that a mercenary can walk to from it's master before being warped
 #define MAX_MER_DISTANCE 15
@@ -40,7 +40,7 @@ struct s_mercenary_db {
 
 struct s_mercenary_data {
 	block_list bl;
-	unit_data ud;
+	units::UnitData ud;
 	view_data *vd;
 	status_data base_status, battle_status;
 	status_change sc;

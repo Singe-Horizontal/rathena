@@ -642,11 +642,11 @@ void SkillDatabase::loadingFinished(){
 
 SkillDatabase skill_db;
 
-const std::string MobDatabase::getDefaultLocation(){
+const std::string mobs::MobDatabase::getDefaultLocation(){
 	return std::string( db_path ) + "/mob_db.yml";
 }
 
-uint64 MobDatabase::parseBodyNode(const ryml::NodeRef& node) {
+uint64 mobs::MobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	uint16 mob_id;
 
 	if (!this->asUInt16(node, "Id", mob_id))
@@ -664,8 +664,8 @@ uint64 MobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	return 1;
 }
 
-void MobDatabase::loadingFinished() {};
+void mobs::MobDatabase::loadingFinished() {};
 
-MobDatabase mob_db;
+mobs::MobDatabase mob_db;
 
 #endif /* YAML_HPP */

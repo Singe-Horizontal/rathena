@@ -107,8 +107,8 @@ struct inter_conf inter_config {};
 // DBMap declaration
 static DBMap* id_db=NULL; /// int id -> struct block_list*
 static DBMap* pc_db=NULL; /// int id -> map_session_data*
-static DBMap* mobid_db=NULL; /// int id -> struct mob_data*
-static DBMap* bossid_db=NULL; /// int id -> struct mob_data* (MVP db)
+static DBMap* mobid_db=NULL; /// int id -> mobs::MobData*
+static DBMap* bossid_db=NULL; /// int id -> mobs::MobData* (MVP db)
 static DBMap* map_db=NULL; /// unsigned int mapindex -> struct map_data*
 static DBMap* nick_db=NULL; /// uint32 char_id -> struct charid2nick* (requested names of offline characters)
 static DBMap* charid_db=NULL; /// uint32 char_id -> map_session_data*
@@ -575,7 +575,7 @@ int map_count_oncell(int16 m, int16 x, int16 y, int type, int flag)
 						continue;
 				}
 				if(flag&1) {
-					struct unit_data *ud = unit_bl2ud(bl);
+					units::UnitData *ud = units::bl2ud(bl);
 					if(!ud || ud->walktimer == INVALID_TIMER)
 						count++;
 				} else {
@@ -587,7 +587,7 @@ int map_count_oncell(int16 m, int16 x, int16 y, int type, int flag)
 		for( bl = mapdata->block_mob[bx+by*mapdata->bxs] ; bl != NULL ; bl = bl->next )
 			if(bl->x == x && bl->y == y) {
 				if(flag&1) {
-					struct unit_data *ud = unit_bl2ud(bl);
+					units::UnitData *ud = units::bl2ud(bl);
 					if(!ud || ud->walktimer == INVALID_TIMER)
 						count++;
 				} else {
@@ -1695,7 +1695,7 @@ static int map_count_sub(struct block_list *bl,va_list ap)
  *------------------------------------------*/
 int map_search_freecell(struct block_list *src, int16 m, int16 *x,int16 *y, int16 rx, int16 ry, int flag)
 {
-	int tries, spawn=0;
+	int tries, spawn_data=0;
 	int bx, by;
 	int rx2 = 2*rx+1;
 	int ry2 = 2*ry+1;
@@ -1744,11 +1744,11 @@ int map_search_freecell(struct block_list *src, int16 m, int16 *x,int16 *y, int1
 
 		if (map_getcell(m,*x,*y,CELL_CHKREACH))
 		{
-			if(flag&2 && !unit_can_reach_pos(src, *x, *y, 1))
+			if(flag&2 && !units::can_reach_pos(src, *x, *y, 1))
 				continue;
 			if(flag&4) {
-				if (spawn >= 100) return 0; //Limit of retries reached.
-				if (spawn++ < battle_config.no_spawn_on_player &&
+				if (spawn_data >= 100) return 0; //Limit of retries reached.
+				if (spawn_data++ < battle_config.no_spawn_on_player &&
 					map_foreachinallarea(map_count_sub, m,
 						*x-AREA_SIZE, *y-AREA_SIZE,
 					  	*x+AREA_SIZE, *y+AREA_SIZE, BL_PC)
@@ -2009,7 +2009,7 @@ void map_addiddb(struct block_list *bl)
 	}
 	else if( bl->type == BL_MOB )
 	{
-		TBL_MOB* md = (TBL_MOB*)bl;
+		mobs::MobData* md = (mobs::MobData*)bl;
 		idb_put(mobid_db,bl->id,bl);
 
 		if( md->state.boss )
@@ -2097,7 +2097,7 @@ int map_quit(map_session_data *sd) {
 
 	//Unit_free handles clearing the player related data,
 	//map_quit handles extra specific data which is related to quitting normally
-	//(changing map-servers invokes unit_free but bypasses map_quit)
+	//(changing map-servers invokes units::free but bypasses map_quit)
 	if( sd->sc.count ) {
 		for (const auto &it : status_db) {
 			std::bitset<SCF_MAX> &flag = it.second->flag;
@@ -2132,7 +2132,7 @@ int map_quit(map_session_data *sd) {
 	// Return loot to owner
 	if( sd->pd ) pet_lootitem_drop(sd->pd, sd);
 
-	if (sd->ed) // Remove effects here rather than unit_remove_map_pc so we don't clear on Teleport/map change.
+	if (sd->ed) // Remove effects here rather than units::remove_map_pc so we don't clear on Teleport/map change.
 		elemental_clean_effect(sd->ed);
 
 	if (sd->state.permanent_speed == 1) sd->state.permanent_speed = 0; // Remove lock so speed is set back to normal at login.
@@ -2142,7 +2142,7 @@ int map_quit(map_session_data *sd) {
 	if( mapdata->instance_id > 0 )
 		instance_delusers(mapdata->instance_id);
 
-	unit_remove_map_pc(sd,CLR_RESPAWN);
+	units::remove_map_pc(sd,CLR_RESPAWN);
 
 	if (sd->state.vending)
 		idb_remove(vending_getdb(), sd->status.char_id);
@@ -2157,7 +2157,7 @@ int map_quit(map_session_data *sd) {
 	pc_crimson_marker_clear(sd);
 	pc_macro_detector_disconnect(*sd);
 	chrif_save(sd, CSAVE_QUIT|CSAVE_INVENTORY|CSAVE_CART);
-	unit_free_pc(sd);
+	units::free_pc(sd);
 	return 0;
 }
 
@@ -2169,9 +2169,9 @@ map_session_data * map_id2sd(int id){
 	return (map_session_data*)idb_get(pc_db,id);
 }
 
-struct mob_data * map_id2md(int id){
+mobs::MobData * map_id2md(int id){
 	if (id <= 0) return NULL;
-	return (struct mob_data*)idb_get(mobid_db,id);
+	return (mobs::MobData*)idb_get(mobid_db,id);
 }
 
 struct npc_data * map_id2nd(int id){
@@ -2297,14 +2297,14 @@ bool map_blid_exists( int id ) {
 /*==========================================
  * Convex Mirror
  *------------------------------------------*/
-struct mob_data * map_getmob_boss(int16 m)
+mobs::MobData * map_getmob_boss(int16 m)
 {
 	DBIterator* iter;
-	struct mob_data *md = NULL;
+	mobs::MobData *md = NULL;
 	bool found = false;
 
 	iter = db_iterator(bossid_db);
-	for( md = (struct mob_data*)dbi_first(iter); dbi_exists(iter); md = (struct mob_data*)dbi_next(iter) )
+	for( md = (mobs::MobData*)dbi_first(iter); dbi_exists(iter); md = (mobs::MobData*)dbi_next(iter) )
 	{
 		if( md->bl.m == m )
 		{
@@ -2317,10 +2317,10 @@ struct mob_data * map_getmob_boss(int16 m)
 	return (found)? md : NULL;
 }
 
-struct mob_data * map_id2boss(int id)
+mobs::MobData * map_id2boss(int id)
 {
 	if (id <= 0) return NULL;
-	return (struct mob_data*)idb_get(bossid_db,id);
+	return (mobs::MobData*)idb_get(bossid_db,id);
 }
 
 /// Applies func to all the players in the db.
@@ -2347,13 +2347,13 @@ void map_foreachpc(int (*func)(map_session_data* sd, va_list args), ...)
 
 /// Applies func to all the mobs in the db.
 /// Stops iterating if func returns -1.
-void map_foreachmob(int (*func)(struct mob_data* md, va_list args), ...)
+void map_foreachmob(int (*func)(mobs::MobData* md, va_list args), ...)
 {
 	DBIterator* iter;
-	struct mob_data* md;
+	mobs::MobData* md;
 
 	iter = db_iterator(mobid_db);
-	for( md = (struct mob_data*)dbi_first(iter); dbi_exists(iter); md = (struct mob_data*)dbi_next(iter) )
+	for( md = (mobs::MobData*)dbi_first(iter); dbi_exists(iter); md = (mobs::MobData*)dbi_next(iter) )
 	{
 		va_list args;
 		int ret;
@@ -2752,7 +2752,7 @@ static int map_instancemap_clean(struct block_list *bl, va_list ap)
 			npc_unload((struct npc_data *)bl,true);
 			break;
 		case BL_MOB:
-			unit_free(bl,CLR_OUTSIGHT);
+			units::free(bl,CLR_OUTSIGHT);
 			break;
 		case BL_ITEM:
 			map_clearflooritem(bl);
@@ -2817,7 +2817,7 @@ int map_delinstancemap(int m)
  *-----------------------------------------*/
 // Stores the spawn data entry in the mob list.
 // Returns the index of successful, or -1 if the list was full.
-int map_addmobtolist(unsigned short m, struct spawn_data *spawn)
+int map_addmobtolist(unsigned short m, struct SpawnData *spawn_data)
 {
 	size_t i;
 	struct map_data *mapdata = map_getmapdata(m);
@@ -2825,7 +2825,7 @@ int map_addmobtolist(unsigned short m, struct spawn_data *spawn)
 	ARR_FIND( 0, MAX_MOB_LIST_PER_MAP, i, mapdata->moblist[i] == NULL );
 	if( i < MAX_MOB_LIST_PER_MAP )
 	{
-		mapdata->moblist[i] = spawn;
+		mapdata->moblist[i] = spawn_data;
 		return static_cast<int>(i);
 	}
 	return -1;
@@ -2857,15 +2857,15 @@ void map_spawnmobs(int16 m)
 
 int map_removemobs_sub(struct block_list *bl, va_list ap)
 {
-	struct mob_data *md = (struct mob_data *)bl;
+	mobs::MobData *md = (mobs::MobData *)bl;
 	nullpo_ret(md);
 
 	//When not to remove mob:
 	// doesn't respawn and is not a slave
-	if( !md->spawn && !md->master_id )
+	if( !md->spawn_data && !md->master_id )
 		return 0;
 	// respawn data is not in cache
-	if( md->spawn && !md->spawn->state.dynamic )
+	if( md->spawn_data && !md->spawn_data->state.dynamic )
 		return 0;
 	// hasn't spawned yet
 	if( md->spawn_timer != INVALID_TIMER )
@@ -2877,7 +2877,7 @@ int map_removemobs_sub(struct block_list *bl, va_list ap)
 	if( md->get_bosstype() == BOSSTYPE_MVP )
 		return 0;
 
-	unit_free(&md->bl,CLR_OUTSIGHT);
+	units::free(&md->bl,CLR_OUTSIGHT);
 
 	return 1;
 }
@@ -3026,7 +3026,7 @@ uint8 map_calc_dir(struct block_list* src, int16 x, int16 y)
 
 	nullpo_retr( dir, src );
 
-	dir = map_calc_dir_xy(src->x, src->y, x, y, unit_getdir(src));
+	dir = map_calc_dir_xy(src->x, src->y, x, y, units::getdir(src));
 
 	return dir;
 }
@@ -4360,7 +4360,7 @@ int cleanup_sub(struct block_list *bl, va_list ap)
 			npc_unload((struct npc_data *)bl,false);
 			break;
 		case BL_MOB:
-			unit_free(bl,CLR_OUTSIGHT);
+			units::free(bl,CLR_OUTSIGHT);
 			break;
 		case BL_PET:
 		//There is no need for this, the pet is removed together with the player. [Skotlex]
@@ -4586,7 +4586,7 @@ bool map_setmapflag_sub(int16 m, enum e_mapflag mapflag, bool status, union u_ma
 			if (!status) {
 				clif_map_property_mapall(m, MAPPROPERTY_NOTHING);
 				map_foreachinmap(map_mapflag_pvp_stop_sub, m, BL_PC);
-				map_foreachinmap(unit_stopattack, m, BL_CHAR, 0);
+				map_foreachinmap(units::stopattack, m, BL_CHAR, 0);
 			} else {
 				if (!battle_config.pk_mode) {
 					clif_map_property_mapall(m, MAPPROPERTY_FREEPVPZONE);
@@ -4623,7 +4623,7 @@ bool map_setmapflag_sub(int16 m, enum e_mapflag mapflag, bool status, union u_ma
 			mapdata->setMapFlag(mapflag, status); // Must come first to properly set map property
 			if (!status) {
 				clif_map_property_mapall(m, MAPPROPERTY_NOTHING);
-				map_foreachinmap(unit_stopattack, m, BL_CHAR, 0);
+				map_foreachinmap(units::stopattack, m, BL_CHAR, 0);
 			} else {
 				clif_map_property_mapall(m, MAPPROPERTY_AGITZONE);
 				if (mapdata->getMapFlag(MF_PVP)) {
@@ -4879,11 +4879,11 @@ void MapServer::finalize(){
 	do_final_pet();
 	do_final_homunculus();
 	do_final_mercenary();
-	do_final_mob(false);
+	mobs::do_final_mob(false);
 	do_final_msg();
 	do_final_skill();
 	do_final_status();
-	do_final_unit();
+	units::do_final_unit();
 	do_final_battleground();
 	do_final_duel();
 	do_final_elemental();
@@ -5257,7 +5257,7 @@ bool MapServer::initialize( int argc, char *argv[] ){
 	do_init_channel();
 	do_init_cashshop();
 	do_init_skill();
-	do_init_mob();
+	mobs::do_init_mob();
 	do_init_pc();
 	do_init_status();
 	do_init_party();
@@ -5271,7 +5271,7 @@ bool MapServer::initialize( int argc, char *argv[] ){
 	do_init_achievement();
 	do_init_battleground();
 	do_init_npc();
-	do_init_unit();
+	units::do_init_unit();
 	do_init_duel();
 	do_init_vending();
 	do_init_buyingstore();

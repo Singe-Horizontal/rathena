@@ -9,7 +9,9 @@
 
 struct block_list;
 class map_session_data;
-struct mob_data;
+namespace mobs{
+class MobData;
+}
 struct item;
 
 enum e_log_chat_type : uint8
@@ -77,7 +79,7 @@ enum e_log_feeding_type : uint8
 
 /// new logs
 void log_pick_pc(map_session_data* sd, e_log_pick_type type, int amount, struct item* itm);
-void log_pick_mob(struct mob_data* md, e_log_pick_type type, int amount, struct item* itm);
+void log_pick_mob(mobs::MobData* md, e_log_pick_type type, int amount, struct item* itm);
 void log_zeny(const map_session_data &target_sd, e_log_pick_type type, uint32 src_id, int amount);
 void log_cash( map_session_data* sd, e_log_pick_type type, e_log_cash_type cash_type, int amount );
 void log_npc( struct npc_data* nd, const char* message );

@@ -2239,8 +2239,8 @@ ACMD_FUNC(monster)
 		return -1;
 	}
 
-	if ((mob_id = mobdb_searchname(monster)) == 0) // check name first (to avoid possible name begining by a number)
-		mob_id = mobdb_checkid(atoi(monster));
+	if ((mob_id = mobs::mobdb_searchname(monster)) == 0) // check name first (to avoid possible name begining by a number)
+		mob_id = mobs::mobdb_checkid(atoi(monster));
 
 	if (mob_id == 0) {
 		clif_displaymessage(fd, msg_txt(sd,40)); // Invalid monster ID or name.
@@ -2279,7 +2279,7 @@ ACMD_FUNC(monster)
 	for (i = 0; i < number; i++) {
 		int k;
 		map_search_freecell(&sd->bl, 0, &mx,  &my, range, range, 0);
-		k = mob_once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE);
+		k = mobs::once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE);
 		if(k) {
 			//mapreg_setreg(reference_uid(add_str("$@mobid"), i),k); //retain created mobid in array uncomment if needed
 			count ++;
@@ -2306,10 +2306,10 @@ ACMD_FUNC(monster)
  *------------------------------------------*/
 static int atkillmonster_sub(struct block_list *bl, va_list ap)
 {
-	struct mob_data *md;
+	mobs::MobData *md;
 	int flag;
 
-	nullpo_ret(md=(struct mob_data *)bl);
+	nullpo_ret(md=(mobs::MobData *)bl);
 	flag = va_arg(ap, int);
 
 	if (md->guardian_data)
@@ -3099,7 +3099,7 @@ ACMD_FUNC(makeegg) {
 
 
 	// for monster name
-	if ((id = mobdb_searchname(message)) != 0)
+	if ((id = mobs::mobdb_searchname(message)) != 0)
 		;
 	else
 		id = atoi(message);
@@ -3123,7 +3123,7 @@ ACMD_FUNC(makeegg) {
 
 	int res(-1);
 	if (pet != nullptr) {
-		std::shared_ptr<s_mob_db> mdb = mob_db.find(pet->class_);
+		std::shared_ptr<mobs::s_mob_db> mdb = mobs::mob_db.find(pet->class_);
 		if(mdb){
 			sd->catch_target_class = pet->class_;
 			if(intif_create_pet(sd->status.account_id, sd->status.char_id, pet->class_, mdb->lv, pet->EggID, 0, pet->intimate, 100, 0, 1, mdb->jname.c_str())){
@@ -4214,7 +4214,7 @@ ACMD_FUNC(reload) {
 		itemdb_reload();
 		clif_displaymessage(fd, msg_txt(sd,97)); // Item database has been reloaded.
 	} else if (strstr(command, "mobdb") || strncmp(message, "mobdb", 3) == 0) {
-		mob_reload();
+		mobs::reload();
 		pet_db.reload();
 		hom_reload();
 		mercenary_db.reload();
@@ -4271,7 +4271,7 @@ ACMD_FUNC(reload) {
 		||  prev_config.job_exp_rate           != battle_config.job_exp_rate
 		)
 		{	// Exp or Drop rates changed.
-			mob_reload(); //Needed as well so rate changes take effect.
+			mobs::reload(); //Needed as well so rate changes take effect.
 		}
 		clif_displaymessage(fd, msg_txt(sd,255)); // Battle configuration has been reloaded.
 	} else if (strstr(command, "statusdb") || strncmp(message, "statusdb", 3) == 0) {
@@ -5428,10 +5428,10 @@ ACMD_FUNC(disguise)
 
 	if ((id = atoi(message)) > 0)
 	{	//Acquired an ID
-		if (!mobdb_checkid(id) && !npcdb_checkid(id))
+		if (!mobs::mobdb_checkid(id) && !npcdb_checkid(id))
 			id = 0; //Invalid id for either mobs or npcs.
 	}	else	{ //Acquired a Name
-		if ((id = mobdb_searchname(message)) == 0)
+		if ((id = mobs::mobdb_searchname(message)) == 0)
 		{
 			struct npc_data* nd = npc_name2id(message);
 			if (nd != NULL)
@@ -5477,10 +5477,10 @@ ACMD_FUNC(disguiseall)
 		return -1;
 	}
 
-	if ((mob_id = mobdb_searchname(message)) == 0) // check name first (to avoid possible name beginning by a number)
+	if ((mob_id = mobs::mobdb_searchname(message)) == 0) // check name first (to avoid possible name beginning by a number)
 		mob_id = atoi(message);
 
-	if (!mobdb_checkid(mob_id) && !npcdb_checkid(mob_id)) { //if mob or npc...
+	if (!mobs::mobdb_checkid(mob_id) && !npcdb_checkid(mob_id)) { //if mob or npc...
 		clif_displaymessage(fd, msg_txt(sd,123)); // Monster/NPC name/id not found.
 		return -1;
 	}
@@ -5511,10 +5511,10 @@ ACMD_FUNC(disguiseguild)
 	}
 
 	if( (id = atoi(monster)) > 0 ) {
-		if( !mobdb_checkid(id) && !npcdb_checkid(id) )
+		if( !mobs::mobdb_checkid(id) && !npcdb_checkid(id) )
 			id = 0;
 	} else {
-		if( (id = mobdb_searchname(monster)) == 0 ) {
+		if( (id = mobs::mobdb_searchname(monster)) == 0 ) {
 			struct npc_data* nd = npc_name2id(monster);
 			if( nd != NULL )
 				id = nd->class_;
@@ -5769,7 +5769,7 @@ ACMD_FUNC(killable)
 		clif_displaymessage(fd, msg_txt(sd,242)); // You can now be attacked and killed by players.
 	else {
 		clif_displaymessage(fd, msg_txt(sd,288)); // You are no longer killable.
-		map_foreachinallrange(unit_stopattack,&sd->bl, AREA_SIZE, BL_CHAR, sd->bl.id);
+		map_foreachinallrange(units::stopattack,&sd->bl, AREA_SIZE, BL_CHAR, sd->bl.id);
 	}
 	return 0;
 }
@@ -6179,9 +6179,9 @@ ACMD_FUNC(useskill)
 		bl = &sd->bl;
 
 	if (skill_get_inf(skill_id)&INF_GROUND_SKILL)
-		unit_skilluse_pos(bl, pl_sd->bl.x, pl_sd->bl.y, skill_id, skill_lv);
+		units::skilluse_pos(bl, pl_sd->bl.x, pl_sd->bl.y, skill_id, skill_lv);
 	else
-		unit_skilluse_id(bl, pl_sd->bl.id, skill_id, skill_lv);
+		units::skilluse_id(bl, pl_sd->bl.id, skill_id, skill_lv);
 
 	return 0;
 }
@@ -7042,11 +7042,11 @@ ACMD_FUNC(mobsearch)
 	int mob_id = strtol(mob_name, nullptr, 10);
 
 	if (mob_id == 0)
-		 mob_id = mobdb_searchname(mob_name);
+		 mob_id = mobs::mobdb_searchname(mob_name);
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 
-	if (mob == nullptr || mobdb_checkid(mob_id) == 0) {
+	if (mob == nullptr || mobs::mobdb_checkid(mob_id) == 0) {
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1219),mob_name); // Invalid mob ID %s!
 		clif_displaymessage(fd, atcmd_output);
 		return -1;
@@ -7062,7 +7062,7 @@ ACMD_FUNC(mobsearch)
 	int number = 0;
 	for(;;)
 	{
-		TBL_MOB* md = (TBL_MOB*)mapit_next(it);
+		mobs::MobData* md = (mobs::MobData*)mapit_next(it);
 		if( md == NULL )
 			break;// no more mobs
 
@@ -7289,7 +7289,7 @@ ACMD_FUNC(summon)
 	char name[NAME_LENGTH];
 	int mob_id = 0;
 	int duration = 0;
-	struct mob_data *md;
+	mobs::MobData *md;
 	t_tick tick=gettick();
 
 	nullpo_retr(-1, sd);
@@ -7306,23 +7306,23 @@ ACMD_FUNC(summon)
 		duration =60;
 
 	if ((mob_id = atoi(name)) == 0)
-		mob_id = mobdb_searchname(name);
-	if(mob_id == 0 || mobdb_checkid(mob_id) == 0)
+		mob_id = mobs::mobdb_searchname(name);
+	if(mob_id == 0 || mobs::mobdb_checkid(mob_id) == 0)
 	{
 		clif_displaymessage(fd, msg_txt(sd,40));	// Invalid monster ID or name.
 		return -1;
 	}
 
-	md = mob_once_spawn_sub(&sd->bl, sd->bl.m, -1, -1, "--ja--", mob_id, "", SZ_SMALL, AI_NONE);
+	md = mobs::once_spawn_sub(&sd->bl, sd->bl.m, -1, -1, "--ja--", mob_id, "", SZ_SMALL, AI_NONE);
 
 	if(!md)
 		return -1;
 
 	md->master_id=sd->bl.id;
 	md->special_state.ai=AI_ATTACK;
-	md->deletetimer=add_timer(tick+(duration*60000),mob_timer_delete,md->bl.id,0);
+	md->deletetimer=add_timer(tick+(duration*60000),mobs::mob_timer_delete,md->bl.id,0);
 	clif_specialeffect(&md->bl,EF_ENTRY2,AREA);
-	mob_spawn(md);
+	md->spawn();
 	sc_start4(NULL,&md->bl, SC_MODECHANGE, 100, 1, 0, MD_AGGRESSIVE, 0, 60000);
 	clif_skill_poseffect(&sd->bl,AM_CALLHOMUN,1,md->bl.x,md->bl.y,tick);
 	clif_displaymessage(fd, msg_txt(sd,39));	// All monster summoned!
@@ -7407,7 +7407,7 @@ ACMD_FUNC(setbattleflag)
 	clif_displaymessage(fd, msg_txt(sd,1233)); // Set battle_config as requested.
 
 	if (reload)
-		mob_reload();
+		mobs::reload();
 
 	return 0;
 }
@@ -7695,12 +7695,12 @@ ACMD_FUNC(mobinfo)
 	}
 
 	// If monster identifier/name argument is a name
-	if ((i = mobdb_checkid(strtoul(message, nullptr, 10))))
+	if ((i = mobs::mobdb_checkid(strtoul(message, nullptr, 10))))
 	{
 		mob_ids[0] = i;
 		count = 1;
 	} else
-		count = mobdb_searchname_array(message, mob_ids, MAX_SEARCH);
+		count = mobs::mobdb_searchname_array(message, mob_ids, MAX_SEARCH);
 
 	if (!count) {
 		clif_displaymessage(fd, msg_txt(sd,40)); // Invalid monster ID or name.
@@ -7713,7 +7713,7 @@ ACMD_FUNC(mobinfo)
 		count = MAX_SEARCH;
 	}
 	for (uint16 k = 0; k < count; k++) {
-		std::shared_ptr<s_mob_db> mob = mob_db.find(mob_ids[k]);
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_ids[k]);
 
 		if (mob == nullptr)
 			continue;
@@ -7776,7 +7776,7 @@ ACMD_FUNC(mobinfo)
 			if (id == nullptr)
 				continue;
 
-			int droprate = mob_getdroprate( &sd->bl, mob, mob->dropitem[i].rate, drop_modifier );
+			int droprate = mobs::getdroprate( &sd->bl, mob, mob->dropitem[i].rate, drop_modifier );
 
 			sprintf(atcmd_output2, " - %s  %02.02f%%", item_db.create_item_link( id ).c_str(), (float)droprate / 100);
 			strcat(atcmd_output, atcmd_output2);
@@ -7848,11 +7848,11 @@ ACMD_FUNC(showmobs)
 		return -1;
 
 	if((mob_id = strtol(mob_name, nullptr, 10)) == 0)
-		mob_id = mobdb_searchname(mob_name);
+		mob_id = mobs::mobdb_searchname(mob_name);
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 
-	if (mob == nullptr || mobdb_checkid(mob_id) == 0) {
+	if (mob == nullptr || mobs::mobdb_checkid(mob_id) == 0) {
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1250),mob_name); // Invalid mob id %s!
 		clif_displaymessage(fd, atcmd_output);
 		return 0;
@@ -7874,7 +7874,7 @@ ACMD_FUNC(showmobs)
 	it = mapit_geteachmob();
 	for(;;)
 	{
-		TBL_MOB* md = (TBL_MOB*)mapit_next(it);
+		mobs::MobData* md = (mobs::MobData*)mapit_next(it);
 		if( md == NULL )
 			break;// no more mobs
 
@@ -8322,7 +8322,7 @@ ACMD_FUNC(whodrops)
 			for (uint16 j=0; j < MAX_SEARCH && id->mob[j].chance > 0; j++)
 			{
 				int dropchance = id->mob[j].chance;
-				std::shared_ptr<s_mob_db> mob = mob_db.find(id->mob[j].id);
+				std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(id->mob[j].id);
 				if(!mob) continue;
 
 #ifdef RENEWAL_DROP
@@ -8352,13 +8352,13 @@ ACMD_FUNC(whereis)
 	}
 	
 	int i_message = atoi(message);
-	if (mobdb_checkid(i_message)) {
+	if (mobs::mobdb_checkid(i_message)) {
 		// ID given
 		mob_ids[0] = i_message;
 		count = 1;
 	} else {
 		// Name given, get all monster associated whith this name
-		count = mobdb_searchname_array(message, mob_ids, MAX_SEARCH);
+		count = mobs::mobdb_searchname_array(message, mob_ids, MAX_SEARCH);
 	}
 	
 	if (count <= 0) {
@@ -8374,13 +8374,13 @@ ACMD_FUNC(whereis)
 
 	for (int i = 0; i < count; i++) {
 		uint16 mob_id = mob_ids[i];
-		std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 
 		if(!mob) continue;
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1289), mob->jname.c_str()); // %s spawns in:
 		clif_displaymessage(fd, atcmd_output);
 		
-		const std::vector<spawn_info> spawns = mob_get_spawns(mob_id);
+		const std::vector<mobs::spawn_info> spawns = mobs::get_spawns(mob_id);
 		if (spawns.size() <= 0) {
 			 // This monster does not spawn normally.
 			clif_displaymessage(fd, msg_txt(sd,1290));
@@ -9070,7 +9070,7 @@ ACMD_FUNC(clone)
 		}
 		master = sd->bl.id;
 		if (battle_config.atc_slave_clone_limit
-			&& mob_countslave(&sd->bl) >= battle_config.atc_slave_clone_limit) {
+			&& mobs::countslave(&sd->bl) >= battle_config.atc_slave_clone_limit) {
 			clif_displaymessage(fd, msg_txt(sd,127));	// You've reached your slave clones limit.
 			return 0;
 		}
@@ -9086,7 +9086,7 @@ ACMD_FUNC(clone)
 		y = sd->bl.y;
 	}
 
-	if((x = mob_clone_spawn(pl_sd, sd->bl.m, x, y, "", master, MD_NONE, flag?1:0, 0)) > 0) {
+	if((x = mobs::clone_spawn(pl_sd, sd->bl.m, x, y, "", master, MD_NONE, flag?1:0, 0)) > 0) {
 		clif_displaymessage(fd, msg_txt(sd,128+flag*2));	// Evil Clone spawned. Clone spawned. Slave clone spawned.
 		return 0;
 	}

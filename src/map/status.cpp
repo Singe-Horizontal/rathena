@@ -1524,7 +1524,7 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 
 		if (target->type == BL_PC)
 			pc_bonus_script_clear(BL_CAST(BL_PC,target),BSF_REM_ON_DAMAGED);
-		unit_skillcastcancel(target, 2);
+		units::skillcastcancel(target, 2);
 	}
 
 	status->hp-= hp;
@@ -1546,19 +1546,19 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 
 	switch (target->type) {
 		case BL_PC:  pc_damage((TBL_PC*)target,src,hp,sp,ap); break;
-		case BL_MOB: mob_damage((TBL_MOB*)target, src, hp); break;
+		case BL_MOB: ((mobs::MobData*)target)->damage(src, hp); break;
 		case BL_HOM: hom_damage((TBL_HOM*)target); break;
 		case BL_MER: mercenary_heal((TBL_MER*)target,hp,sp); break;
 		case BL_ELEM: elemental_heal((TBL_ELEM*)target,hp,sp); break;
 	}
 
 	if( src && target->type == BL_PC && ((TBL_PC*)target)->disguise ) { // Stop walking when attacked in disguise to prevent walk-delay bug
-		unit_stop_walking( target, 1 );
+		units::stop_walking( target, 1 );
 	}
 
 	if( status->hp || (flag&8) ) { // Still lives or has been dead before this damage.
 		if (walkdelay)
-			unit_set_walkdelay(target, gettick(), walkdelay, 0);
+			units::set_walkdelay(target, gettick(), walkdelay, 0);
 		return (int)(hp+sp+ap);
 	}
 
@@ -1572,7 +1572,7 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 	**/
 	switch (target->type) {
 		case BL_PC:  flag = pc_dead((TBL_PC*)target,src); break;
-		case BL_MOB: flag = mob_dead((TBL_MOB*)target, src, flag&4?3:0); break;
+		case BL_MOB: flag = ((mobs::MobData*)target)->dead(src, flag&4?3:0); break;
 		case BL_HOM: flag = hom_dead((TBL_HOM*)target); break;
 		case BL_MER: flag = mercenary_dead((TBL_MER*)target); break;
 		case BL_ELEM: flag = elemental_dead((TBL_ELEM*)target); break;
@@ -1612,7 +1612,7 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 		sc_start(src,target,SC_KYRIE,100,10,time);
 
 		if( target->type == BL_MOB )
-			((TBL_MOB*)target)->state.rebirth = 1;
+			((mobs::MobData*)target)->state.rebirth = 1;
 
 		return (int)(hp+sp+ap);
 	}
@@ -1624,15 +1624,15 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 		clif_skill_nodamage(target, target, ALL_RESURRECTION, 1, 1);
 
 		if (target->type == BL_MOB)
-			((TBL_MOB*)target)->state.rebirth = 1;
+			((mobs::MobData*)target)->state.rebirth = 1;
 
 		return (int)(hp+sp+ap);
 	}
 
-	if (target->type == BL_MOB && sc && sc->getSCE(SC_REBIRTH) && !((TBL_MOB*) target)->state.rebirth) { // Ensure the monster has not already rebirthed before doing so.
+	if (target->type == BL_MOB && sc && sc->getSCE(SC_REBIRTH) && !((mobs::MobData*) target)->state.rebirth) { // Ensure the monster has not already rebirthed before doing so.
 		status_revive(target, sc->getSCE(SC_REBIRTH)->val2, 0);
 		status_change_clear(target,0);
-		((TBL_MOB*)target)->state.rebirth = 1;
+		((mobs::MobData*)target)->state.rebirth = 1;
 
 		return (int)(hp+sp+ap);
 	}
@@ -1640,13 +1640,13 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 	status_change_clear(target,0);
 
 	if(flag&4) // Delete from memory. (also invokes map removal code)
-		unit_free(target,CLR_DEAD);
+		units::free(target,CLR_DEAD);
 	else if(flag&2) // remove from map
 		unit_remove_map(target,CLR_DEAD);
 	else { // Some death states that would normally be handled by unit_remove_map
-		unit_stop_attack(target);
-		unit_stop_walking(target,1);
-		unit_skillcastcancel(target,0);
+		units::stop_attack(target);
+		units::stop_walking(target,1);
+		units::skillcastcancel(target,0);
 		clif_clearunit_area(target,CLR_DEAD);
 		skill_unit_move(target,gettick(),4);
 		skill_cleartimerskill(target);
@@ -1661,7 +1661,7 @@ int status_damage(struct block_list *src,struct block_list *target,int64 dhp, in
 			std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, sd->bg_id);
 
 			if( bg && !(bg->die_event.empty()) )
-				npc_event(sd, bg->die_event.c_str(), 0);
+				npc_event_process(sd, bg->die_event.c_str(), 0);
 		}
 
 		npc_script_event(sd,NPCE_DIE);
@@ -1759,7 +1759,7 @@ int status_heal(struct block_list *bl,int64 hhp,int64 hsp, int64 hap, int flag)
 	// Send HP update to client
 	switch(bl->type) {
 		case BL_PC:  pc_heal((TBL_PC*)bl,hp,sp,ap,flag); break;
-		case BL_MOB: mob_heal((TBL_MOB*)bl,hp); break;
+		case BL_MOB: ((TBL_MOB*)bl)->heal(hp); break;
 		case BL_HOM: hom_heal((TBL_HOM*)bl); break;
 		case BL_MER: mercenary_heal((TBL_MER*)bl,hp,sp); break;
 		case BL_ELEM: elemental_heal((TBL_ELEM*)bl,hp,sp); break;
@@ -1900,7 +1900,7 @@ int status_revive(struct block_list *bl, unsigned char per_hp, unsigned char per
 		clif_resurrection(bl, 1);
 	switch (bl->type) {
 		case BL_PC:  pc_revive((TBL_PC*)bl, hp, sp, ap); break;
-		case BL_MOB: mob_revive((TBL_MOB*)bl, hp); break;
+		case BL_MOB: ((TBL_MOB*)bl)->revive(hp); break;
 		case BL_HOM: hom_revive((TBL_HOM*)bl, hp, sp); break;
 	}
 	return 1;
@@ -2006,9 +2006,9 @@ bool status_check_skilluse(struct block_list *src, struct block_list *target, ui
 			block_list *wink_target = map_id2bl(sc->getSCE(SC_WINKCHARM)->val2);
 
 			if (wink_target != nullptr) {
-				unit_data *wink_ud = unit_bl2ud(src);
+				units::UnitData *wink_ud = units::bl2ud(src);
 				if (wink_ud != nullptr && wink_ud->walktimer == INVALID_TIMER)
-					unit_walktobl(src, map_id2bl(sc->getSCE(SC_WINKCHARM)->val2), 3, 1);
+					units::walktobl(src, map_id2bl(sc->getSCE(SC_WINKCHARM)->val2), 3, 1);
 				clif_emotion(src, ET_THROB);
 				return false;
 			} else
@@ -2181,7 +2181,7 @@ int status_check_visibility(struct block_list *src, struct block_list *target)
 	status_change* tsc = status_get_sc(target);
 	switch (src->type) {
 		case BL_MOB:
-			view_range = ((TBL_MOB*)src)->min_chase;
+			view_range = ((mobs::MobData*)src)->min_chase;
 			break;
 		case BL_PET:
 			view_range = ((TBL_PET*)src)->db->range2;
@@ -2489,7 +2489,7 @@ void status_calc_misc(struct block_list *bl, struct status_data *status, int lev
 		status->patk = status->smatk =
 		status->hplus = status->crate = 0;
 		
-		if (bl->type != BL_MOB)	// BL_MOB has values set when loading mob_db
+		if (bl->type != BL_MOB)	// BL_MOB has values set when loading mobs::mob_db
 			status->res = status->mres = 0;
 	}
 
@@ -2655,7 +2655,7 @@ void status_calc_misc(struct block_list *bl, struct status_data *status, int lev
  * @return 1 for calculated special statuses or 0 for none
  * @author [Skotlex]
  */
-int status_calc_mob_(struct mob_data* md, uint8 opt)
+int status_calc_mob_(mobs::MobData* md, uint8 opt)
 {
 	struct status_data *status;
 	struct block_list *mbl = NULL;
@@ -2666,7 +2666,7 @@ int status_calc_mob_(struct mob_data* md, uint8 opt)
 			;
 		else
 			md->level = md->db->lv;
-		md->damagetaken = md->db->damagetaken;
+		md->damage_taken = md->db->damagetaken;
 	}
 
 	// Check if we need custom base-status
@@ -2800,9 +2800,9 @@ int status_calc_mob_(struct mob_data* md, uint8 opt)
 	}
 
 	if (flag&16 && mbl) { // Max HP setting from Summon Flora/marine Sphere
-		struct unit_data *ud = unit_bl2ud(mbl);
+		units::UnitData *ud = units::bl2ud(mbl);
 		// Remove special AI when this is used by regular mobs.
-		if (mbl->type == BL_MOB && !((TBL_MOB*)mbl)->special_state.ai)
+		if (mbl->type == BL_MOB && !((mobs::MobData*)mbl)->special_state.ai)
 			md->special_state.ai = AI_NONE;
 		if (ud) { 
 			// Different levels of HP according to skill level
@@ -5538,7 +5538,7 @@ void status_calc_bl_main(struct block_list *bl, std::bitset<SCB_MAX> flag)
 	* we need to update the speed on the client when the last status change ends.
 	**/
 	if(flag[SCB_SPEED]) {
-		struct unit_data *ud = unit_bl2ud(bl);
+		units::UnitData *ud = units::bl2ud(bl);
 		/** [Skotlex]
 		* Re-walk to adjust speed (we do not check if walktimer != INVALID_TIMER
 		* because if you step on something while walking, the moment this
@@ -5833,9 +5833,9 @@ void status_calc_bl_main(struct block_list *bl, std::bitset<SCB_MAX> flag)
 
 		// Since mode changed, reset their state.
 		if (!status_has_mode(status,MD_CANATTACK))
-			unit_stop_attack(bl);
+			units::stop_attack(bl);
 		if (!status_has_mode(status,MD_CANMOVE))
-			unit_stop_walking(bl,1);
+			units::stop_walking(bl,1);
 	}
 
 	/**
@@ -8787,7 +8787,7 @@ static int status_calc_mode(struct block_list *bl, status_change *sc, int mode)
  * @param md: Slave mob whose mode to change
  * @param mmd: Master of slave mob
  */
-void status_calc_slave_mode(struct mob_data *md, struct mob_data *mmd)
+void status_calc_slave_mode(mobs::MobData *md, mobs::MobData *mmd)
 {
 	switch (battle_config.slaves_inherit_mode) {
 		case 1: //Always aggressive
@@ -8820,7 +8820,7 @@ const char* status_get_name(struct block_list *bl)
 	nullpo_ret(bl);
 	switch (bl->type) {
 		case BL_PC:	return ((TBL_PC *)bl)->fakename[0] != '\0' ? ((TBL_PC*)bl)->fakename : ((TBL_PC*)bl)->status.name;
-		case BL_MOB:	return ((TBL_MOB*)bl)->name;
+		case BL_MOB:	return ((mobs::MobData*)bl)->name;
 		case BL_PET:	return ((TBL_PET*)bl)->pet.name;
 		case BL_HOM:	return ((TBL_HOM*)bl)->homunculus.name;
 		case BL_MER:	return ((TBL_MER *)bl)->db->name.c_str();	// They only have database names which are global, not specific to GID.
@@ -8840,7 +8840,7 @@ int status_get_class(struct block_list *bl)
 	nullpo_ret(bl);
 	switch( bl->type ) {
 		case BL_PC:	return ((TBL_PC*)bl)->status.class_;
-		case BL_MOB:	return ((TBL_MOB*)bl)->vd->class_; // Class used on all code should be the view class of the mob.
+		case BL_MOB:	return ((mobs::MobData*)bl)->vd->class_; // Class used on all code should be the view class of the mob.
 		case BL_PET:	return ((TBL_PET*)bl)->pet.class_;
 		case BL_HOM:	return ((TBL_HOM*)bl)->homunculus.class_;
 		case BL_MER:	return ((TBL_MER*)bl)->mercenary.class_;
@@ -8860,7 +8860,7 @@ int status_get_lv(struct block_list *bl)
 	nullpo_ret(bl);
 	switch (bl->type) {
 		case BL_PC:	return ((TBL_PC*)bl)->status.base_level;
-		case BL_MOB:	return ((TBL_MOB*)bl)->level;
+		case BL_MOB:	return ((mobs::MobData*)bl)->level;
 		case BL_PET:	return ((TBL_PET*)bl)->pet.level;
 		case BL_HOM:	return ((TBL_HOM*)bl)->homunculus.level;
 		case BL_MER:	return ((TBL_MER*)bl)->db->lv;
@@ -8899,12 +8899,12 @@ struct status_data *status_get_status_data(struct block_list *bl)
 
 	switch (bl->type) {
 		case BL_PC: 	return &((TBL_PC*)bl)->battle_status;
-		case BL_MOB:	return &((TBL_MOB*)bl)->status;
+		case BL_MOB:	return &((mobs::MobData*)bl)->status;
 		case BL_PET:	return &((TBL_PET*)bl)->status;
 		case BL_HOM:	return &((TBL_HOM*)bl)->battle_status;
 		case BL_MER:	return &((TBL_MER*)bl)->battle_status;
 		case BL_ELEM:	return &((TBL_ELEM*)bl)->battle_status;
-		case BL_NPC:	return ((mobdb_checkid(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : &dummy_status);
+		case BL_NPC:	return ((mobs::mobdb_checkid(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : &dummy_status);
 		default:
 			return &dummy_status;
 	}
@@ -8920,12 +8920,12 @@ struct status_data *status_get_base_status(struct block_list *bl)
 	nullpo_retr(NULL, bl);
 	switch (bl->type) {
 		case BL_PC:	return &((TBL_PC*)bl)->base_status;
-		case BL_MOB:	return ((TBL_MOB*)bl)->base_status ? ((TBL_MOB*)bl)->base_status : &((TBL_MOB*)bl)->db->status;
+		case BL_MOB:	return ((mobs::MobData*)bl)->base_status ? ((mobs::MobData*)bl)->base_status : &((mobs::MobData*)bl)->db->status;
 		case BL_PET:	return &((TBL_PET*)bl)->db->status;
 		case BL_HOM:	return &((TBL_HOM*)bl)->base_status;
 		case BL_MER:	return &((TBL_MER*)bl)->base_status;
 		case BL_ELEM:	return &((TBL_ELEM*)bl)->base_status;
-		case BL_NPC:	return ((mobdb_checkid(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : NULL);
+		case BL_NPC:	return ((mobs::mobdb_checkid(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : NULL);
 		default:
 			return NULL;
 	}
@@ -8938,10 +8938,10 @@ struct status_data *status_get_base_status(struct block_list *bl)
  */
 defType status_get_def(struct block_list *bl)
 {
-	struct unit_data *ud;
+	units::UnitData *ud;
 	struct status_data *status = status_get_status_data(bl);
 	int def = status?status->def:0;
-	ud = unit_bl2ud(bl);
+	ud = units::bl2ud(bl);
 	if (ud && ud->skilltimer != INVALID_TIMER)
 		def -= def * skill_get_castdef(ud->skill_id)/100;
 
@@ -8976,7 +8976,7 @@ int status_get_party_id(struct block_list *bl)
 				return ((TBL_PET*)bl)->master->status.party_id;
 			break;
 		case BL_MOB: {
-				struct mob_data *md=(TBL_MOB*)bl;
+				mobs::MobData *md=(mobs::MobData*)bl;
 				if( md->master_id > 0 ) {
 					map_session_data *msd;
 					if (md->special_state.ai && (msd = map_id2sd(md->master_id)) != NULL)
@@ -9023,7 +9023,7 @@ int status_get_guild_id(struct block_list *bl)
 		case BL_MOB:
 			{
 				map_session_data *msd;
-				struct mob_data *md = (struct mob_data *)bl;
+				mobs::MobData *md = (mobs::MobData *)bl;
 				if (md->guardian_data)	// Guardian's guild [Skotlex]
 					return md->guardian_data->guild_id;
 				if (md->special_state.ai && (msd = map_id2sd(md->master_id)) != NULL)
@@ -9072,7 +9072,7 @@ int status_get_emblem_id(struct block_list *bl)
 		case BL_MOB:
 			{
 				map_session_data *msd;
-				struct mob_data *md = (struct mob_data *)bl;
+				mobs::MobData *md = (mobs::MobData *)bl;
 				if (md->guardian_data)	// Guardian's guild [Skotlex]
 					return md->guardian_data->emblem_id;
 				if (md->special_state.ai && (msd = map_id2sd(md->master_id)) != NULL)
@@ -9112,7 +9112,7 @@ std::vector<e_race2> status_get_race2(struct block_list *bl)
 	nullpo_retr(std::vector<e_race2>(),bl);
 
 	if (bl->type == BL_MOB)
-		return ((struct mob_data *)bl)->db->race2;
+		return ((mobs::MobData *)bl)->db->race2;
 	if (bl->type == BL_PET)
 		return ((struct pet_data *)bl)->db->race2;
 	return std::vector<e_race2>();
@@ -9162,7 +9162,7 @@ struct view_data* status_get_viewdata(struct block_list *bl)
 	nullpo_retr(NULL, bl);
 	switch (bl->type) {
 		case BL_PC:  return &((TBL_PC*)bl)->vd;
-		case BL_MOB: return ((TBL_MOB*)bl)->vd;
+		case BL_MOB: return ((mobs::MobData*)bl)->vd;
 		case BL_PET: return &((TBL_PET*)bl)->vd;
 		case BL_NPC: return &((TBL_NPC*)bl)->vd;
 		case BL_HOM: return ((TBL_HOM*)bl)->vd;
@@ -9183,8 +9183,8 @@ void status_set_viewdata(struct block_list *bl, int class_)
 {
 	struct view_data* vd;
 	nullpo_retv(bl);
-	if (mobdb_checkid(class_) || mob_is_clone(class_))
-		vd = mob_get_viewdata(class_);
+	if (mobs::mobdb_checkid(class_) || mobs::is_clone(class_))
+		vd = mobs::get_viewdata(class_);
 	else if (npcdb_checkid(class_))
 		vd = npc_get_viewdata(class_);
 	else if (homdb_checkid(class_))
@@ -9256,13 +9256,13 @@ void status_set_viewdata(struct block_list *bl, int class_)
 	break;
 	case BL_MOB:
 		{
-			TBL_MOB* md = (TBL_MOB*)bl;
+			mobs::MobData* md = (mobs::MobData*)bl;
 			if (vd){
-				mob_free_dynamic_viewdata( md );
+				md->free_dynamic_viewdata();
 
 				md->vd = vd;
 			}else if( pcdb_checkid( class_ ) ){
-				mob_set_dynamic_viewdata( md );
+				md->set_dynamic_viewdata();
 
 				md->vd->class_ = class_;
 				md->vd->hair_style = cap_value(md->vd->hair_style, MIN_HAIR_STYLE, MAX_HAIR_STYLE);
@@ -9348,7 +9348,7 @@ status_change *status_get_sc(struct block_list *bl)
 	if( bl )
 	switch (bl->type) {
 		case BL_PC:  return &((TBL_PC*)bl)->sc;
-		case BL_MOB: return &((TBL_MOB*)bl)->sc;
+		case BL_MOB: return &((mobs::MobData*)bl)->sc;
 		case BL_NPC: return &((TBL_NPC*)bl)->sc;
 		case BL_HOM: return &((TBL_HOM*)bl)->sc;
 		case BL_MER: return &((TBL_MER*)bl)->sc;
@@ -10538,7 +10538,7 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 
 		case SC_KEEPING:
 		case SC_BARRIER: {
-			unit_data *ud = unit_bl2ud(bl);
+			units::UnitData *ud = units::bl2ud(bl);
 
 			if (ud)
 				ud->attackabletime = ud->canact_tick = ud->canmove_tick = gettick() + tick;
@@ -10747,8 +10747,8 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			val2 = 3*((val1+1)/3);
 			if (val1 > 4) val2--;
 			//Suiton is a special case, stop effect is forced and only happens when target enters it
-			if (!unit_blown_immune(bl, 0x1))
-				unit_stop_walking(bl, 9);
+			if (!units::blown_immune(bl, 0x1))
+				units::stop_walking(bl, 9);
 			break;
 		case SC_ONEHAND:
 		case SC_TWOHANDQUICKEN:
@@ -10961,7 +10961,7 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			break;
 		case SC_BOSSMAPINFO:
 			if( sd != NULL ) {
-				struct mob_data *boss_md = map_getmob_boss(bl->m); // Search for Boss on this Map
+				mobs::MobData *boss_md = map_getmob_boss(bl->m); // Search for Boss on this Map
 
 				if( boss_md == NULL ) { // No MVP on this map
 					clif_bossmapinfo(sd, NULL, BOSS_INFO_NOT);
@@ -10995,7 +10995,7 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			// val4&1 signals the presence of a wall.
 			// val4&2 makes cloak not end on normal attacks [Skotlex]
 			// val4&4 makes cloak not end on using skills
-			if (bl->type == BL_PC || (bl->type == BL_MOB && ((TBL_MOB*)bl)->special_state.clone) )	// Standard cloaking.
+			if (bl->type == BL_PC || (bl->type == BL_MOB && ((mobs::MobData*)bl)->special_state.clone) )	// Standard cloaking.
 				val4 |= battle_config.pc_cloak_check_type&7;
 			else
 				val4 |= battle_config.monster_cloak_check_type&7;
@@ -11247,12 +11247,12 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			// val3: If set to 2 this combo will delay ONLY attack
 			// val3: TK: Last used kick
 			// val4: TK: Combo time
-			struct unit_data *ud = unit_bl2ud(bl);
+			units::UnitData *ud = units::bl2ud(bl);
 			if ( ud && (!val3 || val3 == 2) ) {
 				tick += 300 * battle_config.combo_delay_rate/100;
 				ud->attackabletime = gettick()+tick;
 				if( !val3 )
-					unit_set_walkdelay(bl, gettick(), tick, 1);
+					units::set_walkdelay(bl, gettick(), tick, 1);
 			}
 			val3 = 0;
 			val4 = tick;
@@ -12203,7 +12203,7 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			break;
 		case SC_MONSTER_TRANSFORM:
 		case SC_ACTIVE_MONSTER_TRANSFORM:
-			if( !mobdb_checkid(val1) )
+			if( !mobs::mobdb_checkid(val1) )
 				val1 = MOBID_PORING; // Default poring
 			break;
 #ifndef RENEWAL
@@ -12237,7 +12237,7 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 		case SC_VACUUM_EXTREME:
 			// Suck target at n second, only if the n second is lower than the duration
 			// Does not suck targets on no-knockback maps
-			if (val4 < tick && unit_blown_immune(bl, 0x9) == UB_KNOCKABLE) {
+			if (val4 < tick && units::blown_immune(bl, 0x9) == UB_KNOCKABLE) {
 				tick_time = val4;
 				val4 = tick - tick_time;
 			} else
@@ -12783,43 +12783,43 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 
 	//SC that make stop attacking [LuzZza]
 	if (scdb->flag[SCF_STOPATTACKING])
-		unit_stop_attack(bl);
+		units::stop_attack(bl);
 
 	//SC that make stop walking
 	if (scdb->flag[SCF_STOPWALKING]) {
 		switch (type) {
 			case SC_ANKLE:
 				if (battle_config.skill_trap_type || !map_flag_gvg(bl->m))
-					unit_stop_walking(bl, 1);
+					units::stop_walking(bl, 1);
 				break;
 			case SC__MANHOLE:
-				if (bl->type == BL_PC || !unit_blown_immune(bl,0x1))
-					unit_stop_walking(bl,1);
+				if (bl->type == BL_PC || !units::blown_immune(bl,0x1))
+					units::stop_walking(bl,1);
 				break;
 			case SC_VACUUM_EXTREME:
-				if (bl->type != BL_PC && unit_blown_immune(bl, 0x1) == UB_KNOCKABLE) {
-					unit_stop_walking(bl,1);
-					unit_stop_attack(bl);
+				if (bl->type != BL_PC && units::blown_immune(bl, 0x1) == UB_KNOCKABLE) {
+					units::stop_walking(bl,1);
+					units::stop_attack(bl);
 				}
 				break;
 			case SC_FREEZE:
 			case SC_STUN:
 			case SC_STONE:
 				if (sc->getSCE(SC_DANCING)) {
-					unit_stop_walking(bl, 1);
+					units::stop_walking(bl, 1);
 					status_change_end(bl, SC_DANCING);
 				}
 				break;
 			default:
-				if (!unit_blown_immune(bl,0x1))
-					unit_stop_walking(bl,1);
+				if (!units::blown_immune(bl,0x1))
+					units::stop_walking(bl,1);
 				break;
 		}
 	}
 
 	//SC that make stop casting
 	if (battle_config.sc_castcancel&bl->type && scdb->flag[SCF_STOPCASTING])
-		unit_skillcastcancel(bl,0);
+		units::skillcastcancel(bl,0);
 
 	sc->opt1 = scdb->opt1;
 	sc->opt2 |= scdb->opt2;
@@ -12941,10 +12941,10 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			break;
 		case SC_RUN:
 			{
-				struct unit_data *ud = unit_bl2ud(bl);
+				units::UnitData *ud = units::bl2ud(bl);
 
 				if( ud )
-					ud->state.running = unit_run(bl, NULL, SC_RUN);
+					ud->state.running = units::run(bl, NULL, SC_RUN);
 			}
 			break;
 		case SC_BOSSMAPINFO:
@@ -12960,10 +12960,10 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 			break;
 		case SC_WUGDASH:
 			{
-				struct unit_data *ud = unit_bl2ud(bl);
+				units::UnitData *ud = units::bl2ud(bl);
 
 				if( ud )
-					ud->state.running = unit_run(bl, sd, SC_WUGDASH);
+					ud->state.running = units::run(bl, sd, SC_WUGDASH);
 			}
 			break;
 		case SC_COMBO:
@@ -13178,7 +13178,7 @@ int status_change_end(struct block_list* bl, enum sc_type type, int tid)
 	switch(type) {
 		case SC_KEEPING:
 		case SC_BARRIER: {
-			unit_data *ud = unit_bl2ud(bl);
+			units::UnitData *ud = units::bl2ud(bl);
 
 			if (ud)
 				ud->attackabletime = ud->canact_tick = ud->canmove_tick = gettick();
@@ -13194,7 +13194,7 @@ int status_change_end(struct block_list* bl, enum sc_type type, int tid)
 			break;
 		case SC_RUN:
 		{
-			struct unit_data *ud = unit_bl2ud(bl);
+			units::UnitData *ud = units::bl2ud(bl);
 			bool begin_spurt = true;
 			// Note: this int64 value is stored in two separate int32 variables (FIXME)
 			t_tick starttick  = (t_tick)sce->val3&0x00000000ffffffffLL;
@@ -13205,7 +13205,7 @@ int status_change_end(struct block_list* bl, enum sc_type type, int tid)
 					begin_spurt = false;
 				ud->state.running = 0;
 				if (ud->walktimer != INVALID_TIMER)
-					unit_stop_walking(bl,1);
+					units::stop_walking(bl,1);
 			}
 			if (begin_spurt && sce->val1 >= 7 &&
 				DIFF_TICK(gettick(), starttick) <= 1000 &&
@@ -13480,11 +13480,11 @@ int status_change_end(struct block_list* bl, enum sc_type type, int tid)
 			break;
 		case SC_WUGDASH:
 			{
-				struct unit_data *ud = unit_bl2ud(bl);
+				units::UnitData *ud = units::bl2ud(bl);
 				if (ud) {
 					ud->state.running = 0;
 					if (ud->walktimer != INVALID_TIMER)
-						unit_stop_walking(bl,1);
+						units::stop_walking(bl,1);
 				}
 			}
 			break;
@@ -13942,8 +13942,8 @@ TIMER_FUNC(status_change_timer){
 					if (!skill_get_index(mushroom_skill_id))
 						break;
 
-					unit_stop_attack(bl);
-					unit_skillcastcancel(bl, 1);
+					units::stop_attack(bl);
+					units::skillcastcancel(bl, 1);
 
 					switch (skill_get_casttype(mushroom_skill_id)) { // Magic Mushroom skills are buffs or area damage
 					case CAST_GROUND:
@@ -13967,7 +13967,7 @@ TIMER_FUNC(status_change_timer){
 			map_freeblock_lock();
 			dounlock = true;
 			status_fix_damage(bl, bl, 100, clif_damage(bl, bl, tick, status->amotion, status->dmotion + 500, 100, 1, DMG_NORMAL, 0, false),0);
-			unit_skillcastcancel(bl, 2);
+			units::skillcastcancel(bl, 2);
 		}
 		break;
 		
@@ -13977,7 +13977,7 @@ TIMER_FUNC(status_change_timer){
 			map_freeblock_lock();
 			dounlock = true;
 			status_fix_damage(bl, bl, damage, clif_damage(bl, bl, tick, status->amotion, status->dmotion + 500, damage, 1, DMG_NORMAL, 0, false),0);
-			unit_skillcastcancel(bl, 2);
+			units::skillcastcancel(bl, 2);
 		}
 		break;
 
@@ -14041,7 +14041,7 @@ TIMER_FUNC(status_change_timer){
 
 	case SC_BOSSMAPINFO:
 		if( sd && --(sce->val4) >= 0 ) {
-			struct mob_data *boss_md = map_id2boss(sce->val1);
+			mobs::MobData *boss_md = map_id2boss(sce->val1);
 
 			if (boss_md) {
 				if (sd->bl.m != boss_md->bl.m) // Not on same map anymore
@@ -14612,10 +14612,10 @@ TIMER_FUNC(status_change_timer){
 	case SC_VACUUM_EXTREME:
 		if (sce->val4 > 0) {
 			// Only slide targets to center if they are standing still
-			if (unit_bl2ud(bl)->walktimer == INVALID_TIMER) {
+			if (units::bl2ud(bl)->walktimer == INVALID_TIMER) {
 				uint16 x = sce->val3 >> 16, y = sce->val3 & 0xFFFF;
 
-				if (distance_xy(x, y, bl->x, bl->y) <= skill_get_unit_range(SO_VACUUM_EXTREME, sce->val1) && unit_movepos(bl, x, y, 0, false)) {
+				if (distance_xy(x, y, bl->x, bl->y) <= skill_get_unit_range(SO_VACUUM_EXTREME, sce->val1) && units::movepos(bl, x, y, 0, false)) {
 					clif_slide(bl, x, y);
 					clif_fixpos(bl);
 				}
@@ -15047,7 +15047,7 @@ static int status_natural_heal(struct block_list* bl, va_list args)
 	struct regen_data *regen;
 	struct status_data *status;
 	status_change *sc;
-	struct unit_data *ud;
+	units::UnitData *ud;
 	struct view_data *vd = NULL;
 	struct regen_data_sub *sregen;
 	map_session_data *sd;
@@ -15121,7 +15121,7 @@ static int status_natural_heal(struct block_list* bl, va_list args)
 	if (flag && regen->state.overweight)
 		flag = RGN_NONE;
 
-	ud = unit_bl2ud(bl);
+	ud = units::bl2ud(bl);
 
 	if (flag&(RGN_HP|RGN_SHP|RGN_SSP) && ud && ud->walktimer != INVALID_TIMER) {
 		flag &= ~(RGN_SHP|RGN_SSP);

@@ -450,7 +450,7 @@ struct block_list {
 
 // Mob List Held in memory for Dynamic Mobs [Wizputer]
 // Expanded to specify all mob-related spawn data by [Skotlex]
-struct spawn_data {
+struct SpawnData {
 	short id; //ID, used because a mob can change it's class
 	unsigned short m, x, y;	//Spawn information (map, point, spawn-area around point)
 	signed short xs, ys;
@@ -818,7 +818,7 @@ struct map_data {
 	std::unordered_map<uint16, int> skill_duration;
 
 	struct npc_data *npc[MAX_NPC_PER_MAP];
-	struct spawn_data *moblist[MAX_MOB_LIST_PER_MAP]; // [Wizputer]
+	struct SpawnData *moblist[MAX_MOB_LIST_PER_MAP]; // [Wizputer]
 	int mob_delete_timer;	// Timer ID for map_removemobs_timer [Skotlex]
 
 	// Instance Variables
@@ -1138,7 +1138,10 @@ const char* map_charid2nick(int charid);
 map_session_data* map_charid2sd(int charid);
 
 map_session_data * map_id2sd(int id);
-struct mob_data * map_id2md(int id);
+namespace mobs {
+class MobData;
+}
+mobs::MobData * map_id2md(int id);
 struct npc_data * map_id2nd(int id);
 struct homun_data* map_id2hd(int id);
 struct s_mercenary_data* map_id2mc(int id);
@@ -1159,13 +1162,13 @@ int map_eraseallipport(void);
 void map_addiddb(struct block_list *);
 void map_deliddb(struct block_list *bl);
 void map_foreachpc(int (*func)(map_session_data* sd, va_list args), ...);
-void map_foreachmob(int (*func)(struct mob_data* md, va_list args), ...);
+void map_foreachmob(int (*func)(mobs::MobData* md, va_list args), ...);
 void map_foreachnpc(int (*func)(struct npc_data* nd, va_list args), ...);
 void map_foreachregen(int (*func)(struct block_list* bl, va_list args), ...);
 void map_foreachiddb(int (*func)(struct block_list* bl, va_list args), ...);
 map_session_data * map_nick2sd(const char* nick, bool allow_partial);
-struct mob_data * map_getmob_boss(int16 m);
-struct mob_data * map_id2boss(int id);
+mobs::MobData *map_getmob_boss(int16 m);
+mobs::MobData *map_id2boss(int id);
 
 // reload config file looking only for npcs
 void map_reloadnpc(bool clear);
@@ -1207,7 +1210,7 @@ bool map_iwall_set(int16 m, int16 x, int16 y, int size, int8 dir, bool shootable
 void map_iwall_get(map_session_data *sd);
 bool map_iwall_remove(const char *wall_name);
 
-int map_addmobtolist(unsigned short m, struct spawn_data *spawn);	// [Wizputer]
+int map_addmobtolist(unsigned short m, struct SpawnData *spawn_data);	// [Wizputer]
 void map_spawnmobs(int16 m); // [Wizputer]
 void map_removemobs(int16 m); // [Wizputer]
 void map_addmap2db(struct map_data *m);
@@ -1243,7 +1246,6 @@ extern const char*MSG_CONF_NAME_THA;
 //Useful typedefs from jA [Skotlex]
 typedef map_session_data TBL_PC;
 typedef struct npc_data         TBL_NPC;
-typedef struct mob_data         TBL_MOB;
 typedef struct flooritem_data   TBL_ITEM;
 typedef struct chat_data        TBL_CHAT;
 typedef struct skill_unit       TBL_SKILL;
@@ -1251,6 +1253,8 @@ typedef struct pet_data         TBL_PET;
 typedef struct homun_data       TBL_HOM;
 typedef struct s_mercenary_data   TBL_MER;
 typedef struct s_elemental_data	TBL_ELEM;
+using TBL_MOB = mobs::MobData;
+
 
 #define BL_CAST(type_, bl) \
 	( ((bl) == (struct block_list*)NULL || (bl)->type != (type_)) ? (T ## type_ *)NULL : (T ## type_ *)(bl) )

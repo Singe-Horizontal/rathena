@@ -316,7 +316,7 @@ int hom_delete(struct homun_data *hd, int emote)
 	sd = hd->master;
 
 	if (!sd)
-		return unit_free(&hd->bl,CLR_DEAD);
+		return units::free(&hd->bl,CLR_DEAD);
 
 	if (emote >= 0)
 		clif_emotion(&sd->bl, emote);
@@ -1061,14 +1061,14 @@ void hom_alloc(map_session_data *sd, struct s_homunculus *hom)
 
 	status_set_viewdata(&hd->bl, hd->homunculus.class_);
 	status_change_init(&hd->bl);
-	unit_dataset(&hd->bl);
+	units::dataset(&hd->bl);
 	hd->ud.dir = sd->ud.dir;
 
 	// Find a random valid pos around the player
 	hd->bl.m = sd->bl.m;
 	hd->bl.x = sd->bl.x;
 	hd->bl.y = sd->bl.y;
-	unit_calc_pos(&hd->bl, sd->bl.x, sd->bl.y, sd->ud.dir);
+	units::calc_pos(&hd->bl, sd->bl.x, sd->bl.y, sd->ud.dir);
 	hd->bl.x = hd->ud.to_x;
 	hd->bl.y = hd->ud.to_y;
 
@@ -1141,7 +1141,7 @@ bool hom_call(map_session_data *sd)
 		hom_save(hd);
 	} else
 		//Warp him to master.
-		unit_warp(&hd->bl,sd->bl.m, sd->bl.x, sd->bl.y,CLR_OUTSIGHT);
+		units::warp(&hd->bl,sd->bl.m, sd->bl.x, sd->bl.y,CLR_OUTSIGHT);
 
 #ifdef RENEWAL
 	sc_start(&sd->bl, &sd->bl, SC_HOMUN_TIME, 100, 1, skill_get_time(AM_CALLHOMUN, 1));

@@ -15,7 +15,7 @@
 
 //fwd declaration
 class map_session_data;
-struct mob_data;
+class MobData;
 struct block_list;
 enum e_damage_type : uint8;
 
@@ -437,7 +437,7 @@ struct Battle_Config
 
 	int show_hp_sp_drain, show_hp_sp_gain;	//[Skotlex]
 
-	int mob_npc_event_type; //Determines on who the npc_event is executed. [Skotlex]
+	int mob_npc_event_type; //Determines on who the npc_event_process is executed. [Skotlex]
 
 	int character_size; // if riders have size=2, and baby class riders size=1 [Lupus]
 	int mob_max_skilllvl; // Max possible skill level [Lupus]
