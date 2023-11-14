@@ -1676,7 +1676,7 @@ int map_searchrandfreecell(int16 m,int16 *x,int16 *y,int stack) {
 }
 
 
-static int map_count_sub(BlockList *bl,va_list ap)
+static int map_Count_sub(BlockList *bl,va_list ap)
 {
 	return 1;
 }
@@ -1744,12 +1744,12 @@ int map_search_freecell(BlockList *src, int16 m, int16 *x,int16 *y, int16 rx, in
 
 		if (map_getcell(m,*x,*y,CELL_CHKREACH))
 		{
-			if(flag&2 && !units::can_reach_pos(src, *x, *y, 1))
+			if(flag&2 && !units::CanReachPos(src, *x, *y, 1))
 				continue;
 			if(flag&4) {
 				if (spawn_data >= 100) return 0; //Limit of retries reached.
 				if (spawn_data++ < battle_config.no_spawn_on_player &&
-					map_foreachinallarea(map_count_sub, m,
+					map_foreachinallarea(map_Count_sub, m,
 						*x-AREA_SIZE, *y-AREA_SIZE,
 					  	*x+AREA_SIZE, *y+AREA_SIZE, BL_PC)
 				)
@@ -2874,7 +2874,7 @@ int map_removemobs_sub(BlockList *bl, va_list ap)
 	if( !battle_config.mob_remove_damaged && md->status.hp < md->status.max_hp )
 		return 0;
 	// is a mvp
-	if( md->get_bosstype() == BOSSTYPE_MVP )
+	if( md->GetBossType() == BOSSTYPE_MVP )
 		return 0;
 
 	units::free(&md->bl,CLR_OUTSIGHT);
@@ -4879,7 +4879,7 @@ void MapServer::finalize(){
 	do_final_pet();
 	do_final_homunculus();
 	do_final_mercenary();
-	mobs::do_final_mob(false);
+	mobs::DoFinalMob(false);
 	do_final_msg();
 	do_final_skill();
 	do_final_status();
@@ -5257,7 +5257,7 @@ bool MapServer::initialize( int argc, char *argv[] ){
 	do_init_channel();
 	do_init_cashshop();
 	do_init_skill();
-	mobs::do_init_mob();
+	mobs::DoInitMob();
 	do_init_pc();
 	do_init_status();
 	do_init_party();

@@ -353,12 +353,12 @@ uint16 clif_getport(void)
 #if PACKETVER >= 20071106
 static inline unsigned char clif_bl_type(BlockList *bl, bool walking) {
 	switch (bl->type) {
-	case BL_PC:    return (disguised(bl) && !pcdb_checkid(status_get_viewdata(bl)->class_))? 0x1:0x0; //PC_TYPE
+	case BL_PC:    return (disguised(bl) && !pcdb_checkid(status_GetViewData(bl)->class_))? 0x1:0x0; //PC_TYPE
 	case BL_ITEM:  return 0x2; //ITEM_TYPE
 	case BL_SKILL: return 0x3; //SKILL_TYPE
 	case BL_CHAT:  return 0x4; //UNKNOWN_TYPE
 	case BL_MOB:
-		if( pcdb_checkid( status_get_viewdata( bl )->class_ ) ){
+		if( pcdb_checkid( status_GetViewData( bl )->class_ ) ){
 			return 0x0; //PC_TYPE
 		}else{
 			switch( ( (mobs::MobData*)bl )->special_state.ai ){
@@ -375,16 +375,16 @@ static inline unsigned char clif_bl_type(BlockList *bl, bool walking) {
 // There is one exception and this is if they are walking.
 // Since walking NPCs are not supported on official servers, the client does not know how to handle it.
 #if PACKETVER >= 20170726
-		if (pcdb_checkid( status_get_viewdata( bl )->class_ ) && walking)
+		if (pcdb_checkid( status_GetViewData( bl )->class_ ) && walking)
 			return 0x0;
-		else if (mobs::mobdb_checkid( status_get_viewdata( bl )->class_ ))	// FIXME: categorize NPCs able to walk
+		else if (mobs::MobDbCheckId( status_GetViewData( bl )->class_ ))	// FIXME: categorize NPCs able to walk
 			return 0xC;
 		else
 			return 0x6;
 #else
-		return pcdb_checkid(status_get_viewdata(bl)->class_) ? 0x0 : 0x6; //NPC_EVT_TYPE
+		return pcdb_checkid(status_GetViewData(bl)->class_) ? 0x0 : 0x6; //NPC_EVT_TYPE
 #endif
-	case BL_PET:   return pcdb_checkid(status_get_viewdata(bl)->class_)?0x0:0x7; //NPC_PET_TYPE
+	case BL_PET:   return pcdb_checkid(status_GetViewData(bl)->class_)?0x0:0x7; //NPC_PET_TYPE
 	case BL_HOM:   return 0x8; //NPC_HOM_TYPE
 	case BL_MER:   return 0x9; //NPC_MERSOL_TYPE
 	case BL_ELEM:  return 0xa; //NPC_ELEMENTAL_TYPE
@@ -1090,7 +1090,7 @@ static void clif_set_unit_idle( struct BlockList* bl, bool walking, send_target 
 
 	map_session_data* sd = BL_CAST( BL_PC, bl );
 	status_change* sc = status_get_sc( bl );
-	struct view_data* vd = status_get_viewdata( bl );
+	struct view_data* vd = status_GetViewData( bl );
 	int g_id = status_get_guild_id( bl );
 
 #if PACKETVER < 20091103
@@ -1218,9 +1218,9 @@ static void clif_set_unit_idle( struct BlockList* bl, bool walking, send_target 
 	}
 
 	if( bl->type == BL_MOB ){
-		p.isBoss = ( (mobs::MobData*)bl )->get_bosstype();
+		p.isBoss = ( (mobs::MobData*)bl )->GetBossType();
 	}else if( bl->type == BL_PET ){
-		p.isBoss = ( (pet_data*)bl )->db->get_bosstype();
+		p.isBoss = ( (pet_data*)bl )->db->GetBossType();
 	}else{
 		p.isBoss = BOSSTYPE_NONE;
 	}
@@ -1237,7 +1237,7 @@ static void clif_set_unit_idle( struct BlockList* bl, bool walking, send_target 
 	// if disguised, send to self
 	if( disguised( bl ) ){
 #if PACKETVER >= 20091103
-		p.objecttype = pcdb_checkid( status_get_viewdata( bl )->class_ ) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
+		p.objecttype = pcdb_checkid( status_GetViewData( bl )->class_ ) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
 #if PACKETVER >= 20131223
 		p.AID = disguised_bl_id( bl->id );
 #else
@@ -1255,7 +1255,7 @@ static void clif_spawn_unit( BlockList *bl, enum send_target target ){
 
 	map_session_data* sd = BL_CAST( BL_PC, bl );
 	status_change* sc = status_get_sc( bl );
-	struct view_data* vd = status_get_viewdata( bl );
+	struct view_data* vd = status_GetViewData( bl );
 	int g_id = status_get_guild_id( bl );
 
 #if PACKETVER < 20091103
@@ -1359,9 +1359,9 @@ static void clif_spawn_unit( BlockList *bl, enum send_target target ){
 	}
 
 	if( bl->type == BL_MOB ){
-		p.isBoss = ( (mobs::MobData*)bl )->get_bosstype();
+		p.isBoss = ( (mobs::MobData*)bl )->GetBossType();
 	}else if( bl->type == BL_PET ){
-		p.isBoss = ( (pet_data*)bl )->db->get_bosstype();
+		p.isBoss = ( (pet_data*)bl )->db->GetBossType();
 	}else{
 		p.isBoss = BOSSTYPE_NONE;
 	}
@@ -1382,7 +1382,7 @@ static void clif_spawn_unit( BlockList *bl, enum send_target target ){
 		}
 
 #if PACKETVER >= 20091103
-		p.objecttype = pcdb_checkid( status_get_viewdata(bl)->class_ ) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
+		p.objecttype = pcdb_checkid( status_GetViewData(bl)->class_ ) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
 #if PACKETVER >= 20131223
 		p.AID = disguised_bl_id( bl->id );
 #else
@@ -1406,7 +1406,7 @@ static void clif_set_unit_walking( BlockList *bl, map_session_data *tsd, units::
 
 	map_session_data* sd;
 	status_change* sc = status_get_sc( bl );
-	struct view_data* vd = status_get_viewdata( bl );
+	struct view_data* vd = status_GetViewData( bl );
 	struct packet_unit_walking p;
 	int g_id = status_get_guild_id(bl);
 
@@ -1467,9 +1467,9 @@ static void clif_set_unit_walking( BlockList *bl, map_session_data *tsd, units::
 	}
 
 	if( bl->type == BL_MOB ){
-		p.isBoss = ( (mobs::MobData*)bl )->get_bosstype();
+		p.isBoss = ( (mobs::MobData*)bl )->GetBossType();
 	}else if( bl->type == BL_PET ){
-		p.isBoss = ( (pet_data*)bl )->db->get_bosstype();
+		p.isBoss = ( (pet_data*)bl )->db->GetBossType();
 	}else{
 		p.isBoss = BOSSTYPE_NONE;
 	}
@@ -1487,7 +1487,7 @@ static void clif_set_unit_walking( BlockList *bl, map_session_data *tsd, units::
 	// if disguised, send the info to self
 	if( disguised( bl ) ){
 #if PACKETVER >= 20091103
-		p.objecttype = pcdb_checkid( status_get_viewdata(bl)->class_ ) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
+		p.objecttype = pcdb_checkid( status_GetViewData(bl)->class_ ) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
 #if PACKETVER >= 20131223
 		p.AID = disguised_bl_id( bl->id );
 #else
@@ -1505,10 +1505,10 @@ static void clif_set_unit_walking( BlockList *bl, map_session_data *tsd, units::
 static void clif_setdisguise(BlockList *bl, unsigned char *buf,int len)
 {
 #if PACKETVER >= 20091103
-	WBUFB(buf,4)= pcdb_checkid(status_get_viewdata(bl)->class_) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
+	WBUFB(buf,4)= pcdb_checkid(status_GetViewData(bl)->class_) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
 	WBUFL(buf,5)=-bl->id;
 #elif PACKETVER >= 20071106
-	WBUFB(buf,2)= pcdb_checkid(status_get_viewdata(bl)->class_) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
+	WBUFB(buf,2)= pcdb_checkid(status_GetViewData(bl)->class_) ? 0x0 : 0x5; //PC_TYPE : NPC_MOB_TYPE
 	WBUFL(buf,3)=-bl->id;
 #else
 	WBUFL(buf,2)=-bl->id;
@@ -1521,7 +1521,7 @@ static void clif_setdisguise(BlockList *bl, unsigned char *buf,int len)
 /// 01b0 <id>.L <type>.B <value>.L
 /// type:
 ///     unused
-void clif_class_change_target(BlockList *bl,int class_,int type, enum send_target target, map_session_data *sd)
+void clif_ClassChange_target(BlockList *bl,int class_,int type, enum send_target target, map_session_data *sd)
 {
 	nullpo_retv(bl);
 
@@ -1687,7 +1687,7 @@ static inline bool clif_npc_mayapurple(BlockList *bl) {
 int clif_spawn( BlockList *bl, bool walking ){
 	struct view_data *vd;
 
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 	if( !vd || vd->class_ == JT_INVISIBLE )
 		return 0;
 
@@ -2032,7 +2032,7 @@ void clif_move(units::UnitData *ud)
 	struct BlockList* bl = ud->bl;
 	status_change *sc = NULL;
 
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 	if (!vd )
 		return;
 	//This performance check is needed to keep GM-hidden objects from being notified to bots.
@@ -3913,7 +3913,7 @@ void clif_changelook(BlockList *bl, int type, int val) {
 
 	sd = BL_CAST(BL_PC, bl);
 	sc = status_get_sc(bl);
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 
 	if( vd ) //temp hack to let Warp Portal change appearance
 		switch(type) {
@@ -5057,7 +5057,7 @@ void clif_getareachar_unit( map_session_data* sd,BlockList *bl ){
 	bool option = false;
 	unsigned int option_val = 0;
 
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 	if (!vd || vd->class_ == JT_INVISIBLE)
 		return;
 
@@ -5651,7 +5651,7 @@ int clif_outsight(BlockList *bl,va_list ap)
 				clif_clearunit_single(bl->id,CLR_OUTSIGHT,tsd->fd);
 			break;
 		default:
-			if((vd=status_get_viewdata(bl)) && vd->class_ != JT_INVISIBLE)
+			if((vd=status_GetViewData(bl)) && vd->class_ != JT_INVISIBLE)
 				clif_clearunit_single(bl->id,CLR_OUTSIGHT,tsd->fd);
 			break;
 		}
@@ -5660,7 +5660,7 @@ int clif_outsight(BlockList *bl,va_list ap)
 		nullpo_ret(tbl);
 		if(tbl->type == BL_SKILL) //Trap knocked out of sight
 			clif_clearchar_skillunit((struct skill_unit *)tbl,sd->fd);
-		else if(((vd=status_get_viewdata(tbl)) && vd->class_ != JT_INVISIBLE) &&
+		else if(((vd=status_GetViewData(tbl)) && vd->class_ != JT_INVISIBLE) &&
 			!(tbl->type == BL_NPC && (((TBL_NPC*)tbl)->is_invisible)))
 			clif_clearunit_single(tbl->id,CLR_OUTSIGHT,sd->fd);
 	}
@@ -10357,7 +10357,7 @@ void clif_hate_info(map_session_data *sd, unsigned char hate_level,int class_, u
 {
 	if( pcdb_checkid(class_) ) {
 		clif_starskill(sd, job_name(class_), class_, hate_level, type ? 10 : 11);
-	} else if( mobs::mobdb_checkid(class_) ) {
+	} else if( mobs::MobDbCheckId(class_) ) {
 		clif_starskill(sd, mobs::mob_db.find(class_)->jname.c_str(), class_, hate_level, type ? 10 : 11);
 	} else {
 		ShowWarning("clif_hate_info: Received invalid class %d for this packet (char_id=%d, hate_level=%u, type=%u).\n", class_, sd->status.char_id, (unsigned int)hate_level, (unsigned int)type);
@@ -14911,8 +14911,8 @@ void clif_parse_GM_Item_Monster(int fd, map_session_data *sd)
 	}
 
 	// Monster
-	if ((mob_id = mobs::mobdb_searchname(str)) == 0)
-		mob_id = mobs::mobdb_checkid(atoi(str));
+	if ((mob_id = mobs::MobDbSearchName(str)) == 0)
+		mob_id = mobs::MobDbCheckId(atoi(str));
 
 	std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 

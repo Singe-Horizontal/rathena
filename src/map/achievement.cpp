@@ -159,7 +159,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 					return 0;
 				}
 
-				std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname( mob_name.c_str() );
+				std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName( mob_name.c_str() );
 
 				if (mob == nullptr) {
 					this->invalidWarning(targetNode["Mob"], "Target Mob %s does not exist, skipping.\n", mob_name.c_str());

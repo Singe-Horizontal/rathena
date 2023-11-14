@@ -123,7 +123,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(targetNode, "Mob", mob_name))
 					return 0;
 
-				std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(mob_name.c_str());
+				std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName(mob_name.c_str());
 
 				if (!mob) {
 					this->invalidWarning(targetNode["Mob"], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -298,7 +298,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 						std::string mob_name;
 						c4::from_chars(MapMobTargetsIt.key(), &mob_name);
 
-						std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(mob_name.c_str());
+						std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName(mob_name.c_str());
 
 						if (!mob) {
 							this->invalidWarning(MapMobTargetsNode[MapMobTargetsIt.key()], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -350,7 +350,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(dropNode, "Mob", mob_name))
 					return 0;
 
-				std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(mob_name.c_str());
+				std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName(mob_name.c_str());
 
 				if (!mob) {
 					this->invalidWarning(dropNode["Mob"], "Mob %s does not exist, skipping.\n", mob_name.c_str());

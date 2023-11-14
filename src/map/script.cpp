@@ -11109,7 +11109,7 @@ BUILDIN_FUNC(monster)
 	if( script_isstring( st, 6 ) ){
 		const char* name = script_getstr( st, 6 );
 
-		std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname( name );
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_monster: Attempted to spawn_data non-existing monster \"%s\"\n", name );
@@ -11120,7 +11120,7 @@ BUILDIN_FUNC(monster)
 	}else{
 		class_ = script_getnum( st, 6 );
 
-		if( class_ >= 0 && !mobs::mobdb_checkid( class_ ) ){
+		if( class_ >= 0 && !mobs::MobDbCheckId( class_ ) ){
 			ShowWarning( "buildin_monster: Attempted to spawn_data non-existing monster class %d\n", class_ );
 			return SCRIPT_CMD_FAILURE;
 		}
@@ -11157,7 +11157,7 @@ BUILDIN_FUNC(monster)
 	mobs::MobData* md;
 
 	for(i = 0; i < amount; i++) { //not optimised
-		int mobid = mobs::once_spawn(sd, m, x, y, str, class_, 1, event, size, ai);
+		int mobid = mobs::OnceSpawn(sd, m, x, y, str, class_, 1, event, size, ai);
 
 		if (mobid > 0) {
 			md = map_id2md(mobid);
@@ -11179,7 +11179,7 @@ BUILDIN_FUNC(getmobdrops)
 	int class_ = script_getnum(st,2);
 	int i, j = 0;
 
-	if( !mobs::mobdb_checkid(class_) )
+	if( !mobs::MobDbCheckId(class_) )
 	{
 		script_pushint(st, 0);
 		return SCRIPT_CMD_SUCCESS;
@@ -11233,7 +11233,7 @@ BUILDIN_FUNC(areamonster)
 	if( script_isstring( st, 8 ) ){
 		const char* name = script_getstr( st, 8 );
 
-		std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname( name );
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_areamonster: Attempted to spawn_data non-existing monster \"%s\"\n", name );
@@ -11244,7 +11244,7 @@ BUILDIN_FUNC(areamonster)
 	}else{
 		class_ = script_getnum( st, 8 );
 
-		if( class_ >= 0 && !mobs::mobdb_checkid( class_ ) ){
+		if( class_ >= 0 && !mobs::MobDbCheckId( class_ ) ){
 			ShowWarning( "buildin_areamonster: Attempted to spawn_data non-existing monster class %d\n", class_ );
 			return SCRIPT_CMD_FAILURE;
 		}
@@ -11281,7 +11281,7 @@ BUILDIN_FUNC(areamonster)
 	mobs::MobData* md;
 
 	for(i = 0; i < amount; i++) { //not optimised
-		int mobid = mobs::once_spawn_area(sd, m, x0, y0, x1, y1, str, class_, 1, event, size, ai);
+		int mobid = mobs::OnceSpawnArea(sd, m, x0, y0, x1, y1, str, class_, 1, event, size, ai);
 
 		if (mobid > 0) {
 			md = map_id2md(mobid);
@@ -11444,7 +11444,7 @@ BUILDIN_FUNC(clone)
 			master_id = 0;
 	}
 	if (sd) //Return ID of newly crafted clone.
-		script_pushint(st,mobs::clone_spawn(sd, m, x, y, event, master_id, mode, flag, 1000*duration));
+		script_pushint(st,mobs::CloneSpawn(sd, m, x, y, event, master_id, mode, flag, 1000*duration));
 	else //Failed to create clone.
 		script_pushint(st,0);
 
@@ -13646,7 +13646,7 @@ static int buildin_maprespawnguildid_sub_mob(BlockList *bl,va_list ap)
 {
 	mobs::MobData *md=(mobs::MobData *)bl;
 
-	if(!md->guardian_data && md->mob_id != MOBID_EMPERIUM && ( !mobs::is_clone(md->mob_id) || battle_config.guild_maprespawn_clones ))
+	if(!md->guardian_data && md->mob_id != MOBID_EMPERIUM && ( !mobs::IsClone(md->mob_id) || battle_config.guild_maprespawn_clones ))
 		status_kill(bl);
 
 	return 1;
@@ -14147,7 +14147,7 @@ BUILDIN_FUNC(mapwarp)	// Added by RoVeRT
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int buildin_mobcount_sub(BlockList *bl,va_list ap)	// Added by RoVeRT
+static int buildin_mobCount_sub(BlockList *bl,va_list ap)	// Added by RoVeRT
 {
 	char *event=va_arg(ap,char *);
 	mobs::MobData *md = ((mobs::MobData *)bl);
@@ -14182,7 +14182,7 @@ BUILDIN_FUNC(mobcount)	// Added by RoVeRT
 		return SCRIPT_CMD_SUCCESS;
 	}
 
-	script_pushint(st,map_foreachinmap(buildin_mobcount_sub, m, BL_MOB, event));
+	script_pushint(st,map_foreachinmap(buildin_mobCount_sub, m, BL_MOB, event));
 	return SCRIPT_CMD_SUCCESS;
 }
 
@@ -14345,7 +14345,7 @@ BUILDIN_FUNC(strmobinfo)
 	int num=script_getnum(st,2);
 	int class_=script_getnum(st,3);
 
-	if(!mobs::mobdb_checkid(class_))
+	if(!mobs::MobDbCheckId(class_))
 	{
 		if (num < 3) //requested a string
 			script_pushconststr(st,"");
@@ -14404,7 +14404,7 @@ BUILDIN_FUNC(guardian)
 	}
 
 	check_event(st, evt);
-	script_pushint(st, mobs::spawn_guardian(mapname,x,y,str,class_,evt,guardian,has_index));
+	script_pushint(st, mobs::SpawnGuardian(mapname,x,y,str,class_,evt,guardian,has_index));
 	return SCRIPT_CMD_SUCCESS;
 }
 
@@ -14905,7 +14905,7 @@ BUILDIN_FUNC(disguise)
 
 	id = script_getnum(st,2);
 
-	if (mobs::mobdb_checkid(id) || npcdb_checkid(id)) {
+	if (mobs::MobDbCheckId(id) || npcdb_checkid(id)) {
 		pc_disguise(sd, id);
 		script_pushint(st,id);
 	} else
@@ -14966,11 +14966,11 @@ BUILDIN_FUNC(classchange)
 		}
 	}
 	if (target != SELF)
-		clif_class_change(&nd->bl,_class,type);
+		clif_ClassChange(&nd->bl,_class,type);
 	else if (sd == NULL)
 		return SCRIPT_CMD_FAILURE;
 	else
-		clif_class_change_target(&nd->bl,_class,type,target,sd);
+		clif_ClassChange_target(&nd->bl,_class,type,target,sd);
 
 	return SCRIPT_CMD_SUCCESS;
 }
@@ -16345,7 +16345,7 @@ BUILDIN_FUNC(summon)
 
 	clif_skill_poseffect(&sd->bl,AM_CALLHOMUN,1,sd->bl.x,sd->bl.y,tick);
 
-	md = mobs::once_spawn_sub(&sd->bl, sd->bl.m, sd->bl.x, sd->bl.y, str, _class, event, SZ_SMALL, AI_NONE);
+	md = mobs::OnceSpawn_sub(&sd->bl, sd->bl.m, sd->bl.x, sd->bl.y, str, _class, event, SZ_SMALL, AI_NONE);
 	if (md) {
 		md->master_id=sd->bl.id;
 		md->special_state.ai = AI_ATTACK;
@@ -18138,7 +18138,7 @@ BUILDIN_FUNC(addmonsterdrop)
 	std::shared_ptr<mobs::s_mob_db> mob;
 
 	if (script_isstring(st, 2))
-		mob = mobs::mob_db.find(mobs::mobdb_searchname(script_getstr(st, 2)));
+		mob = mobs::mob_db.find(mobs::MobDbSearchName(script_getstr(st, 2)));
 	else
 		mob = mobs::mob_db.find(script_getnum(st, 2));
 
@@ -18211,7 +18211,7 @@ BUILDIN_FUNC(addmonsterdrop)
 	mob->dropitem[c].rate = rate;
 	mob->dropitem[c].steal_protected = steal_protected > 0;
 	mob->dropitem[c].randomopt_group = group;
-	mobs::reload_itemmob_data(); // Reload the mob search data stored in the item_data
+	mobs::ReloadItemMobData(); // Reload the mob search data stored in the item_data
 
 	script_pushint(st, true);
 	return SCRIPT_CMD_SUCCESS;
@@ -18231,7 +18231,7 @@ BUILDIN_FUNC(delmonsterdrop)
 	std::shared_ptr<mobs::s_mob_db> mob;
 
 	if(script_isstring(st, 2))
-		mob = mobs::mob_db.find(mobs::mobdb_searchname(script_getstr(st,2)));
+		mob = mobs::mob_db.find(mobs::MobDbSearchName(script_getstr(st,2)));
 	else
 		mob = mobs::mob_db.find(script_getnum(st,2));
 
@@ -18250,7 +18250,7 @@ BUILDIN_FUNC(delmonsterdrop)
 				mob->dropitem[i].rate = 0;
 				mob->dropitem[i].steal_protected = false;
 				mob->dropitem[i].randomopt_group = 0;
-				mobs::reload_itemmob_data(); // Reload the mob search data stored in the item_data
+				mobs::ReloadItemMobData(); // Reload the mob search data stored in the item_data
 				script_pushint(st,1);
 				return SCRIPT_CMD_SUCCESS;
 			}
@@ -18305,7 +18305,7 @@ BUILDIN_FUNC(getrandmobid)
 		lv = MAX_LEVEL;
 	}
 
-	script_pushint(st, mobs::get_random_id(type, (enum e_random_monster_flags)flag, lv));
+	script_pushint(st, mobs::GetRandomId(type, (enum e_random_monster_flags)flag, lv));
 
 	return SCRIPT_CMD_SUCCESS;
 }
@@ -18322,11 +18322,11 @@ BUILDIN_FUNC(getmonsterinfo)
 	std::shared_ptr<mobs::s_mob_db> mob = nullptr;
 
 	if (script_isstring(st, 2))
-		mob = mobs::mobdb_search_aegisname(script_getstr(st, 2));
+		mob = mobs::MobDbSearchAegisName(script_getstr(st, 2));
 	else {
 		uint16 mob_id = script_getnum(st, 2);
 
-		if (!mobs::is_clone(mob_id)) {
+		if (!mobs::IsClone(mob_id)) {
 			mob = mobs::mob_db.find(mob_id);
 		}
 	}
@@ -19093,7 +19093,7 @@ BUILDIN_FUNC(setunitdata)
 			case UMOB_WEAPON:
 			case UMOB_ROBE:
 			case UMOB_BODY2:
-				md->set_dynamic_viewdata();
+				md->SetDynamicViewData();
 				break;
 		}
 
@@ -19161,7 +19161,7 @@ BUILDIN_FUNC(setunitdata)
 			case UMOB_DMOTION: md->base_status->dmotion = (short)value; calc_status = true; break;
 			case UMOB_TARGETID: {
 				if (value==0) {
-					md->unlock_target(gettick());
+					md->UnlockTarget(gettick());
 					break;
 				}
 				struct BlockList* target = map_id2bl(value);
@@ -19169,7 +19169,7 @@ BUILDIN_FUNC(setunitdata)
 					ShowWarning("buildin_setunitdata: Error in finding target for BL_MOB!\n");
 					return SCRIPT_CMD_FAILURE;
 				}
-				md->resolve_target(target,0);
+				md->ResolveTarget(target,0);
 				break;
 			}
 			case UMOB_ROBE: clif_changelook(bl, LOOK_ROBE, (unsigned short)value); break;
@@ -19683,7 +19683,7 @@ BUILDIN_FUNC(unitwalk)
 		int x = script_getnum(st,3);
 		int y = script_getnum(st,4);
 
-		if (script_pushint(st, units::can_reach_pos(bl,x,y,0))) {
+		if (script_pushint(st, units::CanReachPos(bl,x,y,0))) {
 			if (ud != nullptr)
 				ud->state.force_walk = true;
 			add_timer(gettick()+50, units::delay_walktoxy_timer, bl->id, (x<<16)|(y&0xFFFF)); // Need timer to avoid mismatches
@@ -19695,7 +19695,7 @@ BUILDIN_FUNC(unitwalk)
 			ShowError("buildin_unitwalk: Bad target destination.\n");
 			script_pushint(st, 0);
 			return SCRIPT_CMD_FAILURE;
-		} else if (script_pushint(st, units::can_reach_bl(bl, tbl, distance_bl(bl, tbl)+1, 0, NULL, NULL))) {
+		} else if (script_pushint(st, units::CanReachBl(bl, tbl, distance_bl(bl, tbl)+1, 0, NULL, NULL))) {
 			if (ud != nullptr)
 				ud->state.force_walk = true;
 			add_timer(gettick()+50, units::delay_walktobl_timer, bl->id, tbl->id); // Need timer to avoid mismatches
@@ -19942,7 +19942,7 @@ BUILDIN_FUNC(unitskilluseid)
 			}
 			mobs::MobData* md = map_id2md(bl->id);
 			if (md)
-				md->chat_display_message(static_cast<uint16>(msg_id));
+				md->ChatDisplayMessage(static_cast<uint16>(msg_id));
 		}
 		if (bl->type == BL_NPC) {
 			if (!((TBL_NPC*)bl)->status.hp)
@@ -19997,7 +19997,7 @@ BUILDIN_FUNC(unitskillusepos)
 			}
 			mobs::MobData* md = map_id2md(bl->id);
 			if (md)
-				md->chat_display_message(static_cast<uint16>(msg_id));
+				md->ChatDisplayMessage(static_cast<uint16>(msg_id));
 		}
 		if (bl->type == BL_NPC) {
 			if (!((TBL_NPC*)bl)->status.hp)
@@ -21099,7 +21099,7 @@ BUILDIN_FUNC(bg_monster)
 	class_ = script_getnum(st,7);
 	if( script_hasdata(st,8) ) evt = script_getstr(st,8);
 	check_event(st, evt);
-	script_pushint(st, mobs::spawn_bg(mapname,x,y,str,class_,evt,bg_id));
+	script_pushint(st, mobs::SpawnBg(mapname,x,y,str,class_,evt,bg_id));
 	return SCRIPT_CMD_SUCCESS;
 }
 
@@ -22092,7 +22092,7 @@ BUILDIN_FUNC(areamobuseskill)
 	if( script_isstring( st, 6 ) ){
 		const char* name = script_getstr( st, 6 );
 
-		std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname( name );
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_areamobuseskill: Attempted to use skill of non-existing monster \"%s\"\n", name );
@@ -23322,9 +23322,9 @@ BUILDIN_FUNC(montransform) {
 		return SCRIPT_CMD_FAILURE;
 
 	if( script_isstring(st, 2) )
-		mob_id = mobs::mobdb_searchname(script_getstr(st, 2));
+		mob_id = mobs::MobDbSearchName(script_getstr(st, 2));
 	else
-		mob_id = mobs::mobdb_checkid(script_getnum(st, 2));
+		mob_id = mobs::MobDbCheckId(script_getnum(st, 2));
 
 	tick = script_getnum(st, 3);
 

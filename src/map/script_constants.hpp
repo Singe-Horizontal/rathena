@@ -1231,7 +1231,7 @@
 	export_constant(SC_INCHEALRATE);
 	export_constant(SC_PNEUMA);
 	export_constant(SC_AUTOTRADE);
-	export_constant(SC_KSPROTECTED);
+	export_constant(SC_KsProtected);
 	export_constant(SC_ARMOR_RESIST);
 	export_constant(SC_SPCOST_RATE);
 	export_constant(SC_COMMONSC_RESIST);
@@ -9634,7 +9634,7 @@
 	export_constant(MD_SKILLIMMUNE);
 
 	export_deprecated_constant3("MD_CASTSENSOR_IDLE", MD_CASTSENSORIDLE, "MD_CASTSENSORIDLE");
-	export_deprecated_constant3("MD_NORANDOM_WALK", MD_NORANDOMWALK, "MD_NORANDOMWALK");
+	export_deprecated_constant3("MD_NORandomWalk", MD_NORANDOMWALK, "MD_NORANDOMWALK");
 	export_deprecated_constant3("MD_NOCAST_SKILL", MD_NOCAST, "MD_NOCAST");
 	export_deprecated_constant3("MD_CASTSENSOR_CHASE", MD_CASTSENSORCHASE, "MD_CASTSENSORCHASE");
 	export_deprecated_constant3("MD_CHANGETARGET_MELEE", MD_CHANGETARGETMELEE, "MD_CHANGETARGETMELEE");

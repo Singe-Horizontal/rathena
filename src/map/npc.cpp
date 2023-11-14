@@ -862,7 +862,7 @@ BarterDatabase barter_db;
  * @param class_: NPC class ID
  * @return viewdata or nullptr if the ID is invalid
  */
-struct view_data* npc_get_viewdata(int class_) {
+struct view_data* npc_GetViewData(int class_) {
 	if( class_ == JT_INVISIBLE )
 		return &npc_viewdb[0];
 	if (npcdb_checkid(class_)){
@@ -3739,7 +3739,7 @@ int npc_parseview(const char* w4, const char* start, const char* buffer, const c
 
 		// Check if constant exists and get its value.
 		if(!script_get_constant(viewid, &val_tmp)) {
-			std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(viewid);
+			std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName(viewid);
 			if (mob != nullptr)
 				val = static_cast<int>(mob->id);
 			else {
@@ -5180,7 +5180,7 @@ void npc_parse_mob2(struct SpawnData* mob)
 
 	for( i = mob->active; i < mob->num; ++i )
 	{
-		mobs::MobData* md = mobs::spawn_dataset(mob);
+		mobs::MobData* md = mobs::SpawnDataset(mob);
 		md->spawn_data = mob;
 		md->spawn_data->active++;
 		md->spawn();
@@ -5233,7 +5233,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 	mob_id = strtol(sprite, &pid, 0);
 
 	if (pid != nullptr && *pid != '\0') {
-		std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname(sprite);
+		std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName(sprite);
 
 		if (mob == nullptr) {
 			ShowError("npc_parse_mob: Unknown mob name %s (file '%s', line '%d').\n", sprite, filepath, strline(buffer,start-buffer));
@@ -5241,7 +5241,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 		}
 		mob_id = mob->id;
 	}
-	else if (mobs::mobdb_checkid(mob_id) == 0) {	// check monster ID if exists!
+	else if (mobs::MobDbCheckId(mob_id) == 0) {	// check monster ID if exists!
 		ShowError("npc_parse_mob: Unknown mob ID %d (file '%s', line '%d').\n", mob_id, filepath, strline(buffer,start-buffer));
 		return strchr(start,'\n');// skip and continue
 	}
@@ -5335,7 +5335,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 		safestrncpy(mob.name, mobname, sizeof(mob.name));
 
 	//Verify dataset.
-	if( !mobs::parse_dataset(&mob) )
+	if( !mobs::ParseDataSet(&mob) )
 	{
 		ShowError("npc_parse_mob: Invalid dataset for monster ID %d (file '%s', line '%d').\n", mob_id, filepath, strline(buffer,start-buffer));
 		return strchr(start,'\n');// skip and continue
@@ -5343,7 +5343,7 @@ static const char* npc_parse_mob(char* w1, char* w2, char* w3, char* w4, const c
 
 	//Update mob spawn lookup database
 	mobs::spawn_info spawn_data = { mapdata->index, mob.num };
-	mobs::add_spawn(mob_id, spawn_data);
+	mobs::AddSpawn(mob_id, spawn_data);
 
 	//Now that all has been validated. We allocate the actual memory that the re-spawn data will use.
 	data = (struct SpawnData*)aMalloc(sizeof(struct SpawnData));
@@ -6048,7 +6048,7 @@ int npc_reload(void) {
 	}
 
 	// clear mob spawn lookup index
-	mobs::clear_spawninfo();
+	mobs::ClearSpawnInfo();
 
 	npc_warp = npc_shop = npc_script = 0;
 	npc_mob = npc_cache_mob = npc_delay_mob = 0;

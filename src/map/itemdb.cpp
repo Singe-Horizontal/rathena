@@ -4773,7 +4773,7 @@ void itemdb_reload(void) {
 	itemdb_read();
 	cashshop_reloaddb();
 
-	mobs::reload_itemmob_data();
+	mobs::ReloadItemMobData();
 
 	// readjust itemdb pointer cache for each player
 	iter = mapit_geteachpc();

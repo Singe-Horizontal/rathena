@@ -1508,7 +1508,7 @@ enum npce_event : uint8 {
 	NPCE_MAX
 };
 
-struct view_data* npc_get_viewdata(int class_);
+struct view_data* npc_GetViewData(int class_);
 int npc_chat_sub(BlockList* bl, va_list ap);
 int npc_event_dequeue(map_session_data* sd,bool free_script_stack=true);
 int npc_event_process(map_session_data* sd, const char* eventname, int ontouch);

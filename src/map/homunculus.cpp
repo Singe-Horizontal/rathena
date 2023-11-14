@@ -126,7 +126,7 @@ short hom_skill_get_index(uint16 skill_id) {
 * @param class_ Homunculus class
 * @return vd
 */
-struct view_data* hom_get_viewdata(int class_)
+struct view_data* hom_GetViewData(int class_)
 {	//Returns the viewdata for homunculus
 	if (homdb_checkid(class_))
 		return &hom_viewdb[class_-HM_CLASS_BASE];

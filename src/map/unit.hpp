@@ -143,8 +143,8 @@ int blown(BlockList* bl, int dx, int dy, int count, enum e_skill_blown flag);
 enum e_unit_blown blown_immune(BlockList* bl, uint8 flag);
 
 // Can-reach checks
-bool can_reach_pos(BlockList *bl,int x,int y,int easy);
-bool can_reach_bl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y);
+bool CanReachPos(BlockList *bl,int x,int y,int easy);
+bool CanReachBl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y);
 
 // Unit attack functions
 int stopattack(BlockList *bl, va_list ap);

@@ -45,7 +45,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname( mob_name.c_str() );
+	std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName( mob_name.c_str() );
 
 	if( mob == nullptr ){
 		this->invalidWarning( node["Mob"], "Mob %s does not exist and cannot be used as a pet.\n", mob_name.c_str() );
@@ -412,7 +412,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<mobs::s_mob_db> mob = mobs::mobdb_search_aegisname( target_name.c_str() );
+			std::shared_ptr<mobs::s_mob_db> mob = mobs::MobDbSearchAegisName( target_name.c_str() );
 
 			if( mob == nullptr ){
 				this->invalidWarning( evolutionNode["Target"], "Evolution target %s does not exist.\n", target_name.c_str() );
@@ -1386,7 +1386,7 @@ bool pet_get_egg(uint32 account_id, short pet_class, int pet_id ) {
 }
 
 static int pet_unequipitem(map_session_data *sd, struct pet_data *pd);
-static int pet_ai_sub_hard_lootsearch(BlockList *bl,va_list ap);
+static int pet_AiSubHard_lootsearch(BlockList *bl,va_list ap);
 
 /**
  * Pet menu options.
@@ -1717,7 +1717,7 @@ static int pet_randomwalk(struct pet_data *pd,t_tick tick)
  * @param tick : last support time
  * @return 0
  */
-static int pet_ai_sub_hard(struct pet_data *pd, map_session_data *sd, t_tick tick)
+static int pet_AiSubHard(struct pet_data *pd, map_session_data *sd, t_tick tick)
 {
 	BlockList *target = NULL;
 
@@ -1785,7 +1785,7 @@ static int pet_ai_sub_hard(struct pet_data *pd, map_session_data *sd, t_tick tic
 
 	if(!target && pd->loot && pd->loot->count < pd->loot->max && DIFF_TICK(tick,pd->ud.canact_tick) > 0) {
 		// Use half the pet's range of sight.
-		map_foreachinallrange(pet_ai_sub_hard_lootsearch, &pd->bl, pd->db->range2 / 2, BL_ITEM, pd, &target);
+		map_foreachinallrange(pet_AiSubHard_lootsearch, &pd->bl, pd->db->range2 / 2, BL_ITEM, pd, &target);
 	}
 
 	if (!target) { // Just walk around.
@@ -1852,7 +1852,7 @@ static int pet_ai_sub_foreachclient(map_session_data *sd,va_list ap)
 	t_tick tick = va_arg(ap,t_tick);
 
 	if(sd->status.pet_id && sd->pd)
-		pet_ai_sub_hard(sd->pd,sd,tick);
+		pet_AiSubHard(sd->pd,sd,tick);
 
 	return 0;
 }
@@ -1879,7 +1879,7 @@ static TIMER_FUNC(pet_ai_hard){
  *   target : item
  * @return 1:success, 0:failure
  */
-static int pet_ai_sub_hard_lootsearch(BlockList *bl,va_list ap)
+static int pet_AiSubHard_lootsearch(BlockList *bl,va_list ap)
 {
 	struct pet_data* pd;
 	struct flooritem_data *fitem = (struct flooritem_data *)bl;
@@ -1894,7 +1894,7 @@ static int pet_ai_sub_hard_lootsearch(BlockList *bl,va_list ap)
 	if(sd_charid && sd_charid != pd->master->status.char_id)
 		return 0;
 
-	if(units::can_reach_bl(&pd->bl,bl, pd->db->range2, 1, NULL, NULL) &&
+	if(units::CanReachBl(&pd->bl,bl, pd->db->range2, 1, NULL, NULL) &&
 		((*target) == NULL || //New target closer than previous one.
 		!check_distance_bl(&pd->bl, *target, distance_bl(&pd->bl, bl)))) {
 		(*target) = bl;

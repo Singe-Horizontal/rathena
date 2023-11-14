@@ -31,7 +31,7 @@ using namespace rathena;
 
 ElementalDatabase elemental_db;
 
-struct view_data * elemental_get_viewdata(int class_) {
+struct view_data * elemental_GetViewData(int class_) {
 	std::shared_ptr<s_elemental_db> db = elemental_db.find(class_);
 	if (db == nullptr)
 		return 0;

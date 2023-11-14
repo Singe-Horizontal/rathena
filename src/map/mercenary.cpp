@@ -36,7 +36,7 @@ MercenaryDatabase mercenary_db;
 * @param class_ The Class ID
 * @return View Data of Mercenary
 **/
-struct view_data *mercenary_get_viewdata( uint16 class_ ){
+struct view_data *mercenary_GetViewData( uint16 class_ ){
 	std::shared_ptr<s_mercenary_db> db = mercenary_db.find(class_);
 
 	if( db ){

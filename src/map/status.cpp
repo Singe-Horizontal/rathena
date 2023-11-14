@@ -8904,7 +8904,7 @@ struct status_data *status_get_status_data(BlockList *bl)
 		case BL_HOM:	return &((TBL_HOM*)bl)->battle_status;
 		case BL_MER:	return &((TBL_MER*)bl)->battle_status;
 		case BL_ELEM:	return &((TBL_ELEM*)bl)->battle_status;
-		case BL_NPC:	return ((mobs::mobdb_checkid(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : &dummy_status);
+		case BL_NPC:	return ((mobs::MobDbCheckId(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : &dummy_status);
 		default:
 			return &dummy_status;
 	}
@@ -8925,7 +8925,7 @@ struct status_data *status_get_base_status(BlockList *bl)
 		case BL_HOM:	return &((TBL_HOM*)bl)->base_status;
 		case BL_MER:	return &((TBL_MER*)bl)->base_status;
 		case BL_ELEM:	return &((TBL_ELEM*)bl)->base_status;
-		case BL_NPC:	return ((mobs::mobdb_checkid(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : NULL);
+		case BL_NPC:	return ((mobs::MobDbCheckId(((TBL_NPC*)bl)->class_) == 0) ? &((TBL_NPC*)bl)->status : NULL);
 		default:
 			return NULL;
 	}
@@ -9157,7 +9157,7 @@ int status_isimmune(BlockList *bl)
  * @param bl: Object whose view data to get [PC|MOB|PET|HOM|MER|ELEM|NPC]
  * @return view data structure bl->vd
  */
-struct view_data* status_get_viewdata(BlockList *bl)
+struct view_data* status_GetViewData(BlockList *bl)
 {
 	nullpo_retr(NULL, bl);
 	switch (bl->type) {
@@ -9183,16 +9183,16 @@ void status_set_viewdata(BlockList *bl, int class_)
 {
 	struct view_data* vd;
 	nullpo_retv(bl);
-	if (mobs::mobdb_checkid(class_) || mobs::is_clone(class_))
-		vd = mobs::get_viewdata(class_);
+	if (mobs::MobDbCheckId(class_) || mobs::IsClone(class_))
+		vd = mobs::GetViewData(class_);
 	else if (npcdb_checkid(class_))
-		vd = npc_get_viewdata(class_);
+		vd = npc_GetViewData(class_);
 	else if (homdb_checkid(class_))
-		vd = hom_get_viewdata(class_);
+		vd = hom_GetViewData(class_);
 	else if (mercenary_db.exists(class_))
-		vd = mercenary_get_viewdata(class_);
+		vd = mercenary_GetViewData(class_);
 	else if (elemental_db.exists(class_))
-		vd = elemental_get_viewdata(class_);
+		vd = elemental_GetViewData(class_);
 	else
 		vd = NULL;
 
@@ -9258,11 +9258,11 @@ void status_set_viewdata(BlockList *bl, int class_)
 		{
 			mobs::MobData* md = (mobs::MobData*)bl;
 			if (vd){
-				md->free_dynamic_viewdata();
+				md->FreeDynamicViewData();
 
 				md->vd = vd;
 			}else if( pcdb_checkid( class_ ) ){
-				md->set_dynamic_viewdata();
+				md->SetDynamicViewData();
 
 				md->vd->class_ = class_;
 				md->vd->hair_style = cap_value(md->vd->hair_style, MIN_HAIR_STYLE, MAX_HAIR_STYLE);
@@ -10008,7 +10008,7 @@ int status_change_start(BlockList* src, struct BlockList* bl,enum sc_type type,i
 	int tick = (int)duration;
 
 	sd = BL_CAST(BL_PC, bl);
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 
 	undead_flag = battle_check_undead(status->race,status->def_ele);
 	// Check for immunities / sc fails
@@ -10510,7 +10510,7 @@ int status_change_start(BlockList* src, struct BlockList* bl,enum sc_type type,i
 		}
 	}
 
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 	std::bitset<SCB_MAX> calc_flag = scdb->calc_flag;
 
 	if(!(flag&SCSTART_LOADED)) // &4 - Do not parse val settings when loading SCs
@@ -12203,7 +12203,7 @@ int status_change_start(BlockList* src, struct BlockList* bl,enum sc_type type,i
 			break;
 		case SC_MONSTER_TRANSFORM:
 		case SC_ACTIVE_MONSTER_TRANSFORM:
-			if( !mobs::mobdb_checkid(val1) )
+			if( !mobs::MobDbCheckId(val1) )
 				val1 = MOBID_PORING; // Default poring
 			break;
 #ifndef RENEWAL
@@ -13172,7 +13172,7 @@ int status_change_end(BlockList* bl, enum sc_type type, int tid)
 	if (scdb->flag[SCF_DISPLAYPC] || scdb->flag[SCF_DISPLAYNPC])
 		status_display_remove(bl,type);
 
-	vd = status_get_viewdata(bl);
+	vd = status_GetViewData(bl);
 	std::bitset<SCB_MAX> calc_flag = scdb->calc_flag;
 
 	switch(type) {
@@ -15087,7 +15087,7 @@ static int status_natural_heal(BlockList* bl, va_list args)
 	}
 
 	if(flag&(RGN_SHP|RGN_SSP) && regen->ssregen &&
-		(vd = status_get_viewdata(bl)) && vd->dead_sit == 2)
+		(vd = status_GetViewData(bl)) && vd->dead_sit == 2)
 	{ // Apply sitting regen bonus.
 		sregen = regen->ssregen;
 		if(flag&(RGN_SHP)) { // Sitting HP regen
@@ -15131,7 +15131,7 @@ static int status_natural_heal(BlockList* bl, va_list args)
 
 	if (flag&(RGN_HP|RGN_SP)) {
 		if(!vd)
-			vd = status_get_viewdata(bl);
+			vd = status_GetViewData(bl);
 		if(vd && vd->dead_sit == 2)
 			multi += 1; //This causes the interval to be halved
 		if(regen->state.gc)

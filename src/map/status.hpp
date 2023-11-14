@@ -470,7 +470,7 @@ enum sc_type : int16 {
 	SC_INCHEALRATE = 267,
 	SC_PNEUMA,
 	SC_AUTOTRADE,
-	SC_KSPROTECTED, //270
+	SC_KsProtected, //270
 	SC_ARMOR_RESIST = 271,
 	SC_SPCOST_RATE,
 	SC_COMMONSC_RESIST,
@@ -3400,7 +3400,7 @@ int status_get_guild_id(BlockList *bl);
 int status_get_emblem_id(BlockList *bl);
 std::vector<e_race2> status_get_race2(BlockList *bl);
 
-struct view_data *status_get_viewdata(BlockList *bl);
+struct view_data *status_GetViewData(BlockList *bl);
 void status_set_viewdata(BlockList *bl, int class_);
 void status_change_init(BlockList *bl);
 status_change *status_get_sc(BlockList *bl);

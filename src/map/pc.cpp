@@ -6698,7 +6698,7 @@ bool pc_steal_item(map_session_data *sd,BlockList *bl, uint16 skill_lv)
 	tmp_item.amount = 1;
 	tmp_item.identify = itemdb_isidentified(itemid);
 	if( battle_config.skill_steal_random_options ){
-		mobs::setdropitem_option( &tmp_item, &md->db->dropitem[i] );
+		mobs::SetDropItemOption( &tmp_item, &md->db->dropitem[i] );
 	}
 	flag = pc_additem(sd,&tmp_item,1,LOG_TYPE_PICKDROP_PLAYER);
 
@@ -8024,7 +8024,7 @@ TIMER_FUNC(pc_follow_timer){
 	if (sd->bl.prev != NULL && tbl->prev != NULL &&
 		sd->ud.skilltimer == INVALID_TIMER && sd->ud.attacktimer == INVALID_TIMER && sd->ud.walktimer == INVALID_TIMER)
 	{
-		if((sd->bl.m == tbl->m) && units::can_reach_bl(&sd->bl,tbl, AREA_SIZE, 0, NULL, NULL)) {
+		if((sd->bl.m == tbl->m) && units::CanReachBl(&sd->bl,tbl, AREA_SIZE, 0, NULL, NULL)) {
 			if (!check_distance_bl(&sd->bl, tbl, 5))
 				units::walktobl(&sd->bl, tbl, 5, 0);
 		} else
@@ -9726,7 +9726,7 @@ int pc_dead(map_session_data *sd,BlockList *src)
 		{
 			mobs::MobData *md=(mobs::MobData *)src;
 			if(md->target_id==sd->bl.id)
-				md->unlock_target(tick);
+				md->UnlockTarget(tick);
 			if(battle_config.mobs_level_up && md->status.hp &&
 				(unsigned int)md->level < pc_maxbaselv(sd) &&
 				!md->guardian_data && !md->special_state.ai// Guardians/summons should not level. [Skotlex]
@@ -14434,7 +14434,7 @@ uint8 pc_itemcd_check(map_session_data *sd, struct item_data *id, t_tick tick, u
 * @param sd
 * @param md
 **/
-static void pc_clear_log_damage_sub(uint32 char_id, mobs::MobData *md)
+static void pc_clear_LogDamage_sub(uint32 char_id, mobs::MobData *md)
 {
 	uint8 i;
 	ARR_FIND(0,DAMAGELOG_SIZE,i,md->dmglog[i].id == char_id);
@@ -14489,13 +14489,13 @@ void pc_damage_log_clear(map_session_data *sd, int id)
 				continue;
 
 			if ((md = map_id2md(sd->dmglog[i])))
-				pc_clear_log_damage_sub(sd->status.char_id,md);
+				pc_clear_LogDamage_sub(sd->status.char_id,md);
 			sd->dmglog[i] = 0;
 		}
 	}
 	else {
 		if ((md = map_id2md(id)))
-			pc_clear_log_damage_sub(sd->status.char_id,md);
+			pc_clear_LogDamage_sub(sd->status.char_id,md);
 
 		ARR_FIND(0,DAMAGELOG_SIZE_PC,i,sd->dmglog[i] == id);	// find the id position
 		if (i < DAMAGELOG_SIZE_PC)

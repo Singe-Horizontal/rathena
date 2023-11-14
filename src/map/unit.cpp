@@ -137,7 +137,7 @@ int walktoxy_sub(BlockList *bl)
 	}
 #if PACKETVER >= 20170726
 	// If this is a walking NPC and it will use a player sprite
-	else if( bl->type == BL_NPC && pcdb_checkid( status_get_viewdata( bl )->class_ ) ){
+	else if( bl->type == BL_NPC && pcdb_checkid( status_GetViewData( bl )->class_ ) ){
 		// Respawn the NPC as player unit
 		refresh( bl, true );
 	}
@@ -452,10 +452,10 @@ static TIMER_FUNC(walktoxy_timer)
 		clif_fixpos(bl);
 		//Monsters in this situation first use a chase skill, then unlock target and then use an idle skill
 		if (!(++ud->walk_count%WALK_SKILL_INTERVAL))
-			md->mobskill_use(tick, -1);
-		md->unlock_target(tick);
+			md->MobSkillUse(tick, -1);
+		md->UnlockTarget(tick);
 		if (!(++ud->walk_count%WALK_SKILL_INTERVAL))
-			md->mobskill_use(tick, -1);
+			md->MobSkillUse(tick, -1);
 		return 0;
 	}
 
@@ -477,7 +477,7 @@ static TIMER_FUNC(walktoxy_timer)
 	if (bl->x == ud->to_x && bl->y == ud->to_y) {
 #if PACKETVER >= 20170726
 		// If this was a walking NPC and it used a player sprite
-		if( bl->type == BL_NPC && pcdb_checkid( status_get_viewdata( bl )->class_ ) ){
+		if( bl->type == BL_NPC && pcdb_checkid( status_GetViewData( bl )->class_ ) ){
 			// Respawn the NPC as NPC unit
 			refresh( bl, false );
 		}
@@ -547,7 +547,7 @@ static TIMER_FUNC(walktoxy_timer)
 			if(!ud->state.force_walk && tid != INVALID_TIMER &&
 				!(ud->walk_count%WALK_SKILL_INTERVAL) &&
 				map[bl->m].users > 0 &&
-				md->mobskill_use(tick, -1)) {
+				md->MobSkillUse(tick, -1)) {
 				if (!(ud->skill_id == NPC_SELFDESTRUCTION && ud->skilltimer != INVALID_TIMER)
 					&& ud->skill_id != NPC_EMOTION && ud->skill_id != NPC_EMOTION_ON //NPC_EMOTION doesn't make the monster stop
 					&& md->state.skillstate != MSS_WALK) //Walk skills are supposed to be used while walking
@@ -631,7 +631,7 @@ static TIMER_FUNC(walktoxy_timer)
 			ud->to_x = bl->x;
 			ud->to_y = bl->y;
 
-			if (tbl && bl->type == BL_MOB && ((mobs::MobData*)bl)->warp_chase(tbl))
+			if (tbl && bl->type == BL_MOB && ((mobs::MobData*)bl)->WarpChase(tbl))
 				return 0;
 
 			ud->target_to = 0;
@@ -864,7 +864,7 @@ int walktobl(BlockList *bl, BlockList *tbl, int range, unsigned char flag)
 	if (!status_bl_has_mode(bl,MD_CANMOVE))
 		return 0;
 
-	if (!can_reach_bl(bl, tbl, distance_bl(bl, tbl)+1, flag&1, &ud->to_x, &ud->to_y)) {
+	if (!CanReachBl(bl, tbl, distance_bl(bl, tbl)+1, flag&1, &ud->to_x, &ud->to_y)) {
 		ud->to_x = bl->x;
 		ud->to_y = bl->y;
 		ud->target_to = 0;
@@ -1365,8 +1365,8 @@ int warp(BlockList *bl,short m,short x,short y,clr_type type)
 	clif_spawn(bl);
 	skill_unit_move(bl,gettick(),1);
 
-	if (!battle_config.slave_stick_with_master && bl->type == BL_MOB && mobs::countslave(bl) > 0)
-		mobs::warpslave(bl,MOB_SLAVEDISTANCE);
+	if (!battle_config.slave_stick_with_master && bl->type == BL_MOB && mobs::CountSlave(bl) > 0)
+		mobs::WarpSlave(bl,MOB_SLAVEDISTANCE);
 
 	return 0;
 }
@@ -1740,7 +1740,7 @@ int skilluse_id2(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv
 	if( !target || src->m != target->m || !src->prev || !target->prev )
 		return 0;
 
-	if( battle_config.ksprotection && sd && mobs::ksprotected(src, target) )
+	if( battle_config.ksprotection && sd && mobs::KsProtected(src, target) )
 		return 0;
 
 	// Normally not needed because clif.cpp checks for it, but the at/char/script commands don't! [Skotlex]
@@ -1883,7 +1883,7 @@ int skilluse_id2(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv
 	// (these are supposed to always have the same range as your attack)
 	if( src->type != BL_NPC && !ignore_range && src->id != target_id && (!combo || ud->attacktimer == INVALID_TIMER) ) {
 		if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
-			if( !can_reach_bl(src, target, range + 1, 1, NULL, NULL) )
+			if( !CanReachBl(src, target, range + 1, 1, NULL, NULL) )
 				return 0; // Walk-path check failed.
 		} else if( src->type == BL_MER && skill_id == MA_REMOVETRAP ) {
 			if( !battle_check_range(battle_get_master(src), target, range + 1) )
@@ -2015,7 +2015,7 @@ int skilluse_id2(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv
 	if (sd && target->type == BL_MOB) {
 		mobs::MobData *md = (mobs::MobData*)target;
 
-		md->mobskill_event(src, tick, -1); // Cast targetted skill event.
+		md->MobSkillEvent(src, tick, -1); // Cast targetted skill event.
 
 		if ((status_has_mode(tstatus,MD_CASTSENSORIDLE) || status_has_mode(tstatus,MD_CASTSENSORCHASE)) && battle_check_target(target, src, BCT_ENEMY) > 0 && !ignore_range) {
 			switch (md->state.skillstate) {
@@ -2211,7 +2211,7 @@ int skilluse_pos2( BlockList *src, short skill_x, short skill_y, uint16 skill_id
 
 	if (!ignore_range) {
 		if( skill_get_state(ud->skill_id) == ST_MOVE_ENABLE ) {
-			if( !can_reach_bl(src, &bl, range + 1, 1, NULL, NULL) )
+			if( !CanReachBl(src, &bl, range + 1, 1, NULL, NULL) )
 				return 0; // Walk-path check failed.
 		}else if( !battle_check_range(src, &bl, range) )
 			return 0; // Arrow-path check failed.
@@ -2398,7 +2398,7 @@ int unit_unattackable(BlockList *bl)
 	}
 
 	if(bl->type == BL_MOB)
-		((mobs::MobData*)bl)->unlock_target(gettick());
+		((mobs::MobData*)bl)->UnlockTarget(gettick());
 	else if(bl->type == BL_PET)
 		pet_unlocktarget((struct pet_data*)bl);
 
@@ -2514,7 +2514,7 @@ int cancel_combo(BlockList *bl)
  * @param easy: Easy(1) or Hard(0) path check (hard attempts to go around obstacles)
  * @return true or false
  */
-bool can_reach_pos(BlockList *bl,int x,int y, int easy)
+bool CanReachPos(BlockList *bl,int x,int y, int easy)
 {
 	nullpo_retr(false, bl);
 
@@ -2534,7 +2534,7 @@ bool can_reach_pos(BlockList *bl,int x,int y, int easy)
  * @param y: Pointer storing a valid Y coordinate around tbl that can be reached
  * @return true or false
  */
-bool can_reach_bl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y)
+bool CanReachBl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y)
 {
 	struct walkpath_data wpd;
 	short dx, dy;
@@ -2615,7 +2615,7 @@ int calc_pos(BlockList *bl, int tx, int ty, uint8 dir)
 	x = tx + dx;
 	y = ty + dy;
 
-	if( !can_reach_pos(bl, x, y, 0) ) {
+	if( !CanReachPos(bl, x, y, 0) ) {
 		if( dx > 0 )
 			x--;
 		else if( dx < 0 )
@@ -2626,7 +2626,7 @@ int calc_pos(BlockList *bl, int tx, int ty, uint8 dir)
 		else if( dy < 0 )
 			y++;
 
-		if( !can_reach_pos(bl, x, y, 0) ) {
+		if( !CanReachPos(bl, x, y, 0) ) {
 			int i;
 
 			for( i = 0; i < 12; i++ ) {
@@ -2637,7 +2637,7 @@ int calc_pos(BlockList *bl, int tx, int ty, uint8 dir)
 				x = tx + dx;
 				y = ty + dy;
 
-				if( can_reach_pos(bl, x, y, 0) )
+				if( CanReachPos(bl, x, y, 0) )
 					break;
 				else {
 					if( dx > 0 )
@@ -2650,7 +2650,7 @@ int calc_pos(BlockList *bl, int tx, int ty, uint8 dir)
 					else if( dy < 0 )
 						y++;
 
-					if( can_reach_pos(bl, x, y, 0) )
+					if( CanReachPos(bl, x, y, 0) )
 						break;
 				}
 			}
@@ -2658,7 +2658,7 @@ int calc_pos(BlockList *bl, int tx, int ty, uint8 dir)
 			if( i == 12 ) {
 				x = tx; y = tx; // Exactly Master Position
 
-				if( !can_reach_pos(bl, x, y, 0) )
+				if( !CanReachPos(bl, x, y, 0) )
 					return 1;
 			}
 		}
@@ -2711,7 +2711,7 @@ static int attack_timer_sub(BlockList* src, int tid, t_tick tick)
 		return 0; // Can't attack under these conditions
 
 	if( src->m != target->m ) {
-		if( src->type == BL_MOB && ((mobs::MobData*)src)->warp_chase(target))
+		if( src->type == BL_MOB && ((mobs::MobData*)src)->WarpChase(target))
 			return 1; // Follow up.
 
 		return 0;
@@ -2784,7 +2784,7 @@ static int attack_timer_sub(BlockList* src, int tid, t_tick tick)
 		if(md) {
 			//First attack is always a normal attack
 			if(md->state.skillstate == MSS_ANGRY || md->state.skillstate == MSS_BERSERK) {
-				if (md->mobskill_use(tick,-1))
+				if (md->MobSkillUse(tick,-1))
 					return 1;
 			}
 			// Set mob's ANGRY/BERSERK states.
@@ -2793,7 +2793,7 @@ static int attack_timer_sub(BlockList* src, int tid, t_tick tick)
 			if (status_has_mode(sstatus,MD_ASSIST) && DIFF_TICK(tick, md->last_linktime) >= MIN_MOBLINKTIME) { 
 				// Link monsters nearby [Skotlex]
 				md->last_linktime = tick;
-				map_foreachinrange(mobs::linksearch, src, md->db->range2, BL_MOB, md->mob_id, target, tick);
+				map_foreachinrange(mobs::LinkSearch, src, md->db->range2, BL_MOB, md->mob_id, target, tick);
 			}
 		}
 
@@ -3513,7 +3513,7 @@ int free(BlockList *bl, clr_type clrtype)
 		case BL_MOB: {
 			mobs::MobData *md = (mobs::MobData*)bl;
 
-			md->free_dynamic_viewdata();
+			md->FreeDynamicViewData();
 
 			if( md->spawn_timer != INVALID_TIMER ) {
 				delete_timer(md->spawn_timer,mobs::mob_delayspawn);
@@ -3567,11 +3567,11 @@ int free(BlockList *bl, clr_type clrtype)
 			skill_clear_unitgroup(bl);
 			status_change_clear(bl,1);
 
-			if( mobs::is_clone(md->mob_id) )
-				md->clone_delete();
+			if( mobs::IsClone(md->mob_id) )
+				md->CloneDelete();
 
 			if( md->tomb_nid )
-				md->mvptomb_destroy();
+				md->MvpTombDestroy();
 			md->~MobData();
 			break;
 		}

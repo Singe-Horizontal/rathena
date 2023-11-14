@@ -732,9 +732,9 @@ void clif_storageclose(map_session_data* sd);
 int clif_insight(BlockList *bl,va_list ap);	// map_forallinmovearea callback
 int clif_outsight(BlockList *bl,va_list ap);	// map_forallinmovearea callback
 
-void clif_class_change_target(BlockList *bl,int class_, int type, enum send_target target, map_session_data *sd);
-#define clif_class_change(bl, class_, type) clif_class_change_target(bl, class_, type, AREA, NULL)
-#define clif_mob_class_change(md, class_) clif_class_change(&md->bl, class_, 1)
+void clif_ClassChange_target(BlockList *bl,int class_, int type, enum send_target target, map_session_data *sd);
+#define clif_ClassChange(bl, class_, type) clif_ClassChange_target(bl, class_, type, AREA, NULL)
+#define clif_mob_ClassChange(md, class_) clif_ClassChange(&md->bl, class_, 1)
 
 void clif_skillinfoblock(map_session_data *sd);
 void clif_skillup(map_session_data *sd, uint16 skill_id, int lv, int range, int upgradable);

@@ -105,7 +105,7 @@ public:
 
 extern ElementalDatabase elemental_db;
 
-struct view_data * elemental_get_viewdata(int class_);
+struct view_data * elemental_GetViewData(int class_);
 
 int elemental_create(map_session_data *sd, int class_, unsigned int lifetime);
 int elemental_data_received(s_elemental *ele, bool flag);

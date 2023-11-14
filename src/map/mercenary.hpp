@@ -57,7 +57,7 @@ struct s_mercenary_data {
 	unsigned devotion_flag : 1;
 };
 
-struct view_data * mercenary_get_viewdata(uint16 class_);
+struct view_data * mercenary_GetViewData(uint16 class_);
 
 class MercenaryDatabase : public TypesafeYamlDatabase<int32, s_mercenary_db> {
 public:

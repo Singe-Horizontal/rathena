@@ -206,7 +206,7 @@ extern HomunculusDatabase homunculus_db;
 // merc_is_hom_alive(struct homun_data *)
 #define hom_is_active(x) ((x) && (x)->homunculus.vaporize == HOM_ST_ACTIVE && (x)->battle_status.hp > 0)
 int hom_recv_data(uint32 account_id, struct s_homunculus *sh, int flag); //albator
-struct view_data* hom_get_viewdata(int class_);
+struct view_data* hom_GetViewData(int class_);
 int hom_class2mapid(int hom_class);
 enum homun_type hom_class2type(int class_);
 void hom_damage(struct homun_data *hd);

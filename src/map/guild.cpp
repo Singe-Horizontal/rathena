@@ -2301,7 +2301,7 @@ int guild_castledatasave(int castle_id, int index, int value) {
 		for (i = 0; i < MAX_GUARDIANS; i++){
 			mobs::MobData *gd;
 			if (gc->guardian[i].visible && (gd = map_id2md(gc->guardian[i].id)) != NULL)
-				gd->guardian_guild_change();
+				gd->GuardianGuildChange();
 		}
 		break;
 	}

@@ -286,9 +286,9 @@ void battle_damage(BlockList *src, BlockList *target, int64 damage, t_tick delay
 			// Trigger monster skill condition for non-skill attacks.
 			if (!status_isdead(target) && src != target) {
 				if (damage > 0)
-					md->mobskill_event(src, tick, attack_type, damage);
+					md->MobSkillEvent(src, tick, attack_type, damage);
 				if (skill_id > 0)
-					md->mobskill_event(src, tick, MSC_SKILLUSED | (skill_id << 16));
+					md->MobSkillEvent(src, tick, MSC_SKILLUSED | (skill_id << 16));
 			}
 
 			// Monsters differentiate whether they have been attacked by a skill or a normal attack
@@ -1511,7 +1511,7 @@ int64 battle_calc_damage(BlockList *src,BlockList *bl,struct Damage *d,int64 dam
 
 	if( !damage )
 		return 0;
-	if( battle_config.ksprotection && mobs::ksprotected(src, bl) )
+	if( battle_config.ksprotection && mobs::KsProtected(src, bl) )
 		return 0;
 
 	if( map_getcell(bl->m, bl->x, bl->y, CELL_CHKMAELSTROM) && skill_id && skill_get_type(skill_id) != BF_MISC
@@ -2043,7 +2043,7 @@ bool battle_can_hit_gvg_target(BlockList *src,BlockList *bl,uint16 skill_id,int 
 	if(md && (md->guardian_data || md->special_state.ai == AI_GUILD)) {
 		if ((status_bl_has_mode(bl,MD_SKILLIMMUNE) || (class_ == MOBID_EMPERIUM && !skill_get_inf2(skill_id, INF2_TARGETEMPERIUM))) && flag&BF_SKILL) //Skill immunity.
 			return false;
-		if( src->type != BL_MOB || mobs::is_clone( ((mobs::MobData*)src)->mob_id ) ){
+		if( src->type != BL_MOB || mobs::IsClone( ((mobs::MobData*)src)->mob_id ) ){
 			auto g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild_search(status_get_guild_id(src));
 
 			if (class_ == MOBID_EMPERIUM && (!g || guild_checkskill(g->guild, GD_APPROVAL) <= 0 ))

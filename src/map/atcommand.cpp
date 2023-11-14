@@ -2239,8 +2239,8 @@ ACMD_FUNC(monster)
 		return -1;
 	}
 
-	if ((mob_id = mobs::mobdb_searchname(monster)) == 0) // check name first (to avoid possible name begining by a number)
-		mob_id = mobs::mobdb_checkid(atoi(monster));
+	if ((mob_id = mobs::MobDbSearchName(monster)) == 0) // check name first (to avoid possible name begining by a number)
+		mob_id = mobs::MobDbCheckId(atoi(monster));
 
 	if (mob_id == 0) {
 		clif_displaymessage(fd, msg_txt(sd,40)); // Invalid monster ID or name.
@@ -2279,7 +2279,7 @@ ACMD_FUNC(monster)
 	for (i = 0; i < number; i++) {
 		int k;
 		map_search_freecell(&sd->bl, 0, &mx,  &my, range, range, 0);
-		k = mobs::once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE);
+		k = mobs::OnceSpawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE);
 		if(k) {
 			//mapreg_setreg(reference_uid(add_str("$@mobid"), i),k); //retain created mobid in array uncomment if needed
 			count ++;
@@ -3099,7 +3099,7 @@ ACMD_FUNC(makeegg) {
 
 
 	// for monster name
-	if ((id = mobs::mobdb_searchname(message)) != 0)
+	if ((id = mobs::MobDbSearchName(message)) != 0)
 		;
 	else
 		id = atoi(message);
@@ -5428,10 +5428,10 @@ ACMD_FUNC(disguise)
 
 	if ((id = atoi(message)) > 0)
 	{	//Acquired an ID
-		if (!mobs::mobdb_checkid(id) && !npcdb_checkid(id))
+		if (!mobs::MobDbCheckId(id) && !npcdb_checkid(id))
 			id = 0; //Invalid id for either mobs or npcs.
 	}	else	{ //Acquired a Name
-		if ((id = mobs::mobdb_searchname(message)) == 0)
+		if ((id = mobs::MobDbSearchName(message)) == 0)
 		{
 			struct npc_data* nd = npc_name2id(message);
 			if (nd != NULL)
@@ -5477,10 +5477,10 @@ ACMD_FUNC(disguiseall)
 		return -1;
 	}
 
-	if ((mob_id = mobs::mobdb_searchname(message)) == 0) // check name first (to avoid possible name beginning by a number)
+	if ((mob_id = mobs::MobDbSearchName(message)) == 0) // check name first (to avoid possible name beginning by a number)
 		mob_id = atoi(message);
 
-	if (!mobs::mobdb_checkid(mob_id) && !npcdb_checkid(mob_id)) { //if mob or npc...
+	if (!mobs::MobDbCheckId(mob_id) && !npcdb_checkid(mob_id)) { //if mob or npc...
 		clif_displaymessage(fd, msg_txt(sd,123)); // Monster/NPC name/id not found.
 		return -1;
 	}
@@ -5511,10 +5511,10 @@ ACMD_FUNC(disguiseguild)
 	}
 
 	if( (id = atoi(monster)) > 0 ) {
-		if( !mobs::mobdb_checkid(id) && !npcdb_checkid(id) )
+		if( !mobs::MobDbCheckId(id) && !npcdb_checkid(id) )
 			id = 0;
 	} else {
-		if( (id = mobs::mobdb_searchname(monster)) == 0 ) {
+		if( (id = mobs::MobDbSearchName(monster)) == 0 ) {
 			struct npc_data* nd = npc_name2id(monster);
 			if( nd != NULL )
 				id = nd->class_;
@@ -7042,11 +7042,11 @@ ACMD_FUNC(mobsearch)
 	int mob_id = strtol(mob_name, nullptr, 10);
 
 	if (mob_id == 0)
-		 mob_id = mobs::mobdb_searchname(mob_name);
+		 mob_id = mobs::MobDbSearchName(mob_name);
 
 	std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 
-	if (mob == nullptr || mobs::mobdb_checkid(mob_id) == 0) {
+	if (mob == nullptr || mobs::MobDbCheckId(mob_id) == 0) {
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1219),mob_name); // Invalid mob ID %s!
 		clif_displaymessage(fd, atcmd_output);
 		return -1;
@@ -7306,14 +7306,14 @@ ACMD_FUNC(summon)
 		duration =60;
 
 	if ((mob_id = atoi(name)) == 0)
-		mob_id = mobs::mobdb_searchname(name);
-	if(mob_id == 0 || mobs::mobdb_checkid(mob_id) == 0)
+		mob_id = mobs::MobDbSearchName(name);
+	if(mob_id == 0 || mobs::MobDbCheckId(mob_id) == 0)
 	{
 		clif_displaymessage(fd, msg_txt(sd,40));	// Invalid monster ID or name.
 		return -1;
 	}
 
-	md = mobs::once_spawn_sub(&sd->bl, sd->bl.m, -1, -1, "--ja--", mob_id, "", SZ_SMALL, AI_NONE);
+	md = mobs::OnceSpawn_sub(&sd->bl, sd->bl.m, -1, -1, "--ja--", mob_id, "", SZ_SMALL, AI_NONE);
 
 	if(!md)
 		return -1;
@@ -7695,12 +7695,12 @@ ACMD_FUNC(mobinfo)
 	}
 
 	// If monster identifier/name argument is a name
-	if ((i = mobs::mobdb_checkid(strtoul(message, nullptr, 10))))
+	if ((i = mobs::MobDbCheckId(strtoul(message, nullptr, 10))))
 	{
 		mob_ids[0] = i;
 		count = 1;
 	} else
-		count = mobs::mobdb_searchname_array(message, mob_ids, MAX_SEARCH);
+		count = mobs::MobDbSearchNameArray(message, mob_ids, MAX_SEARCH);
 
 	if (!count) {
 		clif_displaymessage(fd, msg_txt(sd,40)); // Invalid monster ID or name.
@@ -7734,7 +7734,7 @@ ACMD_FUNC(mobinfo)
 		}
 #endif
 		// stats
-		if( mob->get_bosstype() == BOSSTYPE_MVP )
+		if( mob->GetBossType() == BOSSTYPE_MVP )
 			sprintf(atcmd_output, msg_txt(sd,1240), mob->name.c_str(), mob->jname.c_str(), mob->sprite.c_str(), mob->id); // MVP Monster: '%s'/'%s'/'%s' (%d)
 		else
 			sprintf(atcmd_output, msg_txt(sd,1241), mob->name.c_str(), mob->jname.c_str(), mob->sprite.c_str(), mob->id); // Monster: '%s'/'%s'/'%s' (%d)
@@ -7776,7 +7776,7 @@ ACMD_FUNC(mobinfo)
 			if (id == nullptr)
 				continue;
 
-			int droprate = mobs::getdroprate( &sd->bl, mob, mob->dropitem[i].rate, drop_modifier );
+			int droprate = mobs::GetDropRate( &sd->bl, mob, mob->dropitem[i].rate, drop_modifier );
 
 			sprintf(atcmd_output2, " - %s  %02.02f%%", item_db.create_item_link( id ).c_str(), (float)droprate / 100);
 			strcat(atcmd_output, atcmd_output2);
@@ -7790,7 +7790,7 @@ ACMD_FUNC(mobinfo)
 		else if (j % 3 != 0)
 			clif_displaymessage(fd, atcmd_output);
 		// mvp
-		if( mob->get_bosstype() == BOSSTYPE_MVP ){
+		if( mob->GetBossType() == BOSSTYPE_MVP ){
 			float mvppercent, mvpremain;
 			sprintf(atcmd_output, msg_txt(sd,1247), mob->mexp); //  MVP Bonus EXP:%llu
 			clif_displaymessage(fd, atcmd_output);
@@ -7848,11 +7848,11 @@ ACMD_FUNC(showmobs)
 		return -1;
 
 	if((mob_id = strtol(mob_name, nullptr, 10)) == 0)
-		mob_id = mobs::mobdb_searchname(mob_name);
+		mob_id = mobs::MobDbSearchName(mob_name);
 
 	std::shared_ptr<mobs::s_mob_db> mob = mobs::mob_db.find(mob_id);
 
-	if (mob == nullptr || mobs::mobdb_checkid(mob_id) == 0) {
+	if (mob == nullptr || mobs::MobDbCheckId(mob_id) == 0) {
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1250),mob_name); // Invalid mob id %s!
 		clif_displaymessage(fd, atcmd_output);
 		return 0;
@@ -8352,13 +8352,13 @@ ACMD_FUNC(whereis)
 	}
 	
 	int i_message = atoi(message);
-	if (mobs::mobdb_checkid(i_message)) {
+	if (mobs::MobDbCheckId(i_message)) {
 		// ID given
 		mob_ids[0] = i_message;
 		count = 1;
 	} else {
 		// Name given, get all monster associated whith this name
-		count = mobs::mobdb_searchname_array(message, mob_ids, MAX_SEARCH);
+		count = mobs::MobDbSearchNameArray(message, mob_ids, MAX_SEARCH);
 	}
 	
 	if (count <= 0) {
@@ -8380,7 +8380,7 @@ ACMD_FUNC(whereis)
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1289), mob->jname.c_str()); // %s spawns in:
 		clif_displaymessage(fd, atcmd_output);
 		
-		const std::vector<mobs::spawn_info> spawns = mobs::get_spawns(mob_id);
+		const std::vector<mobs::spawn_info> spawns = mobs::GetSpawns(mob_id);
 		if (spawns.size() <= 0) {
 			 // This monster does not spawn normally.
 			clif_displaymessage(fd, msg_txt(sd,1290));
@@ -9070,7 +9070,7 @@ ACMD_FUNC(clone)
 		}
 		master = sd->bl.id;
 		if (battle_config.atc_slave_clone_limit
-			&& mobs::countslave(&sd->bl) >= battle_config.atc_slave_clone_limit) {
+			&& mobs::CountSlave(&sd->bl) >= battle_config.atc_slave_clone_limit) {
 			clif_displaymessage(fd, msg_txt(sd,127));	// You've reached your slave clones limit.
 			return 0;
 		}
@@ -9086,7 +9086,7 @@ ACMD_FUNC(clone)
 		y = sd->bl.y;
 	}
 
-	if((x = mobs::clone_spawn(pl_sd, sd->bl.m, x, y, "", master, MD_NONE, flag?1:0, 0)) > 0) {
+	if((x = mobs::CloneSpawn(pl_sd, sd->bl.m, x, y, "", master, MD_NONE, flag?1:0, 0)) > 0) {
 		clif_displaymessage(fd, msg_txt(sd,128+flag*2));	// Evil Clone spawned. Clone spawned. Slave clone spawned.
 		return 0;
 	}
