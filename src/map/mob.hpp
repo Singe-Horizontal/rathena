@@ -364,7 +364,7 @@ extern MapDropDatabase map_drop_db;
 
 class MobData {
 public:
-	struct block_list bl;
+	BlockList bl;
 	units::UnitData ud;
 	struct view_data *vd;
 	bool vd_changed;
@@ -436,20 +436,20 @@ public:
 	int guardian_guild_change(); //Change Guardian's ownership. [Skotlex]
 
 	int set_delay_spawn();
-	void log_damage(struct block_list* src, int damage);
-	void damage(struct block_list* src, int damage);
-	int dead(block_list* src, int type);
+	void log_damage(BlockList* src, int damage);
+	void damage(BlockList* src, int damage);
+	int dead(BlockList* src, int type);
 	void revive(unsigned int hp);
 	void heal(unsigned int heal);
 	int spawn();
 
 	int random_walk(t_tick tick);
-	int warp_chase(block_list* target);
-	int resolve_target(block_list* bl, int dist);
+	int warp_chase(BlockList* target);
+	int resolve_target(BlockList* bl, int dist);
 	int unlock_target(t_tick tick);
 	bool chat_display_message(uint16 msg_id);
 	int mobskill_use(t_tick tick, int event, int64 damage = 0);
-	int mobskill_event(block_list* src, t_tick tick, int flag, int64 damage = 0);
+	int mobskill_event(BlockList* src, t_tick tick, int flag, int64 damage = 0);
 	int slave_summon(int* value, int amount, uint16 skill_id);
 
 	void mvptomb_create(char *killer, time_t time);
@@ -461,7 +461,7 @@ public:
 	void clean_spotted();
 	bool is_spotted();
 	void add_spotted(uint32 char_id);
-	int can_reach(block_list *bl,int range);
+	int can_reach(BlockList *bl,int range);
 	int ai_sub_hard_slavemob(t_tick tick);
 	bool ai_sub_hard(t_tick tick);
 	int clone_delete();
@@ -469,10 +469,10 @@ public:
 	static int ai_sub_lazy(MobData*md, va_list args);
 
 private:
-	block_list* getfriendhprate(int64 min_rate, int64 max_rate);
+	BlockList* getfriendhprate(int64 min_rate, int64 max_rate);
 	MobData* getfriendstatus(int64 cond1,int64 cond2);
-	block_list* getmasterhpltmaxrate(int64 rate);
-	int can_changetarget(struct block_list* target, int mode);
+	BlockList* getmasterhpltmaxrate(int64 rate);
+	int can_changetarget(BlockList* target, int mode);
 
 };
 
@@ -528,7 +528,7 @@ int mobdb_checkid(const int id);
 struct view_data* get_viewdata(int mob_id);
 
 
-MobData* once_spawn_sub(struct block_list *bl, int16 m, int16 x, int16 y, const char *mobname, int mob_id, const char *event, unsigned int size, enum mob_ai ai);
+MobData* once_spawn_sub(BlockList *bl, int16 m, int16 x, int16 y, const char *mobname, int mob_id, const char *event, unsigned int size, enum mob_ai ai);
 
 int once_spawn(map_session_data* sd, int16 m, int16 x, int16 y,
 	const char* mobname, int mob_id, int amount, const char* event, unsigned int size, enum mob_ai ai);
@@ -536,7 +536,7 @@ int once_spawn(map_session_data* sd, int16 m, int16 x, int16 y,
 int once_spawn_area(map_session_data* sd, int16 m,
 	int16 x0, int16 y0, int16 x1, int16 y1, const char* mobname, int mob_id, int amount, const char* event, unsigned int size, enum mob_ai ai);
 
-bool ksprotected (struct block_list *src, struct block_list *target);
+bool ksprotected (BlockList *src, BlockList *target);
 
 int spawn_guardian(const char* mapname, int16 x, int16 y, const char* mobname, int mob_id, const char* event, int guardian, bool has_index);	// Spawning Guardians [Valaris]
 int spawn_bg(const char* mapname, int16 x, int16 y, const char* mobname, int mob_id, const char* event, unsigned int bg_id);
@@ -553,11 +553,11 @@ TIMER_FUNC(mob_timer_delete);
 
 int random_class (int *value, size_t count);
 int get_random_id(int type, enum e_random_monster_flags flag, int lv);
-int warpslave(struct block_list *bl, int range);
-int linksearch(struct block_list *bl,va_list ap);
+int warpslave(BlockList *bl, int range);
+int linksearch(BlockList *bl,va_list ap);
 
-int countslave(struct block_list *bl);
-int count_sub(struct block_list *bl, va_list ap);
+int countslave(BlockList *bl);
+int count_sub(BlockList *bl, va_list ap);
 
 int is_clone(int mob_id);
 
@@ -569,7 +569,7 @@ void add_spawn(uint16 mob_id, const struct spawn_info& new_spawn);
 const std::vector<spawn_info> get_spawns(uint16 mob_id);
 bool has_spawn(uint16 mob_id);
 
-int getdroprate(block_list *src, std::shared_ptr<s_mob_db> mob, int base_rate, int drop_modifier, MobData* md = nullptr);
+int getdroprate(BlockList *src, std::shared_ptr<s_mob_db> mob, int base_rate, int drop_modifier, MobData* md = nullptr);
 
 // MvP Tomb System
 int mvptomb_setdelayspawn(struct npc_data *nd);

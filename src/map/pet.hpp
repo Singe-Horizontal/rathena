@@ -181,7 +181,7 @@ struct s_pet_autobonus_wrapper {
 extern std::unordered_map<std::string, std::shared_ptr<s_pet_autobonus_wrapper>> pet_autobonuses;
 
 struct pet_data {
-	struct block_list bl;
+	BlockList bl;
 	units::UnitData ud;
 	struct view_data vd;
 	struct s_pet pet;
@@ -226,7 +226,7 @@ struct pet_data {
 bool pet_create_egg(map_session_data *sd, t_itemid item_id);
 int pet_hungry_val(struct pet_data *pd);
 void pet_set_intimate(struct pet_data *pd, int value);
-int pet_target_check(struct pet_data *pd,struct block_list *bl,int type);
+int pet_target_check(struct pet_data *pd,BlockList *bl,int type);
 void pet_unlocktarget(struct pet_data *pd);
 int pet_sc_check(map_session_data *sd, int type); //Skotlex
 std::shared_ptr<s_pet_db> pet_db_search(int key, enum e_pet_itemtype type);

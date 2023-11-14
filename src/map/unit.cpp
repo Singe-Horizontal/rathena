@@ -57,7 +57,7 @@ namespace units{
 //early declaration
 static TIMER_FUNC(attack_timer);
 static TIMER_FUNC(walktoxy_timer);
-int unit_unattackable(struct block_list *bl);
+int unit_unattackable(BlockList *bl);
 
 /**
  * Get the UnitData related to the bl
@@ -65,7 +65,7 @@ int unit_unattackable(struct block_list *bl);
  *	valid type are : BL_PC|BL_MOB|BL_PET|BL_NPC|BL_HOM|BL_MER|BL_ELEM
  * @return UnitData of bl or NULL
  */
-struct UnitData* bl2ud(struct block_list *bl)
+struct UnitData* bl2ud(BlockList *bl)
 {
 	if( bl == NULL) return NULL;
 	switch(bl->type){
@@ -85,7 +85,7 @@ struct UnitData* bl2ud(struct block_list *bl)
  * @param bl: Unit to walk [ALL]
  * @return 1: Success 0: Fail
  */
-int walktoxy_sub(struct block_list *bl)
+int walktoxy_sub(BlockList *bl)
 {
 	nullpo_retr(1, bl);
 
@@ -166,7 +166,7 @@ int walktoxy_sub(struct block_list *bl)
  * @param bl: char to get his master [HOM|ELEM|PET|MER]
  * @return map_session_data of master or NULL
  */
-TBL_PC* unit_get_master(struct block_list *bl)
+TBL_PC* unit_get_master(BlockList *bl)
 {
 	if(bl)
 		switch(bl->type) {
@@ -183,7 +183,7 @@ TBL_PC* unit_get_master(struct block_list *bl)
  * @param bl: char to get his master's teleport timer [HOM|ELEM|PET|MER]
  * @return timer or NULL
  */
-int* unit_get_masterteleport_timer(struct block_list *bl)
+int* unit_get_masterteleport_timer(BlockList *bl)
 {
 	if(bl)
 		switch(bl->type) {
@@ -205,7 +205,7 @@ int* unit_get_masterteleport_timer(struct block_list *bl)
  * @return 0
  */
 TIMER_FUNC(teleport_timer){
-	struct block_list *bl = map_id2bl(id);
+	BlockList *bl = map_id2bl(id);
 	int *mast_tid = unit_get_masterteleport_timer(bl);
 
 	if(tid == INVALID_TIMER || mast_tid == NULL)
@@ -229,7 +229,7 @@ TIMER_FUNC(teleport_timer){
  * @param sbl: Object with a master [MOB|PET|HOM|MER|ELEM]
  * @return 0
  */
-int unit_check_start_teleport_timer(struct block_list *sbl)
+int unit_check_start_teleport_timer(BlockList *sbl)
 {
 	TBL_PC *msd = NULL;
 	int max_dist = 0;
@@ -278,7 +278,7 @@ int unit_check_start_teleport_timer(struct block_list *sbl)
  * @return 1: Success 0: Fail (No valid bl)
  */
 TIMER_FUNC(step_timer){
-	struct block_list *bl;
+	BlockList *bl;
 	struct UnitData *ud;
 	int target_id;
 
@@ -320,7 +320,7 @@ TIMER_FUNC(step_timer){
 		skilluse_pos(bl, target_id%md->xs, target_id/md->xs, ud->stepskill_id, ud->stepskill_lv);
 	} else {
 		//If a player has target_id set and target is in range, attempt attack
-		struct block_list *tbl = map_id2bl(target_id);
+		BlockList *tbl = map_id2bl(target_id);
 		if (!tbl || !status_check_visibility(bl, tbl)) {
 			return 0;
 		}
@@ -336,7 +336,7 @@ TIMER_FUNC(step_timer){
 	return 1;
 }
 
-int walktoxy_ontouch(struct block_list *bl, va_list ap)
+int walktoxy_ontouch(BlockList *bl, va_list ap)
 {
 	struct npc_data *nd;
 
@@ -382,7 +382,7 @@ int walktoxy_ontouch(struct block_list *bl, va_list ap)
  */
 static TIMER_FUNC(walktoxy_timer)
 {
-	block_list *bl = map_id2bl(id);
+	BlockList *bl = map_id2bl(id);
 
 	if(bl == nullptr)
 		return 0;
@@ -400,7 +400,7 @@ static TIMER_FUNC(walktoxy_timer)
 	ud->walktimer = INVALID_TIMER;
 
 	if (bl->prev == nullptr)
-		return 0; // Stop moved because it is missing from the block_list
+		return 0; // Stop moved because it is missing from the BlockList
 
 	if(ud->walkpath.path_pos>=ud->walkpath.path_len)
 		return 0;
@@ -626,7 +626,7 @@ static TIMER_FUNC(walktoxy_timer)
 			ud->state.running = 0;
 	} else if (!ud->stepaction && ud->target_to) {
 		// Update target trajectory.
-		struct block_list *tbl = map_id2bl(ud->target_to);
+		BlockList *tbl = map_id2bl(ud->target_to);
 		if (!tbl || !status_check_visibility(bl, tbl)) { // Cancel chase.
 			ud->to_x = bl->x;
 			ud->to_y = bl->y;
@@ -681,7 +681,7 @@ static TIMER_FUNC(walktoxy_timer)
  * @return 1: Success 0: Fail (No valid bl)
  */
 TIMER_FUNC(delay_walktoxy_timer){
-	struct block_list *bl = map_id2bl(id);
+	BlockList *bl = map_id2bl(id);
 
 	if (!bl || bl->prev == NULL)
 		return 0;
@@ -700,7 +700,7 @@ TIMER_FUNC(delay_walktoxy_timer){
  * @return 1: Success 0: Fail (No valid bl or target)
  */
 TIMER_FUNC(delay_walktobl_timer){
-	struct block_list *bl = map_id2bl(id), *tbl = map_id2bl(data);
+	BlockList *bl = map_id2bl(id), *tbl = map_id2bl(data);
 
 	if(!bl || bl->prev == NULL || tbl == NULL)
 		return 0;
@@ -726,7 +726,7 @@ TIMER_FUNC(delay_walktobl_timer){
  *	&8: Search for an unoccupied cell and cancel if none available
  * @return 1: Success 0: Fail or walktoxy_sub()
  */
-int walktoxy( struct block_list *bl, short x, short y, unsigned char flag)
+int walktoxy( BlockList *bl, short x, short y, unsigned char flag)
 {
 	nullpo_ret(bl);
 
@@ -809,7 +809,7 @@ int walktoxy( struct block_list *bl, short x, short y, unsigned char flag)
  * @param bl: Mob to set state on
  * @param flag: Whether to set state or not
  */
-static inline void set_mobstate(struct block_list* bl, int flag)
+static inline void set_mobstate(BlockList* bl, int flag)
 {
 	mobs::MobData* md = BL_CAST(BL_MOB,bl);
 
@@ -826,7 +826,7 @@ static inline void set_mobstate(struct block_list* bl, int flag)
  * @return 0
  */
 static TIMER_FUNC(walktobl_sub){
-	struct block_list *bl = map_id2bl(id);
+	BlockList *bl = map_id2bl(id);
 	struct UnitData *ud = bl?bl2ud(bl):NULL;
 
 	if (ud && ud->walktimer == INVALID_TIMER && ud->target && ud->target == data) {
@@ -851,7 +851,7 @@ static TIMER_FUNC(walktobl_sub){
  *	&2: Start attacking upon arrival within range, otherwise just walk to target
  * @return 1: Started walking or set timer 0: Failed
  */
-int walktobl(struct block_list *bl, struct block_list *tbl, int range, unsigned char flag)
+int walktobl(BlockList *bl, BlockList *tbl, int range, unsigned char flag)
 {
 	nullpo_ret(bl);
 	nullpo_ret(tbl);
@@ -917,7 +917,7 @@ int walktobl(struct block_list *bl, struct block_list *tbl, int range, unsigned 
  * Called by run when an object is hit.
  * @param sd Required only when using SC_WUGDASH
  */
-void run_hit(struct block_list *bl, status_change *sc, map_session_data *sd, enum sc_type type)
+void run_hit(BlockList *bl, status_change *sc, map_session_data *sd, enum sc_type type)
 {
 	int lv = sc->getSCE(type)->val1;
 
@@ -945,7 +945,7 @@ void run_hit(struct block_list *bl, status_change *sc, map_session_data *sd, enu
  * @param sd: Required only when using SC_WUGDASH
  * @return true: Success (Finished running) false: Fail (Hit an object/Couldn't run)
  */
-bool run(struct block_list *bl, map_session_data *sd, enum sc_type type)
+bool run(BlockList *bl, map_session_data *sd, enum sc_type type)
 {
 	status_change *sc;
 	short to_x, to_y, dir_x, dir_y;
@@ -1014,7 +1014,7 @@ bool run(struct block_list *bl, map_session_data *sd, enum sc_type type)
  * @param flag: walktoxy flag
  * @return 1: Success 0: Fail
  */
-int escape(struct block_list *bl, struct block_list *target, short dist, uint8 flag)
+int escape(BlockList *bl, BlockList *target, short dist, uint8 flag)
 {
 	uint8 dir = map_calc_dir(target, bl->x, bl->y);
 
@@ -1036,7 +1036,7 @@ int escape(struct block_list *bl, struct block_list *target, short dist, uint8 f
  * @param checkpath: Whether or not to do a cell and path check for NOPASS and NOREACH
  * @return True: Success False: Fail
  */
-bool movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool checkpath)
+bool movepos(BlockList *bl, short dst_x, short dst_y, int easy, bool checkpath)
 {
 	short dx,dy;
 	struct UnitData        *ud = NULL;
@@ -1087,7 +1087,7 @@ bool movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool che
 		if( sd->status.pet_id > 0 && sd->pd && sd->pd->pet.intimate > PET_INTIMATE_NONE ) {
 			// Check if pet needs to be teleported. [Skotlex]
 			int flag = 0;
-			struct block_list* pbl = &sd->pd->bl;
+			struct BlockList* pbl = &sd->pd->bl;
 
 			if( !checkpath && !path_search(NULL,pbl->m,pbl->x,pbl->y,dst_x,dst_y,0,CELL_CHKNOPASS) )
 				flag = 1;
@@ -1111,7 +1111,7 @@ bool movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool che
  * @param send_update: Update the client area of direction (default: true)
  * @return True on success or False on failure
  */
-bool setdir(block_list *bl, uint8 dir, bool send_update)
+bool setdir(BlockList *bl, uint8 dir, bool send_update)
 {
 	nullpo_ret(bl);
 
@@ -1140,7 +1140,7 @@ bool setdir(block_list *bl, uint8 dir, bool send_update)
  * @param bl: Object to get direction
  * @return direction (0-7)
  */
-uint8 getdir(struct block_list *bl)
+uint8 getdir(BlockList *bl)
 {
 	struct UnitData *ud;
 
@@ -1164,7 +1164,7 @@ uint8 getdir(struct block_list *bl)
  * @param flag: See skill.hpp::e_skill_blown
  * @return count (can be modified due to map cell restrictions)
  */
-int blown(struct block_list* bl, int dx, int dy, int count, enum e_skill_blown flag)
+int blown(BlockList* bl, int dx, int dy, int count, enum e_skill_blown flag)
 {
 	if(count) {
 		map_session_data* sd;
@@ -1240,7 +1240,7 @@ int blown(struct block_list* bl, int dx, int dy, int count, enum e_skill_blown f
  *		UB_TARGET_NO_KNOCKBACK - target has 'special_state.no_knockback'
  *		UB_TARGET_TRAP - target is trap that cannot be knocked back
  */
-enum e_unit_blown blown_immune(struct block_list* bl, uint8 flag)
+enum e_unit_blown blown_immune(BlockList* bl, uint8 flag)
 {
 	if ((flag&0x1)
 		&& (map_flag_gvg2(bl->m) || map_getmapflag(bl->m, MF_BATTLEGROUND))
@@ -1291,7 +1291,7 @@ enum e_unit_blown blown_immune(struct block_list* bl, uint8 flag)
  * @param type: Clear type used in clif_clearunit_area()
  * @return Success(0); Failed(1); Error(2); unit_remove_map() Failed(3); map_addblock Failed(4)
  */
-int warp(struct block_list *bl,short m,short x,short y,clr_type type)
+int warp(BlockList *bl,short m,short x,short y,clr_type type)
 {
 	struct UnitData *ud;
 
@@ -1382,7 +1382,7 @@ int warp(struct block_list *bl,short m,short x,short y,clr_type type)
  *	USW_FORCE_STOP: Force stop moving, even if walktimer is currently INVALID_TIMER
  * @return Success(1); Failed(0);
  */
-int stop_walking(struct block_list *bl,int type)
+int stop_walking(BlockList *bl,int type)
 {
 	struct UnitData *ud;
 	const struct TimerData* td = NULL;
@@ -1441,7 +1441,7 @@ int stop_walking(struct block_list *bl,int type)
  * @param skill_lv: Skill Level
  * @return skilluse_id2()
  */
-int skilluse_id(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv)
+int skilluse_id(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv)
 {
 	return skilluse_id2(
 		src, target_id, skill_id, skill_lv,
@@ -1455,7 +1455,7 @@ int skilluse_id(struct block_list *src, int target_id, uint16 skill_id, uint16 s
  * @param bl: Object to check walk status
  * @return Walking(1); Not Walking(0)
  */
-int is_walking(struct block_list *bl)
+int is_walking(BlockList *bl)
 {
 	struct UnitData *ud = bl2ud(bl);
 
@@ -1475,7 +1475,7 @@ int is_walking(struct block_list *bl)
  * @param bl: Object to check
  * @return True - can move; False - can't move
  */
-bool can_move(struct block_list *bl) {
+bool can_move(BlockList *bl) {
 	map_session_data *sd;
 	struct UnitData *ud;
 	status_change *sc;
@@ -1547,7 +1547,7 @@ TIMER_FUNC(unit_resume_running){
  *	1: Skill induced delay; Walk delay can only be increased, not decreased
  * @return Success(1); Fail(0);
  */
-int set_walkdelay(struct block_list *bl, t_tick tick, t_tick delay, int type)
+int set_walkdelay(BlockList *bl, t_tick tick, t_tick delay, int type)
 {
 	struct UnitData *ud = bl2ud(bl);
 
@@ -1609,13 +1609,13 @@ int set_walkdelay(struct block_list *bl, t_tick tick, t_tick delay, int type)
  * @param castcancel: Whether or not the skill can be cancelled by interruption (hit)
  * @return Success(1); Fail(0);
  */
-int skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range)
+int skilluse_id2(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range)
 {
 	struct UnitData *ud;
 	struct status_data *tstatus;
 	status_change *sc;
 	map_session_data *sd = NULL;
-	struct block_list * target = NULL;
+	BlockList * target = NULL;
 	t_tick tick = gettick();
 	int combo = 0, range;
 
@@ -1696,7 +1696,7 @@ int skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 
 				if (!sd->status.partner_id)
 					return 0;
 
-				target = (struct block_list*)map_charid2sd(sd->status.partner_id);
+				target = (BlockList*)map_charid2sd(sd->status.partner_id);
 
 				if (!target) {
 					clif_skill_fail(sd,skill_id,USESKILL_FAIL_LEVEL,0);
@@ -2104,7 +2104,7 @@ int skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 
  * @param skill_lv: Skill Level
  * @return skilluse_pos2()
  */
-int skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv)
+int skilluse_pos(BlockList *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv)
 {
 	return skilluse_pos2(
 		src, skill_x, skill_y, skill_id, skill_lv,
@@ -2124,12 +2124,12 @@ int skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint16 sk
  * @param castcancel: Whether or not the skill can be cancelled by interuption (hit)
  * @return Success(1); Fail(0);
  */
-int skilluse_pos2( struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range)
+int skilluse_pos2( BlockList *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range)
 {
 	map_session_data *sd = NULL;
 	struct UnitData        *ud = NULL;
 	status_change *sc;
-	struct block_list    bl;
+	BlockList    bl;
 	t_tick tick = gettick();
 	int range;
 
@@ -2300,7 +2300,7 @@ int UnitData::set_target(int target_id)
 {
 	if( this->target != target_id ) {
 		struct UnitData * ux;
-		struct block_list* target;
+		struct BlockList* target;
 	
 		if (this->target && (target = map_id2bl(this->target)) && (ux = bl2ud(target)) && ux->target_count > 0)
 			ux->target_count--;
@@ -2321,7 +2321,7 @@ int UnitData::set_target(int target_id)
  *   Parameter: '0' - everyone, 'id' - only those attacking someone with that id
  * @return 1 on success or 0 otherwise
  */
-int stopattack(struct block_list *bl, va_list ap)
+int stopattack(BlockList *bl, va_list ap)
 {
 	struct UnitData *ud = bl2ud(bl);
 	int id = va_arg(ap, int);
@@ -2338,7 +2338,7 @@ int stopattack(struct block_list *bl, va_list ap)
  * Stop a unit's attacks
  * @param bl: Object to stop
  */
-void stop_attack(struct block_list *bl)
+void stop_attack(BlockList *bl)
 {
 	struct UnitData *ud;
 	nullpo_retv(bl);
@@ -2360,7 +2360,7 @@ void stop_attack(struct block_list *bl)
  * Stop a unit's step action
  * @param bl: Object to stop
  */
-void stop_stepaction(struct block_list *bl)
+void stop_stepaction(BlockList *bl)
 {
 	struct UnitData *ud;
 	nullpo_retv(bl);
@@ -2386,7 +2386,7 @@ void stop_stepaction(struct block_list *bl)
  * @param bl: Object to unlock target
  * @return 0
  */
-int unit_unattackable(struct block_list *bl)
+int unit_unattackable(BlockList *bl)
 {
 	struct UnitData *ud = bl2ud(bl);
 
@@ -2414,9 +2414,9 @@ int unit_unattackable(struct block_list *bl)
  *		0x2 - Whether function was called from step_timer or not
  * @return Success(0); Fail(1);
  */
-int attack(struct block_list *src,int target_id,int continuous)
+int attack(BlockList *src,int target_id,int continuous)
 {
-	struct block_list *target;
+	BlockList *target;
 	struct UnitData  *ud;
 	int range;
 
@@ -2485,7 +2485,7 @@ int attack(struct block_list *src,int target_id,int continuous)
  * @param bl: Object to cancel combo
  * @return Success(1); Fail(0);
  */
-int cancel_combo(struct block_list *bl)
+int cancel_combo(BlockList *bl)
 {
 	struct UnitData  *ud;
 
@@ -2514,7 +2514,7 @@ int cancel_combo(struct block_list *bl)
  * @param easy: Easy(1) or Hard(0) path check (hard attempts to go around obstacles)
  * @return true or false
  */
-bool can_reach_pos(struct block_list *bl,int x,int y, int easy)
+bool can_reach_pos(BlockList *bl,int x,int y, int easy)
 {
 	nullpo_retr(false, bl);
 
@@ -2534,7 +2534,7 @@ bool can_reach_pos(struct block_list *bl,int x,int y, int easy)
  * @param y: Pointer storing a valid Y coordinate around tbl that can be reached
  * @return true or false
  */
-bool can_reach_bl(struct block_list *bl,struct block_list *tbl, int range, int easy, short *x, short *y)
+bool can_reach_bl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y)
 {
 	struct walkpath_data wpd;
 	short dx, dy;
@@ -2596,7 +2596,7 @@ bool can_reach_bl(struct block_list *bl,struct block_list *tbl, int range, int e
  * @param dir: Direction which to be 2 cells from master's position
  * @return Success(0); Fail(1);
  */
-int calc_pos(struct block_list *bl, int tx, int ty, uint8 dir)
+int calc_pos(BlockList *bl, int tx, int ty, uint8 dir)
 {
 	int dx, dy, x, y;
 	struct UnitData *ud = bl2ud(bl);
@@ -2677,9 +2677,9 @@ int calc_pos(struct block_list *bl, int tx, int ty, uint8 dir)
  * @param tick: Current tick
  * @return Attackable(1); Unattackable(0);
  */
-static int attack_timer_sub(struct block_list* src, int tid, t_tick tick)
+static int attack_timer_sub(BlockList* src, int tid, t_tick tick)
 {
-	struct block_list *target;
+	BlockList *target;
 	struct UnitData *ud;
 	struct status_data *sstatus;
 	map_session_data *sd = NULL;
@@ -2844,7 +2844,7 @@ static int attack_timer_sub(struct block_list* src, int tid, t_tick tick)
  * @return 0
  */
 static TIMER_FUNC(attack_timer){
-	struct block_list *bl;
+	BlockList *bl;
 
 	bl = map_id2bl(id);
 
@@ -2862,7 +2862,7 @@ static TIMER_FUNC(attack_timer){
  * Called from attack and attack_timer_sub
  * @retval true Can attack
  **/
-bool can_attack(struct block_list *bl, int target_id) {
+bool can_attack(BlockList *bl, int target_id) {
 	nullpo_retr(false, bl);
 
 	if (bl->type == BL_PC) {
@@ -2891,7 +2891,7 @@ bool can_attack(struct block_list *bl, int target_id) {
  *	&2: Cancel only if skill is cancellable
  * @return Success(1); Fail(0);
  */
-int skillcastcancel(struct block_list *bl, char type)
+int skillcastcancel(BlockList *bl, char type)
 {
 	map_session_data *sd = NULL;
 	struct UnitData *ud = bl2ud( bl);
@@ -2954,7 +2954,7 @@ int skillcastcancel(struct block_list *bl, char type)
  * Initialized data on a unit
  * @param bl: Object to initialize data on
  */
-void dataset(struct block_list *bl)
+void dataset(BlockList *bl)
 {
 	struct UnitData *ud;
 
@@ -2989,7 +2989,7 @@ void UnitData::skillunit_maxcount(uint16 skill_id, int& maxcount) {
  * @param bl: Object to check amount of targets
  * @return number of targets or 0
  */
-int counttargeted(struct block_list* bl)
+int counttargeted(BlockList* bl)
 {
 	struct UnitData* ud;
 
@@ -3006,10 +3006,10 @@ int counttargeted(struct block_list* bl)
  * @param src Current target
  * @param target New target
  **/
-int changetarget(struct block_list *bl, va_list ap) {
+int changetarget(BlockList *bl, va_list ap) {
 	struct UnitData *ud = bl2ud(bl);
-	struct block_list *src = va_arg(ap,struct block_list *);
-	struct block_list *target = va_arg(ap,struct block_list *);
+	BlockList *src = va_arg(ap,BlockList *);
+	BlockList *target = va_arg(ap,BlockList *);
 
 	if (!ud || !target || ud->target == target->id)
 		return 1;
@@ -3042,7 +3042,7 @@ int changetarget(struct block_list *bl, va_list ap) {
  * @param file, line, func: Call information for debug purposes
  * @return Success(1); Couldn't be removed or bl was free'd(0)
  */
-int remove_map_(struct block_list *bl, clr_type clrtype, const char* file, int line, const char* func)
+int remove_map_(BlockList *bl, clr_type clrtype, const char* file, int line, const char* func)
 {
 	struct UnitData *ud = bl2ud(bl);
 	status_change *sc = status_get_sc(bl);
@@ -3093,7 +3093,7 @@ int remove_map_(struct block_list *bl, clr_type clrtype, const char* file, int l
 			map_session_data *sd = (map_session_data*)bl;
 
 			if(sd->shadowform_id) { // If shadow target has leave the map
-			    struct block_list *d_bl = map_id2bl(sd->shadowform_id);
+			    BlockList *d_bl = map_id2bl(sd->shadowform_id);
 
 			    if( d_bl )
 				    status_change_end(d_bl,SC__SHADOWFORM);
@@ -3306,7 +3306,7 @@ int remove_map_(struct block_list *bl, clr_type clrtype, const char* file, int l
  * Refresh the area with a change in display of a unit.
  * @bl: Object to update
  */
-void refresh(struct block_list *bl, bool walking) {
+void refresh(BlockList *bl, bool walking) {
 	nullpo_retv(bl);
 
 	if (bl->m < 0)
@@ -3380,7 +3380,7 @@ void free_pc(map_session_data *sd)
  *	1: Death, appropriate cleanup performed
  * @return 0
  */
-int free(struct block_list *bl, clr_type clrtype)
+int free(BlockList *bl, clr_type clrtype)
 {
 	struct UnitData *ud = bl2ud( bl );
 
@@ -3662,7 +3662,7 @@ int free(struct block_list *bl, clr_type clrtype)
 }
 
 static TIMER_FUNC(shadowscar_timer) {
-	block_list *bl = map_id2bl(id);
+	BlockList *bl = map_id2bl(id);
 
 	if (bl == nullptr)
 		return 1;

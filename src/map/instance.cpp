@@ -539,7 +539,7 @@ bool instance_stopidletimer(std::shared_ptr<s_instance_data> idata, int instance
 /**
  * Run the OnInstanceInit events for duplicated NPCs
  */
-static int instance_npcinit(struct block_list *bl, va_list ap)
+static int instance_npcinit(BlockList *bl, va_list ap)
 {
 	struct npc_data* nd;
 
@@ -552,7 +552,7 @@ static int instance_npcinit(struct block_list *bl, va_list ap)
 /**
  * Run the OnInstanceDestroy events for duplicated NPCs
  */
-static int instance_npcdestroy(struct block_list *bl, va_list ap)
+static int instance_npcdestroy(BlockList *bl, va_list ap)
 {
 	struct npc_data* nd;
 
@@ -565,7 +565,7 @@ static int instance_npcdestroy(struct block_list *bl, va_list ap)
 /**
  * Update instance with new NPC
  */
-static int instance_addnpc_sub(struct block_list *bl, va_list ap)
+static int instance_addnpc_sub(BlockList *bl, va_list ap)
 {
 	struct npc_data* nd;
 

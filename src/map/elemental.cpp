@@ -299,7 +299,7 @@ int elemental_clean_effect(s_elemental_data *ed) {
 	return 1;
 }
 
-int elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick) {
+int elemental_action(s_elemental_data *ed, BlockList *bl, t_tick tick) {
 	nullpo_ret(ed);
 	nullpo_ret(bl);
 
@@ -378,7 +378,7 @@ int elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick) {
 int elemental_change_mode_ack(s_elemental_data *ed, e_elemental_skillmode skill_mode) {
 	nullpo_ret(ed);
 
-	block_list *bl = &ed->master->bl;
+	BlockList *bl = &ed->master->bl;
 	if( !bl )
 		return 0;
 
@@ -480,7 +480,7 @@ struct s_skill_condition elemental_skill_get_requirements(uint16 skill_id, uint1
 	return req;
 }
 
-int elemental_set_target( map_session_data *sd, block_list *bl ) {
+int elemental_set_target( map_session_data *sd, BlockList *bl ) {
 	s_elemental_data *ed = sd->ed;
 
 	nullpo_ret(ed);
@@ -498,14 +498,14 @@ int elemental_set_target( map_session_data *sd, block_list *bl ) {
 	return 1;
 }
 
-static int elemental_ai_sub_timer_activesearch(block_list *bl, va_list ap) {
+static int elemental_ai_sub_timer_activesearch(BlockList *bl, va_list ap) {
 	nullpo_ret(bl);
 
 	s_elemental_data *ed;
-	block_list **target;
+	BlockList **target;
 
 	ed = va_arg(ap, s_elemental_data *);
-	target = va_arg(ap, block_list**);
+	target = va_arg(ap, BlockList**);
 
 	//If can't seek yet, not an enemy, or you can't attack it, skip.
 	if( (*target) == bl || !status_check_skilluse(&ed->bl, bl, 0, 0) )
@@ -609,7 +609,7 @@ static int elemental_ai_sub_timer(s_elemental_data *ed, map_session_data *sd, t_
 			return 0;
 	}
 
-	block_list *target = NULL;
+	BlockList *target = NULL;
 
 	if( mode == EL_MODE_AGGRESSIVE ) {
 		target = map_id2bl(ed->ud.target);

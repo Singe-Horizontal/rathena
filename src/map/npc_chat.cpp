@@ -338,7 +338,7 @@ void npc_chat_finalize(struct npc_data* nd)
 /**
  * Handler called whenever a global message is spoken in a NPC's area
  */
-int npc_chat_sub(struct block_list* bl, va_list ap)
+int npc_chat_sub(BlockList* bl, va_list ap)
 {
 	struct npc_data* nd = (struct npc_data *) bl;
 	struct npc_parse* npcParse = (struct npc_parse *) nd->chatdb;

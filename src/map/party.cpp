@@ -1177,7 +1177,7 @@ int party_send_xy_clear(struct party_data *p)
  * @param zeny Zeny gained from killed mob
  * @author Valaris
  **/
-void party_exp_share(struct party_data* p, struct block_list* src, t_exp base_exp, t_exp job_exp, int zeny)
+void party_exp_share(struct party_data* p, struct BlockList* src, t_exp base_exp, t_exp job_exp, int zeny)
 {
 	map_session_data* sd[MAX_PARTY];
 	unsigned int i, c;
@@ -1318,7 +1318,7 @@ int party_send_dot_remove(map_session_data *sd)
  * @param ap: List of parameters
  * @return 1 when neither autotrading and not idle or 0 otherwise
  */
-int party_sub_count(struct block_list *bl, va_list ap)
+int party_sub_count(BlockList *bl, va_list ap)
 {
 	map_session_data *sd = (TBL_PC *)bl;
 
@@ -1337,7 +1337,7 @@ int party_sub_count(struct block_list *bl, va_list ap)
  * @param ap: List of parameters: Class_Mask, Class_ID
  * @return 1 when class exists in party or 0 otherwise
  */
-int party_sub_count_class(struct block_list *bl, va_list ap)
+int party_sub_count_class(BlockList *bl, va_list ap)
 {
 	map_session_data *sd = (TBL_PC *)bl;
 	unsigned int mask = va_arg(ap, unsigned int);
@@ -1353,12 +1353,12 @@ int party_sub_count_class(struct block_list *bl, va_list ap)
 }
 
 /// Executes 'func' for each party member on the same map and in range (0:whole map)
-int party_foreachsamemap(int (*func)(struct block_list*,va_list),map_session_data *sd,int range,...)
+int party_foreachsamemap(int (*func)(BlockList*,va_list),map_session_data *sd,int range,...)
 {
 	struct party_data *p;
 	int i;
 	int x0,y0,x1,y1;
-	struct block_list *list[MAX_PARTY];
+	BlockList *list[MAX_PARTY];
 	int blockcount=0;
 	int total = 0; //Return value.
 

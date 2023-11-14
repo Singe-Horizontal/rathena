@@ -12,12 +12,12 @@
 #include <config/core.hpp>
 
 #include "clif.hpp" //
-#include "map.hpp" // struct block_list
+#include "map.hpp" // struct BlockList
 #include "status.hpp" // struct status_change
 #include "unit.hpp" // units::UnitData
 #include "navi.hpp" // navi stuff
 
-struct block_list;
+struct BlockList;
 struct npc_data;
 struct view_data;
 
@@ -155,7 +155,7 @@ enum e_npcv_status : uint8 {
 };
 
 struct npc_data {
-	struct block_list bl;
+	BlockList bl;
 	units::UnitData ud; //Because they need to be able to move....
 	struct view_data vd;
 	status_change sc; //They can't have status changes, but.. they want the visual opt values.
@@ -1509,7 +1509,7 @@ enum npce_event : uint8 {
 };
 
 struct view_data* npc_get_viewdata(int class_);
-int npc_chat_sub(struct block_list* bl, va_list ap);
+int npc_chat_sub(BlockList* bl, va_list ap);
 int npc_event_dequeue(map_session_data* sd,bool free_script_stack=true);
 int npc_event_process(map_session_data* sd, const char* eventname, int ontouch);
 int npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, struct npc_data* nd);
@@ -1519,7 +1519,7 @@ int npc_check_areanpc(int flag, int16 m, int16 x, int16 y, int16 range);
 int npc_touchnext_areanpc(map_session_data* sd,bool leavemap);
 int npc_click(map_session_data* sd, struct npc_data* nd);
 bool npc_scriptcont(map_session_data* sd, int id, bool closing);
-struct npc_data* npc_checknear(map_session_data* sd, struct block_list* bl);
+struct npc_data* npc_checknear(map_session_data* sd, struct BlockList* bl);
 int npc_buysellsel(map_session_data* sd, int id, int type);
 e_purchase_result npc_buylist(map_session_data* sd, std::vector<s_npc_buy_list>& item_list);
 static int npc_buylist_sub(map_session_data* sd, std::vector<s_npc_buy_list>& item_list, struct npc_data* nd);
@@ -1542,8 +1542,8 @@ bool npc_enable_target(npc_data& nd, uint32 char_id, e_npcv_status flag);
 void npc_setdisplayname(struct npc_data* nd, const char* newname);
 void npc_setclass(struct npc_data* nd, short class_);
 struct npc_data* npc_name2id(const char* name);
-int npc_isnear_sub(struct block_list* bl, va_list args);
-bool npc_isnear(struct block_list * bl);
+int npc_isnear_sub(BlockList* bl, va_list args);
+bool npc_isnear(BlockList * bl);
 
 int npc_get_new_npc_id(void);
 

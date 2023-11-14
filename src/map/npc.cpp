@@ -875,7 +875,7 @@ struct view_data* npc_get_viewdata(int class_) {
 	return nullptr;
 }
 
-int npc_isnear_sub(struct block_list* bl, va_list args) {
+int npc_isnear_sub(BlockList* bl, va_list args) {
     struct npc_data *nd = (struct npc_data*)bl;
 
     if (nd->sc.option&OPTION_HIDE)
@@ -906,7 +906,7 @@ int npc_isnear_sub(struct block_list* bl, va_list args) {
 	return 1;
 }
 
-bool npc_isnear(struct block_list * bl) {
+bool npc_isnear(BlockList * bl) {
 
     if( battle_config.min_npc_vendchat_distance > 0 &&
             map_foreachinallrange(npc_isnear_sub,bl, battle_config.min_npc_vendchat_distance, BL_NPC, 0) )
@@ -953,7 +953,7 @@ int npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, struct np
 /*==========================================
  * Sub-function of npc_enable, runs OnTouch event when enabled
  *------------------------------------------*/
-int npc_enable_sub(struct block_list *bl, va_list ap)
+int npc_enable_sub(BlockList *bl, va_list ap)
 {
 	struct npc_data *nd;
 
@@ -980,7 +980,7 @@ bool npc_is_hidden_dynamicnpc( struct npc_data& nd, map_session_data& tsd ){
 	return nd.dynamicnpc.owner_char_id != 0 && nd.dynamicnpc.owner_char_id != tsd.status.char_id;
 }
 
-static int npc_cloaked_sub(struct block_list *bl, va_list ap)
+static int npc_cloaked_sub(BlockList *bl, va_list ap)
 {
 	map_session_data* sd;
 
@@ -1791,7 +1791,7 @@ int npc_event_process(map_session_data* sd, const char* eventname, int ontouch)
 /*==========================================
  * Sub chk then execute area event type
  *------------------------------------------*/
-int npc_touch_areanpc_sub(struct block_list *bl, va_list ap)
+int npc_touch_areanpc_sub(BlockList *bl, va_list ap)
 {
 	map_session_data *sd;
 	int pc_id;
@@ -2106,7 +2106,7 @@ int npc_check_areanpc(int flag, int16 m, int16 x, int16 y, int16 range)
  * Chk if player not too far to access the npc.
  * Returns npc_data (success) or NULL (fail).
  *------------------------------------------*/
-struct npc_data* npc_checknear(map_session_data* sd, struct block_list* bl)
+struct npc_data* npc_checknear(map_session_data* sd, struct BlockList* bl)
 {
 	struct npc_data *nd;
 
@@ -2256,7 +2256,7 @@ int npc_click(map_session_data* sd, struct npc_data* nd)
  *
  *------------------------------------------*/
 bool npc_scriptcont(map_session_data* sd, int id, bool closing){
-	struct block_list *target = map_id2bl(id);
+	BlockList *target = map_id2bl(id);
 	struct npc_data* nd = BL_CAST( BL_NPC, target );
 
 	nullpo_retr(true, sd);
@@ -3482,13 +3482,13 @@ int npc_unload(struct npc_data* nd, bool single) {
 		aFree(nd->u.shop.shop_item);
 	else if( nd->subtype == NPCTYPE_SCRIPT ) {
 		struct s_mapiterator* iter;
-		struct block_list* bl;
+		struct BlockList* bl;
 
 		if( single )
 			ev_db->foreach(ev_db,npc_unload_ev,nd->exname); //Clean up all events related
 
 		iter = mapit_geteachpc();
-		for( bl = (struct block_list*)mapit_first(iter); mapit_exists(iter); bl = (struct block_list*)mapit_next(iter) ) {
+		for( bl = (BlockList*)mapit_first(iter); mapit_exists(iter); bl = (BlockList*)mapit_next(iter) ) {
 			map_session_data *sd = ((TBL_PC*)bl);
 			if( sd && sd->npc_timer_id != INVALID_TIMER ) {
 				const struct TimerData *td = get_timer(sd->npc_timer_id);
@@ -4976,7 +4976,7 @@ void npc_setcells(struct npc_data* nd)
 	}
 }
 
-int npc_unsetcells_sub(struct block_list* bl, va_list ap)
+int npc_unsetcells_sub(BlockList* bl, va_list ap)
 {
 	struct npc_data *nd = (struct npc_data*)bl;
 	int id =  va_arg(ap,int);
@@ -5992,7 +5992,7 @@ void npc_clear_pathlist(void) {
 int npc_reload(void) {
 	int npc_new_min = npc_id;
 	struct s_mapiterator* iter;
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	/* clear guild flag cache */
 	guild_flags_clear();
@@ -6011,7 +6011,7 @@ int npc_reload(void) {
 #endif
 
 	iter = mapit_geteachiddb();
-	for( bl = (struct block_list*)mapit_first(iter); mapit_exists(iter); bl = (struct block_list*)mapit_next(iter) ) {
+	for( bl = (BlockList*)mapit_first(iter); mapit_exists(iter); bl = (BlockList*)mapit_next(iter) ) {
 		switch(bl->type) {
 		case BL_NPC:
 			if( bl->id != fake_nd->bl.id )// don't remove fake_nd

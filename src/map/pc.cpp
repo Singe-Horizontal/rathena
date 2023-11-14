@@ -2262,7 +2262,7 @@ void pc_authfail(map_session_data *sd)
  * @param bl : target bl
  * @return false:failed, true:success
  */
-bool pc_set_hate_mob(map_session_data *sd, int pos, struct block_list *bl)
+bool pc_set_hate_mob(map_session_data *sd, int pos, BlockList *bl)
 {
 	int class_;
 	if (!sd || !bl || pos < 0 || pos > 2)
@@ -6613,7 +6613,7 @@ int pc_bound_chk(TBL_PC *sd,enum bound_type type,int *idxlist)
 /*==========================================
  *  Display item stolen msg to player sd
  *------------------------------------------*/
-int pc_show_steal(struct block_list *bl,va_list ap)
+int pc_show_steal(BlockList *bl,va_list ap)
 {
 	map_session_data *sd;
 	t_itemid itemid;
@@ -6640,7 +6640,7 @@ int pc_show_steal(struct block_list *bl,va_list ap)
  * @param skill_lv: Level of skill used
  * @return True on success or false otherwise
  */
-bool pc_steal_item(map_session_data *sd,struct block_list *bl, uint16 skill_lv)
+bool pc_steal_item(map_session_data *sd,BlockList *bl, uint16 skill_lv)
 {
 	int i;
 	t_itemid itemid;
@@ -6734,7 +6734,7 @@ bool pc_steal_item(map_session_data *sd,struct block_list *bl, uint16 skill_lv)
  *	0 = fail
  *	1 = success
  *------------------------------------------*/
-int pc_steal_coin(map_session_data *sd,struct block_list *target)
+int pc_steal_coin(map_session_data *sd,BlockList *target)
 {
 	int rate, target_lv;
 	mobs::MobData *md;
@@ -7999,7 +7999,7 @@ const char* job_name(int class_)
  *----------------------------------------------------*/
 TIMER_FUNC(pc_follow_timer){
 	map_session_data *sd;
-	struct block_list *tbl;
+	BlockList *tbl;
 
 	sd = map_id2sd(id);
 	nullpo_ret(sd);
@@ -8054,7 +8054,7 @@ int pc_stop_following (map_session_data *sd)
 
 int pc_follow(map_session_data *sd,int target_id)
 {
-	struct block_list *bl = map_id2bl(target_id);
+	BlockList *bl = map_id2bl(target_id);
 	if (bl == NULL /*|| bl->type != BL_PC*/)
 		return 1;
 	if (sd->followtimer != INVALID_TIMER)
@@ -8187,7 +8187,7 @@ int pc_checkjoblevelup(map_session_data *sd)
 * @param job_exp Job EXP before peronal bonuses
 * @param src Block list that affecting the exp calculation
 */
-static void pc_calcexp(map_session_data *sd, t_exp *base_exp, t_exp *job_exp, struct block_list *src)
+static void pc_calcexp(map_session_data *sd, t_exp *base_exp, t_exp *job_exp, BlockList *src)
 {
 	int bonus = 0, vip_bonus_base = 0, vip_bonus_job = 0;
 
@@ -8267,7 +8267,7 @@ void pc_gainexp_disp(map_session_data *sd, t_exp base_exp, t_exp next_base_exp, 
  * @param exp_flag 1: Quest EXP; 2: Param Exp (Ignore Guild EXP tax, EXP adjustments)
  * @return
  **/
-void pc_gainexp(map_session_data *sd, struct block_list *src, t_exp base_exp, t_exp job_exp, uint8 exp_flag)
+void pc_gainexp(map_session_data *sd, BlockList *src, t_exp base_exp, t_exp job_exp, uint8 exp_flag)
 {
 	t_exp nextb = 0, nextj = 0;
 	uint8 flag = 0; ///< 1: Base EXP given, 2: Job EXP given, 4: Max Base level, 8: Max Job Level
@@ -9497,7 +9497,7 @@ static TIMER_FUNC(pc_respawn_timer){
 /*==========================================
  * Invoked when a player has received damage
  *------------------------------------------*/
-void pc_damage(map_session_data *sd,struct block_list *src,unsigned int hp, unsigned int sp, unsigned int ap)
+void pc_damage(map_session_data *sd,BlockList *src,unsigned int hp, unsigned int sp, unsigned int ap)
 {
 	if (ap) clif_updatestatus(sd,SP_AP);
 	if (sp) clif_updatestatus(sd,SP_SP);
@@ -9582,7 +9582,7 @@ void pc_close_npc(map_session_data *sd,int flag)
 /*==========================================
  * Invoked when a player has negative current hp
  *------------------------------------------*/
-int pc_dead(map_session_data *sd,struct block_list *src)
+int pc_dead(map_session_data *sd,BlockList *src)
 {
 	int i=0,k=0;
 	t_tick tick = gettick();
@@ -10626,7 +10626,7 @@ int pc_percentheal(map_session_data *sd,int hp,int sp)
 	return 0;
 }
 
-static int jobchange_killclone(struct block_list *bl, va_list ap)
+static int jobchange_killclone(BlockList *bl, va_list ap)
 {
 	mobs::MobData *md;
 		int flag;
@@ -12535,7 +12535,7 @@ void pc_check_available_item(map_session_data *sd, uint8 type)
 /*==========================================
  * Update PVP rank for sd1 in cmp to sd2
  *------------------------------------------*/
-static int pc_calc_pvprank_sub(struct block_list *bl,va_list ap)
+static int pc_calc_pvprank_sub(BlockList *bl,va_list ap)
 {
 	map_session_data *sd1,*sd2;
 
@@ -14692,7 +14692,7 @@ void pc_crimson_marker_clear(map_session_data *sd) {
 		return;
 
 	for (i = 0; i < MAX_SKILL_CRIMSON_MARKER; i++) {
-		struct block_list *bl = NULL;
+		BlockList *bl = NULL;
 		if (sd->c_marker[i] && (bl = map_id2bl(sd->c_marker[i])))
 			status_change_end(bl,SC_C_MARKER);
 		sd->c_marker[i] = 0;
@@ -15630,7 +15630,7 @@ void pc_macro_detector_disconnect(map_session_data &sd) {
 /**
  * Save a list of players from an area select via /macro_detector.
  */
-int pc_macro_reporter_area_select_sub(block_list *bl, va_list ap) {
+int pc_macro_reporter_area_select_sub(BlockList *bl, va_list ap) {
 	nullpo_retr(0, bl);
 
 	if (bl->type != BL_PC)

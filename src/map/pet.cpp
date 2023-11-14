@@ -712,7 +712,7 @@ int pet_attackskill(struct pet_data *pd, int target_id)
 
 	if (rnd()%100 < (pd->a_skill->rate +pd->pet.intimate*pd->a_skill->bonusrate/1000)) { // Skotlex: Use pet's skill
 		int inf;
-		struct block_list *bl;
+		BlockList *bl;
 
 		bl = map_id2bl(target_id);
 
@@ -740,7 +740,7 @@ int pet_attackskill(struct pet_data *pd, int target_id)
  * @param type: pet's attack rate type
  * @return 0
  */
-int pet_target_check(struct pet_data *pd,struct block_list *bl,int type)
+int pet_target_check(struct pet_data *pd,BlockList *bl,int type)
 {
 	nullpo_ret(pd);
 
@@ -1386,7 +1386,7 @@ bool pet_get_egg(uint32 account_id, short pet_class, int pet_id ) {
 }
 
 static int pet_unequipitem(map_session_data *sd, struct pet_data *pd);
-static int pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap);
+static int pet_ai_sub_hard_lootsearch(BlockList *bl,va_list ap);
 
 /**
  * Pet menu options.
@@ -1719,7 +1719,7 @@ static int pet_randomwalk(struct pet_data *pd,t_tick tick)
  */
 static int pet_ai_sub_hard(struct pet_data *pd, map_session_data *sd, t_tick tick)
 {
-	struct block_list *target = NULL;
+	BlockList *target = NULL;
 
 	if(pd->bl.prev == NULL || sd == NULL || sd->bl.prev == NULL)
 		return 0;
@@ -1879,15 +1879,15 @@ static TIMER_FUNC(pet_ai_hard){
  *   target : item
  * @return 1:success, 0:failure
  */
-static int pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
+static int pet_ai_sub_hard_lootsearch(BlockList *bl,va_list ap)
 {
 	struct pet_data* pd;
 	struct flooritem_data *fitem = (struct flooritem_data *)bl;
-	struct block_list **target;
+	BlockList **target;
 	int sd_charid = 0;
 
 	pd = va_arg(ap,struct pet_data *);
-	target = va_arg(ap,struct block_list**);
+	target = va_arg(ap,struct BlockList**);
 
 	sd_charid = fitem->first_get_charid;
 

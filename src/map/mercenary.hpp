@@ -39,7 +39,7 @@ struct s_mercenary_db {
 };
 
 struct s_mercenary_data {
-	block_list bl;
+	BlockList bl;
 	units::UnitData ud;
 	view_data *vd;
 	status_data base_status, battle_status;

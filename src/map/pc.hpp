@@ -376,7 +376,7 @@ struct s_qi_display {
 
 class map_session_data {
 public:
-	struct block_list bl;
+	BlockList bl;
 	units::UnitData ud;
 	struct view_data vd;
 	struct status_data base_status, battle_status;
@@ -1476,8 +1476,8 @@ int pc_insert_card(map_session_data *sd,int idx_card,int idx_equip);
 
 int pc_identifyall(map_session_data *sd, bool identify_item);
 
-bool pc_steal_item(map_session_data *sd,struct block_list *bl, uint16 skill_lv);
-int pc_steal_coin(map_session_data *sd,struct block_list *bl);
+bool pc_steal_item(map_session_data *sd,BlockList *bl, uint16 skill_lv);
+int pc_steal_coin(map_session_data *sd,BlockList *bl);
 
 int pc_modifybuyvalue(map_session_data*,int);
 int pc_modifysellvalue(map_session_data*,int);
@@ -1491,7 +1491,7 @@ bool pc_is_maxbaselv(map_session_data *sd);
 bool pc_is_maxjoblv(map_session_data *sd);
 int pc_checkbaselevelup(map_session_data *sd);
 int pc_checkjoblevelup(map_session_data *sd);
-void pc_gainexp(map_session_data *sd, struct block_list *src, t_exp base_exp, t_exp job_exp, uint8 exp_flag);
+void pc_gainexp(map_session_data *sd, BlockList *src, t_exp base_exp, t_exp job_exp, uint8 exp_flag);
 void pc_gainexp_disp(map_session_data *sd, t_exp base_exp, t_exp next_base_exp, t_exp job_exp, t_exp next_job_exp, bool lost);
 void pc_lostexp(map_session_data *sd, t_exp base_exp, t_exp job_exp);
 t_exp pc_nextbaseexp(map_session_data *sd);
@@ -1526,8 +1526,8 @@ int pc_sub_skillatk_bonus(map_session_data *sd, uint16 skill_id);
 int pc_skillheal_bonus(map_session_data *sd, uint16 skill_id);
 int pc_skillheal2_bonus(map_session_data *sd, uint16 skill_id);
 
-void pc_damage(map_session_data *sd,struct block_list *src,unsigned int hp, unsigned int sp, unsigned int ap);
-int pc_dead(map_session_data *sd,struct block_list *src);
+void pc_damage(map_session_data *sd,BlockList *src,unsigned int hp, unsigned int sp, unsigned int ap);
+int pc_dead(map_session_data *sd,BlockList *src);
 void pc_revive(map_session_data *sd,unsigned int hp, unsigned int sp, unsigned int ap = 0);
 bool pc_revive_item(map_session_data *sd);
 void pc_heal(map_session_data *sd,unsigned int hp,unsigned int sp, unsigned int ap, int type);
@@ -1652,7 +1652,7 @@ void pc_delabyssball( map_session_data& sd, int count = 1 );
 
 bool pc_addfame(map_session_data &sd, int count);
 unsigned char pc_famerank(uint32 char_id, int job);
-bool pc_set_hate_mob(map_session_data *sd, int pos, struct block_list *bl);
+bool pc_set_hate_mob(map_session_data *sd, int pos, BlockList *bl);
 
 extern struct fame_list smith_fame_list[MAX_FAME_LIST];
 extern struct fame_list chemist_fame_list[MAX_FAME_LIST];

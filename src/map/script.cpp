@@ -168,7 +168,7 @@ static bool script_mapid2sd_(struct script_state *st, uint8 loc, map_session_dat
  * @param bl Variable that will be assigned
  * @return True if `bl` is assigned, false otherwise
  **/
-static bool script_rid2bl_(struct script_state *st, uint8 loc, struct block_list **bl, const char *func) {
+static bool script_rid2bl_(struct script_state *st, uint8 loc, BlockList **bl, const char *func) {
 	int unit_id;
 
 	if ( !script_hasdata(st, loc) || ( unit_id = script_getnum(st, loc) ) == 0)
@@ -492,7 +492,7 @@ static void script_reportsrc(struct script_state *st)
 	if( st->oid == 0 )
 		return; //Can't report source.
 
-	struct block_list* bl = map_id2bl(st->oid);
+	struct BlockList* bl = map_id2bl(st->oid);
 
 	if (!bl)
 		return;
@@ -5631,7 +5631,7 @@ BUILDIN_FUNC(warp)
 /*==========================================
  * Warp a specified area
  *------------------------------------------*/
-static int buildin_areawarp_sub(struct block_list *bl,va_list ap)
+static int buildin_areawarp_sub(BlockList *bl,va_list ap)
 {
 	int x2,y2,x3,y3;
 	unsigned int index;
@@ -5710,7 +5710,7 @@ BUILDIN_FUNC(areawarp)
 /*==========================================
  * areapercentheal <map>,<x1>,<y1>,<x2>,<y2>,<hp>,<sp>
  *------------------------------------------*/
-static int buildin_areapercentheal_sub(struct block_list *bl,va_list ap)
+static int buildin_areapercentheal_sub(BlockList *bl,va_list ap)
 {
 	int hp, sp;
 	hp = va_arg(ap, int);
@@ -6920,7 +6920,7 @@ BUILDIN_FUNC(viewpoint)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int buildin_viewpointmap_sub(block_list *bl, va_list ap) {
+static int buildin_viewpointmap_sub(BlockList *bl, va_list ap) {
 	int oid, type, x, y, id, color;
 
 	oid = va_arg(ap, int);
@@ -11298,7 +11298,7 @@ BUILDIN_FUNC(areamonster)
 /*==========================================
  * KillMonster subcheck, verify if mob to kill ain't got an even to handle, could be force kill by allflag
  *------------------------------------------*/
- static int buildin_killmonster_sub_strip(struct block_list *bl,va_list ap)
+ static int buildin_killmonster_sub_strip(BlockList *bl,va_list ap)
 { //same fix but with killmonster instead - stripping events from mobs.
 	mobs::MobData* md = (mobs::MobData*)bl;
 	char *event=va_arg(ap,char *);
@@ -11317,7 +11317,7 @@ BUILDIN_FUNC(areamonster)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int buildin_killmonster_sub(struct block_list *bl,va_list ap)
+static int buildin_killmonster_sub(BlockList *bl,va_list ap)
 {
 	mobs::MobData* md = (mobs::MobData*)bl;
 	char *event=va_arg(ap,char *);
@@ -11360,7 +11360,7 @@ BUILDIN_FUNC(killmonster)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int buildin_killmonsterall_sub_strip(struct block_list *bl,va_list ap)
+static int buildin_killmonsterall_sub_strip(BlockList *bl,va_list ap)
 { //Strips the event from the mob if it's killed the old method.
 	mobs::MobData *md;
 
@@ -11371,7 +11371,7 @@ static int buildin_killmonsterall_sub_strip(struct block_list *bl,va_list ap)
 	status_kill(bl);
 	return 0;
 }
-static int buildin_killmonsterall_sub(struct block_list *bl,va_list ap)
+static int buildin_killmonsterall_sub(BlockList *bl,va_list ap)
 {
 	status_kill(bl);
 	return 0;
@@ -11825,7 +11825,7 @@ BUILDIN_FUNC(announce)
 	if (flag&(BC_TARGET_MASK|BC_SOURCE_MASK)) // Broadcast source or broadcast region defined
 	{
 		send_target target;
-		struct block_list *bl;
+		BlockList *bl;
 
 		// If bc_npc flag is set, use NPC as broadcast source
 		if(flag&BC_NPC){
@@ -11866,7 +11866,7 @@ BUILDIN_FUNC(announce)
 
 /*==========================================
  *------------------------------------------*/
-static int buildin_announce_sub(struct block_list *bl, va_list ap)
+static int buildin_announce_sub(BlockList *bl, va_list ap)
 {
 	char *mes       = va_arg(ap, char *);
 	int   len       = va_arg(ap, int);
@@ -11935,7 +11935,7 @@ BUILDIN_FUNC(getusers)
 {
 	int flag, val = 0;
 	map_session_data* sd;
-	struct block_list* bl = NULL;
+	struct BlockList* bl = NULL;
 
 	flag = script_getnum(st,2);
 
@@ -12015,7 +12015,7 @@ BUILDIN_FUNC(getmapusers)
 }
 /*==========================================
  *------------------------------------------*/
-static int buildin_getareausers_sub(struct block_list *bl,va_list ap)
+static int buildin_getareausers_sub(BlockList *bl,va_list ap)
 {
 	int *users = va_arg(ap, int *);
 	(*users)++;
@@ -12049,7 +12049,7 @@ BUILDIN_FUNC(getareausers)
  *------------------------------------------*/
 BUILDIN_FUNC(getunits)
 {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 	map_session_data *sd = NULL;
 	struct script_data *data = NULL;
 	char *command = (char *)script_getfuncname(st);
@@ -12115,7 +12115,7 @@ BUILDIN_FUNC(getunits)
 	}
 
 	struct s_mapiterator *iter = mapit_alloc(MAPIT_NORMAL, bl_type(type));
-	for (bl = (struct block_list*)mapit_first(iter); mapit_exists(iter); bl = (struct block_list*)mapit_next(iter))
+	for (bl = (BlockList*)mapit_first(iter); mapit_exists(iter); bl = (BlockList*)mapit_next(iter))
 	{
 		if (m == -1 || (m == bl->m && !x0 && !y0 && !x1 && !y1) || (bl->m == m && (bl->x >= x0 && bl->y >= y0) && (bl->x <= x1 && bl->y <= y1)))
 		{
@@ -12139,7 +12139,7 @@ BUILDIN_FUNC(getunits)
 
 /*==========================================
  *------------------------------------------*/
-static int buildin_getareadropitem_sub(struct block_list *bl,va_list ap)
+static int buildin_getareadropitem_sub(BlockList *bl,va_list ap)
 {
 	t_itemid nameid = va_arg(ap, t_itemid);
 	unsigned short *amount = (unsigned short *)va_arg(ap, int *);
@@ -12259,7 +12259,7 @@ BUILDIN_FUNC(enablenpc)
 BUILDIN_FUNC(sc_start)
 {
 	TBL_NPC * nd = map_id2nd(st->oid);
-	struct block_list* bl;
+	struct BlockList* bl;
 	enum sc_type type;
 	int tick, val1, val2, val3, val4=0, rate, flag;
 	char start_type;
@@ -12328,7 +12328,7 @@ BUILDIN_FUNC(sc_start)
 /// sc_end <effect_id>{,<unit_id>};
 BUILDIN_FUNC(sc_end)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 	int type;
 
 	type = script_getnum(st, 2);
@@ -12408,7 +12408,7 @@ BUILDIN_FUNC(sc_end_class)
  *------------------------------------------*/
 BUILDIN_FUNC(getscrate)
 {
-	struct block_list *bl;
+	BlockList *bl;
 	int type;
 	t_tick rate;
 
@@ -12877,7 +12877,7 @@ BUILDIN_FUNC(changecharsex)
  *------------------------------------------*/
 BUILDIN_FUNC(globalmes)
 {
-	struct block_list *bl = map_id2bl(st->oid);
+	BlockList *bl = map_id2bl(st->oid);
 	struct npc_data *nd = (struct npc_data *)bl;
 	const char *name=NULL,*mes;
 
@@ -13184,7 +13184,7 @@ void script_detach_rid(struct script_state* st)
  *	0 : Players are always attached. (default)
  *	1 : Players currently running another script will not be attached.
  *-------------------------------------------------------------------------*/
-static int buildin_addrid_sub(struct block_list *bl,va_list ap)
+static int buildin_addrid_sub(BlockList *bl,va_list ap)
 {
 	int forceflag;
 	map_session_data *sd = (TBL_PC *)bl;
@@ -13202,7 +13202,7 @@ static int buildin_addrid_sub(struct block_list *bl,va_list ap)
 BUILDIN_FUNC(addrid)
 {
 	struct s_mapiterator* iter;
-	struct block_list *bl;
+	BlockList *bl;
 	TBL_PC *sd;
 
 	if(st->rid < 1) {
@@ -13605,7 +13605,7 @@ BUILDIN_FUNC(gvgoff3)
  */
 BUILDIN_FUNC(emotion)
 {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 	int type = script_getnum(st,2);
 
 	if (type < ET_SURPRISE || type >= ET_MAX) {
@@ -13642,7 +13642,7 @@ static int buildin_maprespawnguildid_sub_pc(map_session_data* sd, va_list ap)
 	return 1;
 }
 
-static int buildin_maprespawnguildid_sub_mob(struct block_list *bl,va_list ap)
+static int buildin_maprespawnguildid_sub_mob(BlockList *bl,va_list ap)
 {
 	mobs::MobData *md=(mobs::MobData *)bl;
 
@@ -14147,7 +14147,7 @@ BUILDIN_FUNC(mapwarp)	// Added by RoVeRT
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int buildin_mobcount_sub(struct block_list *bl,va_list ap)	// Added by RoVeRT
+static int buildin_mobcount_sub(BlockList *bl,va_list ap)	// Added by RoVeRT
 {
 	char *event=va_arg(ap,char *);
 	mobs::MobData *md = ((mobs::MobData *)bl);
@@ -14202,7 +14202,7 @@ BUILDIN_FUNC(marriage)
 BUILDIN_FUNC(wedding_effect)
 {
 	TBL_PC *sd;
-	struct block_list *bl;
+	BlockList *bl;
 
 	if(!script_rid2sd(sd)) {
 		bl=map_id2bl(st->oid);
@@ -14991,7 +14991,7 @@ BUILDIN_FUNC(misceffect)
 
 
 	if(st->oid && st->oid != fake_nd->bl.id) {
-		struct block_list *bl = map_id2bl(st->oid);
+		BlockList *bl = map_id2bl(st->oid);
 		if (bl)
 			clif_specialeffect(bl,type,AREA);
 	} else{
@@ -15014,7 +15014,7 @@ BUILDIN_FUNC(playBGM)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int playBGM_sub(struct block_list* bl,va_list ap)
+static int playBGM_sub(BlockList* bl,va_list ap)
 {
 	const char* name = va_arg(ap,const char*);
 	clif_playBGM( *BL_CAST( BL_PC, bl ), name );
@@ -15072,7 +15072,7 @@ BUILDIN_FUNC(soundeffect)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-int soundeffect_sub(struct block_list* bl,va_list ap)
+int soundeffect_sub(BlockList* bl,va_list ap)
 {
 	char* name = va_arg(ap,char*);
 	int type = va_arg(ap,int);
@@ -15088,7 +15088,7 @@ int soundeffect_sub(struct block_list* bl,va_list ap)
  *------------------------------------------*/
 BUILDIN_FUNC(soundeffectall)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 	map_session_data* sd;
 	const char* name;
 	int type;
@@ -15278,7 +15278,7 @@ BUILDIN_FUNC(petskillsupport)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static inline void script_skill_effect(block_list *bl, uint16 skill_id, uint16 skill_lv, int16 x, int16 y) {
+static inline void script_skill_effect(BlockList *bl, uint16 skill_id, uint16 skill_lv, int16 x, int16 y) {
 	nullpo_retv(bl);
 
 	switch (skill_get_casttype(skill_id)) {
@@ -15334,7 +15334,7 @@ BUILDIN_FUNC(skilleffect)
 /// npcskilleffect "<skill name>",<level>,<x>,<y>
 BUILDIN_FUNC(npcskilleffect)
 {
-	struct block_list *bl= map_id2bl(st->oid);
+	BlockList *bl= map_id2bl(st->oid);
 
 	if (bl == nullptr) {
 		ShowError("buildin_npcskilleffect: Invalid object attached to NPC.");
@@ -15364,7 +15364,7 @@ BUILDIN_FUNC(npcskilleffect)
  *------------------------------------------*/
 BUILDIN_FUNC(specialeffect)
 {
-	struct block_list *bl=map_id2bl(st->oid);
+	BlockList *bl=map_id2bl(st->oid);
 	int type = script_getnum(st,2);
 	enum send_target target = script_hasdata(st,3) ? (send_target)script_getnum(st,3) : AREA;
 
@@ -15437,8 +15437,8 @@ BUILDIN_FUNC(removespecialeffect)
 
 	send_target e_target = script_hasdata(st, 3) ? static_cast<send_target>(script_getnum(st, 3)) : AREA;
 
-	struct block_list *bl_src;
-	struct block_list *bl_target;
+	BlockList *bl_src;
+	BlockList *bl_target;
 	map_session_data *sd;
 
 	if( strcmp(command, "removespecialeffect") == 0 ) {
@@ -15520,8 +15520,8 @@ int atcommand_sub(struct script_state* st,int type) {
 
 		memset(&dummy_sd, 0, sizeof(TBL_PC));
 		if (st->oid) {
-			struct block_list* bl = map_id2bl(st->oid);
-			memcpy(&dummy_sd.bl, bl, sizeof(struct block_list));
+			struct BlockList* bl = map_id2bl(st->oid);
+			memcpy(&dummy_sd.bl, bl, sizeof(struct BlockList));
 			if (bl->type == BL_NPC)
 				safestrncpy(dummy_sd.status.name, ((TBL_NPC*)bl)->name, NAME_LENGTH);
 			sd->mapindex = (bl->m > 0) ? map_id2index(bl->m) : 0;
@@ -16135,7 +16135,7 @@ BUILDIN_FUNC(getsavepoint)
  */
 BUILDIN_FUNC(getmapxy)
 {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 	TBL_PC *sd=NULL;
 
 	int64 num;
@@ -18493,7 +18493,7 @@ BUILDIN_FUNC(searchitem)
 // [zBuffer] List of player cont commands --->
 BUILDIN_FUNC(rid2name)
 {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 	int rid = script_getnum(st,2);
 	if((bl = map_id2bl(rid)))
 	{
@@ -18522,7 +18522,7 @@ BUILDIN_FUNC(rid2name)
  */
 BUILDIN_FUNC(pcblockmove)
 {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 
 	if (script_getnum(st, 2))
 		bl = map_id2bl(script_getnum(st,2));
@@ -18545,7 +18545,7 @@ BUILDIN_FUNC(pcblockmove)
  */
 BUILDIN_FUNC(pcblockskill)
 {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 
 	if (script_getnum(st, 2))
 		bl = map_id2bl(script_getnum(st,2));
@@ -18615,7 +18615,7 @@ BUILDIN_FUNC(pcstopfollow)
 /// unitexists <unit id>;
 BUILDIN_FUNC(unitexists)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	bl = map_id2bl(script_getnum(st, 2));
 
@@ -18632,7 +18632,7 @@ BUILDIN_FUNC(unitexists)
 /// getunittype <unit id>;
 BUILDIN_FUNC(getunittype)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 	int value = 0;
 
 	if(!script_rid2bl(2,bl))
@@ -18666,7 +18666,7 @@ BUILDIN_FUNC(getunittype)
 BUILDIN_FUNC(getunitdata)
 {
 	TBL_PC *sd = st->rid ? map_id2sd(st->rid) : NULL;
-	struct block_list* bl;
+	struct BlockList* bl;
 	mobs::MobData* md = NULL;
 	TBL_HOM* hd = NULL;
 	TBL_MER* mc = NULL;
@@ -19026,7 +19026,7 @@ BUILDIN_FUNC(getunitdata)
 /// setunitdata <unit id>,<type>,<value>;
 BUILDIN_FUNC(setunitdata)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	if(!script_rid2bl(2,bl))
 	{
@@ -19164,7 +19164,7 @@ BUILDIN_FUNC(setunitdata)
 					md->unlock_target(gettick());
 					break;
 				}
-				struct block_list* target = map_id2bl(value);
+				struct BlockList* target = map_id2bl(value);
 				if (!target) {
 					ShowWarning("buildin_setunitdata: Error in finding target for BL_MOB!\n");
 					return SCRIPT_CMD_FAILURE;
@@ -19237,7 +19237,7 @@ BUILDIN_FUNC(setunitdata)
 					units::stop_attack(&hd->bl);
 					break;
 				}
-				struct block_list* target = map_id2bl(value);
+				struct BlockList* target = map_id2bl(value);
 				if (!target) {
 					ShowWarning("buildin_setunitdata: Error in finding target for BL_HOM!\n");
 					return SCRIPT_CMD_FAILURE;
@@ -19351,7 +19351,7 @@ BUILDIN_FUNC(setunitdata)
 					units::stop_attack(&mc->bl);
 					break;
 				}
-				struct block_list* target = map_id2bl(value);
+				struct BlockList* target = map_id2bl(value);
 				if (!target) {
 					ShowWarning("buildin_setunitdata: Error in finding target for BL_MER!\n");
 					return SCRIPT_CMD_FAILURE;
@@ -19417,7 +19417,7 @@ BUILDIN_FUNC(setunitdata)
 					units::stop_attack(&ed->bl);
 					break;
 				}
-				struct block_list* target = map_id2bl(value);
+				struct BlockList* target = map_id2bl(value);
 				if (!target) {
 					ShowWarning("buildin_setunitdata: Error in finding target for BL_ELEM!\n");
 					return SCRIPT_CMD_FAILURE;
@@ -19524,7 +19524,7 @@ BUILDIN_FUNC(setunitdata)
 /// getunitname <unit id>;
 BUILDIN_FUNC(getunitname)
 {
-	struct block_list* bl = NULL;
+	struct BlockList* bl = NULL;
 
 	if(!script_rid2bl(2,bl)){
 		script_pushconststr(st, "Unknown");
@@ -19543,7 +19543,7 @@ BUILDIN_FUNC(getunitname)
 /// setunitname <unit id>,<name>;
 BUILDIN_FUNC(setunitname)
 {
-	struct block_list* bl = NULL;
+	struct BlockList* bl = NULL;
 	mobs::MobData* md = NULL;
 	TBL_HOM* hd = NULL;
 	TBL_PET* pd = NULL;
@@ -19601,7 +19601,7 @@ BUILDIN_FUNC(setunitname)
 BUILDIN_FUNC(setunittitle)
 {
 	int gid = script_getnum(st, 2);
-	block_list *bl = map_id2bl(gid);
+	BlockList *bl = map_id2bl(gid);
 
 	if (bl == nullptr) {
 		ShowWarning("buildin_setunittitle: Unable to find object with given game ID %d!\n", gid);
@@ -19627,7 +19627,7 @@ BUILDIN_FUNC(setunittitle)
 BUILDIN_FUNC(getunittitle)
 {
 	int gid = script_getnum(st, 2);
-	block_list *bl = map_id2bl(gid);
+	BlockList *bl = map_id2bl(gid);
 
 	if (bl == nullptr) {
 		ShowWarning("buildin_getunittitle: Unable to find object with given game ID %d!\n", gid);
@@ -19652,7 +19652,7 @@ BUILDIN_FUNC(getunittitle)
 /// unitwalkto(<unit_id>,<target_id>{,<event_label>}) -> <bool>
 BUILDIN_FUNC(unitwalk)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 	units::UnitData *ud = NULL;
 	const char *cmd = script_getfuncname(st), *done_label = "";
 	uint8 off = 5;
@@ -19689,7 +19689,7 @@ BUILDIN_FUNC(unitwalk)
 			add_timer(gettick()+50, units::delay_walktoxy_timer, bl->id, (x<<16)|(y&0xFFFF)); // Need timer to avoid mismatches
 		}
 	} else {
-		struct block_list* tbl = map_id2bl(script_getnum(st,3));
+		struct BlockList* tbl = map_id2bl(script_getnum(st,3));
 
 		if (!tbl) {
 			ShowError("buildin_unitwalk: Bad target destination.\n");
@@ -19717,7 +19717,7 @@ BUILDIN_FUNC(unitwalk)
 /// unitkill <unit_id>;
 BUILDIN_FUNC(unitkill)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	if(script_rid2bl(2,bl))
 		status_kill(bl);
@@ -19734,7 +19734,7 @@ BUILDIN_FUNC(unitwarp)
 	int map_idx;
 	short x;
 	short y;
-	struct block_list* bl;
+	struct BlockList* bl;
 	const char *mapname;
 
 	mapname = script_getstr(st, 3);
@@ -19769,8 +19769,8 @@ BUILDIN_FUNC(unitwarp)
 /// unitattack(<unit_id>,<target_id>{,<action type>}) -> <bool>
 BUILDIN_FUNC(unitattack)
 {
-	struct block_list* unit_bl;
-	struct block_list* target_bl = NULL;
+	struct BlockList* unit_bl;
+	struct BlockList* target_bl = NULL;
 	int actiontype = 0;
 
 	if (!script_rid2bl(2,unit_bl)) {
@@ -19822,7 +19822,7 @@ BUILDIN_FUNC(unitattack)
 /// unitstopattack <unit_id>;
 BUILDIN_FUNC(unitstopattack)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	if(script_rid2bl(2,bl))
 	{
@@ -19839,7 +19839,7 @@ BUILDIN_FUNC(unitstopattack)
 /// unitstopwalk <unit_id>{,<flag>};
 BUILDIN_FUNC(unitstopwalk)
 {
-	struct block_list* bl;
+	struct BlockList* bl;
 	int flag = USW_NONE;
 
 	if (script_hasdata(st, 3))
@@ -19873,7 +19873,7 @@ BUILDIN_FUNC(unitstopwalk)
 BUILDIN_FUNC(unittalk)
 {
 	const char* message;
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	message = script_getstr(st, 3);
 
@@ -19909,7 +19909,7 @@ BUILDIN_FUNC(unitskilluseid)
 {
 	int unit_id, target_id, casttime;
 	uint16 skill_id, skill_lv;
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	unit_id  = script_getnum(st,2);
 	if (script_isstring(st, 3)) {
@@ -19964,7 +19964,7 @@ BUILDIN_FUNC(unitskillusepos)
 {
 	int skill_x, skill_y, casttime;
 	uint16 skill_id, skill_lv;
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	if (script_isstring(st, 3)) {
 		const char *name = script_getstr(st, 3);
@@ -20194,7 +20194,7 @@ BUILDIN_FUNC(warpportal)
 	int tpx;
 	int tpy;
 	std::shared_ptr<s_skill_unit_group> group;
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	bl = map_id2bl(st->oid);
 	if( bl == NULL ) {
@@ -20318,7 +20318,7 @@ BUILDIN_FUNC(getfreecell)
 	struct script_data
 		*data_x = script_getdata(st, 3),
 		*data_y = script_getdata(st, 4);
-	struct block_list* bl = map_id2bl(st->rid);
+	struct BlockList* bl = map_id2bl(st->rid);
 	map_session_data *sd = nullptr;
 	int16 m, x = 0, y = 0;
 	int rx = -1, ry = -1, flag = 1;
@@ -21106,7 +21106,7 @@ BUILDIN_FUNC(bg_monster)
 BUILDIN_FUNC(bg_monster_set_team)
 {
 	mobs::MobData *md;
-	struct block_list *mbl;
+	BlockList *mbl;
 	int id = script_getnum(st,2),
 		bg_id = script_getnum(st,3);
 
@@ -21540,7 +21540,7 @@ BUILDIN_FUNC(instance_id)
  *
  * instance_warpall <map_name>,<x>,<y>{,<instance_id>};
  *------------------------------------------*/
-static int buildin_instance_warpall_sub(struct block_list *bl, va_list ap)
+static int buildin_instance_warpall_sub(BlockList *bl, va_list ap)
 {
 	unsigned int m = va_arg(ap,unsigned int);
 	int x = va_arg(ap,int);
@@ -22031,10 +22031,10 @@ BUILDIN_FUNC(setfont)
 	return SCRIPT_CMD_SUCCESS;
 }
 
-static int buildin_mobuseskill_sub(struct block_list *bl,va_list ap)
+static int buildin_mobuseskill_sub(BlockList *bl,va_list ap)
 {
 	mobs::MobData* md		= (mobs::MobData*)bl;
-	struct block_list *tbl;
+	BlockList *tbl;
 	int mobid		= va_arg(ap,int);
 	uint16 skill_id	= va_arg(ap,int);
 	uint16 skill_lv	= va_arg(ap,int);
@@ -22075,7 +22075,7 @@ static int buildin_mobuseskill_sub(struct block_list *bl,va_list ap)
  *------------------------------------------*/
 BUILDIN_FUNC(areamobuseskill)
 {
-	struct block_list center;
+	BlockList center;
 	int16 m;
 
 	if( (m = map_mapname2mapid(script_getstr(st,2))) < 0 ) {
@@ -22814,7 +22814,7 @@ BUILDIN_FUNC(getgroupitem) {
 
 /* cleanmap <map_name>;
  * cleanarea <map_name>, <x0>, <y0>, <x1>, <y1>; */
-static int atcommand_cleanfloor_sub(struct block_list *bl, va_list ap)
+static int atcommand_cleanfloor_sub(BlockList *bl, va_list ap)
 {
 	nullpo_ret(bl);
 	map_clearflooritem(bl);
@@ -23892,7 +23892,7 @@ BUILDIN_FUNC(getvar) {
  *   SELF - Message is sent only to player attached.
  **/
 BUILDIN_FUNC(showscript) {
-	struct block_list *bl = NULL;
+	BlockList *bl = NULL;
 	const char *msg = script_getstr(st,2);
 	int id = 0;
 	send_target target = AREA;
@@ -26289,7 +26289,7 @@ BUILDIN_FUNC(naviregisterwarp) {
  * mobs::setidleevent( <monster game ID>, "<event label>" )
  *------------------------------------------*/
 BUILDIN_FUNC(mob_setidleevent){
-	struct block_list* bl;
+	struct BlockList* bl;
 
 	if( !script_rid2bl( 2, bl ) ){
 		return SCRIPT_CMD_FAILURE;

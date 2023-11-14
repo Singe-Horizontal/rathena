@@ -13,7 +13,7 @@
 #include <common/mmo.hpp> // MAX_SKILL, struct square
 #include <common/timer.hpp>
 
-#include "map.hpp" // struct block_list
+#include "map.hpp" // struct BlockList
 
 enum damage_lv : uint8;
 enum sc_type : int16;
@@ -360,7 +360,7 @@ struct skill_timerskill {
 
 /// Skill unit
 struct skill_unit {
-	struct block_list bl;
+	BlockList bl;
 	std::shared_ptr<s_skill_unit_group> group; /// Skill group reference
 	t_tick limit;
 	int val1, val2;
@@ -502,7 +502,7 @@ int skill_get_inf( uint16 skill_id );
 int skill_get_ele( uint16 skill_id , uint16 skill_lv );
 int skill_get_max( uint16 skill_id );
 int skill_get_range( uint16 skill_id , uint16 skill_lv );
-int skill_get_range2(struct block_list *bl, uint16 skill_id, uint16 skill_lv, bool isServer);
+int skill_get_range2(BlockList *bl, uint16 skill_id, uint16 skill_lv, bool isServer);
 int skill_get_splash( uint16 skill_id , uint16 skill_lv );
 int skill_get_num( uint16 skill_id ,uint16 skill_lv );
 int skill_get_cast( uint16 skill_id ,uint16 skill_lv );
@@ -554,55 +554,55 @@ TIMER_FUNC(skill_castend_pos);
 TIMER_FUNC( skill_keep_using );
 int skill_castend_map( map_session_data *sd,uint16 skill_id, const char *map);
 
-int skill_cleartimerskill(struct block_list *src);
-int skill_addtimerskill(struct block_list *src,t_tick tick,int target,int x,int y,uint16 skill_id,uint16 skill_lv,int type,int flag);
+int skill_cleartimerskill(BlockList *src);
+int skill_addtimerskill(BlockList *src,t_tick tick,int target,int x,int y,uint16 skill_id,uint16 skill_lv,int type,int flag);
 
 // Results? Added
-int skill_additional_effect( struct block_list* src, struct block_list *bl,uint16 skill_id,uint16 skill_lv,int attack_type,enum damage_lv dmg_lv,t_tick tick);
-int skill_counter_additional_effect( struct block_list* src, struct block_list *bl,uint16 skill_id,uint16 skill_lv,int attack_type,t_tick tick);
-short skill_blown(struct block_list* src, struct block_list* target, char count, int8 dir, enum e_skill_blown flag);
-int skill_break_equip(struct block_list *src,struct block_list *bl, unsigned short where, int rate, int flag);
-int skill_strip_equip(struct block_list *src,struct block_list *bl, unsigned short where, int rate, int lv, int time);
+int skill_additional_effect( struct BlockList* src, BlockList *bl,uint16 skill_id,uint16 skill_lv,int attack_type,enum damage_lv dmg_lv,t_tick tick);
+int skill_counter_additional_effect( struct BlockList* src, BlockList *bl,uint16 skill_id,uint16 skill_lv,int attack_type,t_tick tick);
+short skill_blown(BlockList* src, struct BlockList* target, char count, int8 dir, enum e_skill_blown flag);
+int skill_break_equip(BlockList *src,BlockList *bl, unsigned short where, int rate, int flag);
+int skill_strip_equip(BlockList *src,BlockList *bl, unsigned short where, int rate, int lv, int time);
 // Skills unit
 std::shared_ptr<s_skill_unit_group> skill_id2group(int group_id);
-std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list* src, uint16 skill_id, uint16 skill_lv, int16 x, int16 y, int flag);
+std::shared_ptr<s_skill_unit_group> skill_unitsetting(BlockList* src, uint16 skill_id, uint16 skill_lv, int16 x, int16 y, int flag);
 struct skill_unit *skill_initunit (std::shared_ptr<s_skill_unit_group> group, int idx, int x, int y, int val1, int val2, bool hidden);
 int skill_delunit(struct skill_unit *unit);
-std::shared_ptr<s_skill_unit_group> skill_initunitgroup(struct block_list* src, int count, uint16 skill_id, uint16 skill_lv, int unit_id, t_tick limit, int interval);
+std::shared_ptr<s_skill_unit_group> skill_initunitgroup(BlockList* src, int count, uint16 skill_id, uint16 skill_lv, int unit_id, t_tick limit, int interval);
 int skill_delunitgroup_(std::shared_ptr<s_skill_unit_group> group, const char* file, int line, const char* func);
 #define skill_delunitgroup(group) skill_delunitgroup_(group,__FILE__,__LINE__,__func__)
-void skill_clear_unitgroup(struct block_list *src);
-int skill_clear_group(block_list *bl, uint8 flag);
-void ext_skill_unit_onplace(struct skill_unit *unit, struct block_list *bl, t_tick tick);
+void skill_clear_unitgroup(BlockList *src);
+int skill_clear_group(BlockList *bl, uint8 flag);
+void ext_skill_unit_onplace(struct skill_unit *unit, BlockList *bl, t_tick tick);
 int64 skill_unit_ondamaged(struct skill_unit *unit,int64 damage);
 
 // Skill unit visibility [Cydh]
 void skill_getareachar_skillunit_visibilty(struct skill_unit *su, enum send_target target);
-void skill_getareachar_skillunit_visibilty_single(struct skill_unit *su, struct block_list *bl);
+void skill_getareachar_skillunit_visibilty_single(struct skill_unit *su, BlockList *bl);
 
-int skill_castfix(struct block_list *bl, uint16 skill_id, uint16 skill_lv);
-int skill_castfix_sc(struct block_list *bl, double time, uint8 flag);
+int skill_castfix(BlockList *bl, uint16 skill_id, uint16 skill_lv);
+int skill_castfix_sc(BlockList *bl, double time, uint8 flag);
 #ifdef RENEWAL_CAST
 int skill_vfcastfix(struct block_list *bl, double time, uint16 skill_id, uint16 skill_lv);
 #endif
-int skill_delayfix(struct block_list *bl, uint16 skill_id, uint16 skill_lv);
-void skill_toggle_magicpower(struct block_list *bl, uint16 skill_id);
+int skill_delayfix(BlockList *bl, uint16 skill_id, uint16 skill_lv);
+void skill_toggle_magicpower(BlockList *bl, uint16 skill_id);
 //Check sc of bl [Muh]
-int skill_check_bl_sc(struct block_list *target, va_list ap);
+int skill_check_bl_sc(BlockList *target, va_list ap);
 
 // Skill conditions check and remove [Inkfish]
 bool skill_check_condition_castbegin(map_session_data *sd, uint16 skill_id, uint16 skill_lv);
 bool skill_check_condition_castend(map_session_data *sd, uint16 skill_id, uint16 skill_lv);
-int skill_check_condition_char_sub (struct block_list *bl, va_list ap);
+int skill_check_condition_char_sub (BlockList *bl, va_list ap);
 void skill_consume_requirement(map_session_data *sd, uint16 skill_id, uint16 skill_lv, short type);
 struct s_skill_condition skill_get_requirement(map_session_data *sd, uint16 skill_id, uint16 skill_lv);
 bool skill_disable_check(status_change &sc, uint16 skill_id);
-bool skill_pos_maxcount_check(struct block_list *src, int16 x, int16 y, uint16 skill_id, uint16 skill_lv, enum bl_type type, bool display_failure);
+bool skill_pos_maxcount_check(BlockList *src, int16 x, int16 y, uint16 skill_id, uint16 skill_lv, enum bl_type type, bool display_failure);
 
 int skill_check_pc_partner(map_session_data *sd, uint16 skill_id, uint16 *skill_lv, int range, int cast_flag);
-int skill_unit_move(struct block_list *bl,t_tick tick,int flag);
+int skill_unit_move(BlockList *bl,t_tick tick,int flag);
 void skill_unit_move_unit_group( std::shared_ptr<s_skill_unit_group> group, int16 m,int16 dx,int16 dy);
-void skill_unit_move_unit(struct block_list *bl, int dx, int dy);
+void skill_unit_move_unit(BlockList *bl, int dx, int dy);
 
 int skill_sit(map_session_data *sd, bool sitting);
 void skill_repairweapon(map_session_data *sd, int idx);
@@ -610,9 +610,9 @@ void skill_identify(map_session_data *sd,int idx);
 void skill_weaponrefine(map_session_data *sd,int idx); // [Celest]
 int skill_autospell(map_session_data *md,uint16 skill_id);
 
-int skill_calc_heal(struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv, bool heal);
+int skill_calc_heal(BlockList *src, BlockList *target, uint16 skill_id, uint16 skill_lv, bool heal);
 
-bool skill_check_cloaking(struct block_list *bl, struct status_change_entry *sce);
+bool skill_check_cloaking(BlockList *bl, struct status_change_entry *sce);
 int8 skill_isCopyable(map_session_data *sd, uint16 skill_id);
 
 // Abnormal status
@@ -620,7 +620,7 @@ bool skill_isNotOk(uint16 skill_id, map_session_data *sd);
 bool skill_isNotOk_hom(struct homun_data *hd, uint16 skill_id, uint16 skill_lv);
 bool skill_isNotOk_mercenary(uint16 skill_id, s_mercenary_data *md);
 
-bool skill_isNotOk_npcRange(struct block_list *src, uint16 skill_id, uint16 skill_lv, int pos_x, int pos_y);
+bool skill_isNotOk_npcRange(BlockList *src, uint16 skill_id, uint16 skill_lv, int pos_x, int pos_y);
 
 // Item creation
 short skill_can_produce_mix( map_session_data *sd, t_itemid nameid, int trigger, int qty);
@@ -629,9 +629,9 @@ bool skill_produce_mix( map_session_data *sd, uint16 skill_id, t_itemid nameid, 
 bool skill_arrow_create( map_session_data *sd, t_itemid nameid);
 
 // skills for the mob
-int skill_castend_nodamage_id( struct block_list *src, struct block_list *bl,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag );
-int skill_castend_damage_id( struct block_list* src, struct block_list *bl,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag );
-int skill_castend_pos2( struct block_list *src, int x,int y,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag);
+int skill_castend_nodamage_id( BlockList *src, BlockList *bl,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag );
+int skill_castend_damage_id( struct BlockList* src, BlockList *bl,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag );
+int skill_castend_pos2( BlockList *src, int x,int y,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag);
 
 int skill_blockpc_start(map_session_data*, int, t_tick);
 int skill_blockpc_get(map_session_data *sd, int skillid);
@@ -647,7 +647,7 @@ int skill_blockmerc_start (s_mercenary_data*,uint16 skill_id,int);
 	((id) >= CG_LONGINGFREEDOM && (id) <= CG_TAROTCARD)     || ((id) >= WA_SWING_DANCE && (id) <= WM_UNLIMITED_HUMMING_VOICE))
 
 // Skill action, (return dmg,heal)
-int64 skill_attack( int attack_type, struct block_list* src, struct block_list *dsrc,struct block_list *bl,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag );
+int64 skill_attack( int attack_type, struct BlockList* src, BlockList *dsrc,BlockList *bl,uint16 skill_id,uint16 skill_lv,t_tick tick,int flag );
 
 void skill_reload(void);
 
@@ -2740,7 +2740,7 @@ extern ReadingSpellbookDatabase reading_spellbook_db;
 
 void skill_spellbook(map_session_data &sd, t_itemid nameid);
 
-int skill_block_check(struct block_list *bl, enum sc_type type, uint16 skill_id);
+int skill_block_check(BlockList *bl, enum sc_type type, uint16 skill_id);
 
 struct s_skill_magicmushroom_db {
 	uint16 skill_id;
@@ -2758,14 +2758,14 @@ public:
 
 extern MagicMushroomDatabase magic_mushroom_db;
 
-int skill_maelstrom_suction(struct block_list *bl, va_list ap);
-bool skill_check_shadowform(struct block_list *bl, int64 damage, int hit);
+int skill_maelstrom_suction(BlockList *bl, va_list ap);
+bool skill_check_shadowform(BlockList *bl, int64 damage, int hit);
 
 /**
  * Ranger
  **/
-int skill_detonator(struct block_list *bl, va_list ap);
-bool skill_check_camouflage(struct block_list *bl, struct status_change_entry *sce);
+int skill_detonator(BlockList *bl, va_list ap);
+bool skill_check_camouflage(BlockList *bl, struct status_change_entry *sce);
 
 /**
  * Mechanic
@@ -2789,11 +2789,11 @@ int skill_get_elemental_type(uint16 skill_id, uint16 skill_lv);
 int skill_banding_count(map_session_data *sd);
 
 int skill_is_combo(uint16 skill_id);
-void skill_combo_toggle_inf(struct block_list* bl, uint16 skill_id, int inf);
-void skill_combo(struct block_list* src,struct block_list *dsrc, struct block_list *bl, uint16 skill_id, uint16 skill_lv, t_tick tick);
+void skill_combo_toggle_inf(BlockList* bl, uint16 skill_id, int inf);
+void skill_combo(BlockList* src,BlockList *dsrc, BlockList *bl, uint16 skill_id, uint16 skill_lv, t_tick tick);
 
 enum sc_type skill_get_sc(int16 skill_id);
-void skill_reveal_trap_inarea(struct block_list *src, int range, int x, int y);
+void skill_reveal_trap_inarea(BlockList *src, int range, int x, int y);
 int skill_get_time3(struct map_data *mapdata, uint16 skill_id, uint16 skill_lv);
 
 /// Variable name of copied skill by Plagiarism

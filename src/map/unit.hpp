@@ -11,7 +11,7 @@
 #include "skill.hpp" // struct skill_timerskill, struct skill_unit_group, struct skill_unit_group_tickset
 
 enum sc_type : int16;
-struct block_list;
+struct BlockList;
 class map_session_data;
 enum clr_type : uint8;
 
@@ -60,7 +60,7 @@ enum e_stop_walking {
 namespace units{
 class UnitData {
 public:
-	struct block_list *bl; ///link to owner object BL_PC|BL_MOB|BL_PET|BL_NPC|BL_HOM|BL_MER|BL_ELEM
+	BlockList *bl; ///link to owner object BL_PC|BL_MOB|BL_PET|BL_NPC|BL_HOM|BL_MER|BL_ELEM
 	struct walkpath_data walkpath;
 	struct skill_timerskill *skilltimerskill[MAX_SKILLTIMERSKILL];
 	std::vector<std::shared_ptr<s_skill_unit_group>> skillunits;
@@ -118,69 +118,69 @@ public:
 // PC, MOB, PET
 
 // Does walk action for unit
-int walktoxy(struct block_list *bl, short x, short y, unsigned char flag);
-int walktobl(struct block_list *bl, struct block_list *target, int range, unsigned char flag);
-void run_hit(struct block_list *bl, status_change *sc, map_session_data *sd, enum sc_type type);
-bool run(struct block_list *bl, map_session_data *sd, enum sc_type type);
-int calc_pos(struct block_list *bl, int tx, int ty, uint8 dir);
+int walktoxy(BlockList *bl, short x, short y, unsigned char flag);
+int walktobl(BlockList *bl, BlockList *target, int range, unsigned char flag);
+void run_hit(BlockList *bl, status_change *sc, map_session_data *sd, enum sc_type type);
+bool run(BlockList *bl, map_session_data *sd, enum sc_type type);
+int calc_pos(BlockList *bl, int tx, int ty, uint8 dir);
 TIMER_FUNC(delay_walktoxy_timer);
 TIMER_FUNC(delay_walktobl_timer);
 
 // Causes the target object to stop moving.
-int stop_walking(struct block_list *bl,int type);
-bool can_move(struct block_list *bl);
-int is_walking(struct block_list *bl);
-int set_walkdelay(struct block_list *bl, t_tick tick, t_tick delay, int type);
+int stop_walking(BlockList *bl,int type);
+bool can_move(BlockList *bl);
+int is_walking(BlockList *bl);
+int set_walkdelay(BlockList *bl, t_tick tick, t_tick delay, int type);
 
-int escape(struct block_list *bl, struct block_list *target, short dist, uint8 flag = 0);
+int escape(BlockList *bl, BlockList *target, short dist, uint8 flag = 0);
 
 // Instant unit changes
-bool movepos(struct block_list *bl, short dst_x, short dst_y, int easy, bool checkpath);
-int warp(struct block_list *bl, short map, short x, short y, clr_type type);
-bool setdir(block_list *bl, uint8 dir, bool send_update = true);
-uint8 getdir(struct block_list *bl);
-int blown(struct block_list* bl, int dx, int dy, int count, enum e_skill_blown flag);
-enum e_unit_blown blown_immune(struct block_list* bl, uint8 flag);
+bool movepos(BlockList *bl, short dst_x, short dst_y, int easy, bool checkpath);
+int warp(BlockList *bl, short map, short x, short y, clr_type type);
+bool setdir(BlockList *bl, uint8 dir, bool send_update = true);
+uint8 getdir(BlockList *bl);
+int blown(BlockList* bl, int dx, int dy, int count, enum e_skill_blown flag);
+enum e_unit_blown blown_immune(BlockList* bl, uint8 flag);
 
 // Can-reach checks
-bool can_reach_pos(struct block_list *bl,int x,int y,int easy);
-bool can_reach_bl(struct block_list *bl,struct block_list *tbl, int range, int easy, short *x, short *y);
+bool can_reach_pos(BlockList *bl,int x,int y,int easy);
+bool can_reach_bl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y);
 
 // Unit attack functions
-int stopattack(struct block_list *bl, va_list ap);
-void stop_attack(struct block_list *bl);
-int attack(struct block_list *src,int target_id,int continuous);
-int cancel_combo(struct block_list *bl);
-bool can_attack(struct block_list *bl, int target_id);
+int stopattack(BlockList *bl, va_list ap);
+void stop_attack(BlockList *bl);
+int attack(BlockList *src,int target_id,int continuous);
+int cancel_combo(BlockList *bl);
+bool can_attack(BlockList *bl, int target_id);
 
 // Cast on a unit
-int skilluse_id(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv);
-int skilluse_pos(struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv);
-int skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range = false);
-int skilluse_pos2( struct block_list *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range = false);
+int skilluse_id(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv);
+int skilluse_pos(BlockList *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv);
+int skilluse_id2(BlockList *src, int target_id, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range = false);
+int skilluse_pos2( BlockList *src, short skill_x, short skill_y, uint16 skill_id, uint16 skill_lv, int casttime, int castcancel, bool ignore_range = false);
 
 // Step timer used for delayed attack and skill use
 TIMER_FUNC(step_timer);
-void stop_stepaction(struct block_list *bl);
+void stop_stepaction(BlockList *bl);
 
 // Cancel unit cast
-int skillcastcancel(struct block_list *bl, char type);
+int skillcastcancel(BlockList *bl, char type);
 
-int counttargeted(struct block_list *bl);
+int counttargeted(BlockList *bl);
 
 // UnitData
-void dataset(struct block_list *bl);
+void dataset(BlockList *bl);
 
 // Remove unit
-UnitData* bl2ud(struct block_list *bl);
+UnitData* bl2ud(BlockList *bl);
 void remove_map_pc(map_session_data *sd, clr_type clrtype);
-void refresh(struct block_list *bl, bool walking = false);
+void refresh(BlockList *bl, bool walking = false);
 void free_pc(map_session_data *sd);
 #define unit_remove_map(bl,clrtype) units::remove_map_(bl,clrtype,__FILE__,__LINE__,__func__)
-int remove_map_(struct block_list *bl, clr_type clrtype, const char* file, int line, const char* func);
-int free(struct block_list *bl, clr_type clrtype);
-int changeviewsize(struct block_list *bl,short size);
-int changetarget(struct block_list *bl,va_list ap);
+int remove_map_(BlockList *bl, clr_type clrtype, const char* file, int line, const char* func);
+int free(BlockList *bl, clr_type clrtype);
+int changeviewsize(BlockList *bl,short size);
+int changetarget(BlockList *bl,va_list ap);
 
 void do_init_unit(void);
 void do_final_unit(void);

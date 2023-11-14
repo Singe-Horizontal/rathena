@@ -17,7 +17,7 @@
 #include "script.hpp"
 
 enum send_target : uint8;
-struct block_list;
+struct BlockList;
 
 extern int16 instance_start;
 extern int instance_count;

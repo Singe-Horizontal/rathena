@@ -85,7 +85,7 @@ enum e_hom_state2 : uint8 {
 };
 
 struct homun_data {
-	struct block_list bl;
+	BlockList bl;
 	units::UnitData ud;
 	struct view_data *vd;
 	struct status_data base_status, battle_status;

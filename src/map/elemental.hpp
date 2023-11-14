@@ -73,7 +73,7 @@ struct s_elemental_db {
 };
 
 struct s_elemental_data {
-	block_list bl;
+	BlockList bl;
 	units::UnitData ud;
 	view_data *vd;
 	status_data base_status, battle_status;
@@ -124,9 +124,9 @@ t_tick elemental_get_lifetime(s_elemental_data *ed);
 
 int elemental_unlocktarget(s_elemental_data *ed);
 bool elemental_skillnotok(uint16 skill_id, s_elemental_data *ed);
-int elemental_set_target( map_session_data *sd, block_list *bl );
+int elemental_set_target( map_session_data *sd, BlockList *bl );
 int elemental_clean_effect(s_elemental_data *ed);
-int elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick);
+int elemental_action(s_elemental_data *ed, BlockList *bl, t_tick tick);
 struct s_skill_condition elemental_skill_get_requirements(uint16 skill_id, uint16 skill_lv);
 
 #define elemental_stop_walking(ed, type) units::stop_walking(&(ed)->bl, type)

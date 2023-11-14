@@ -7,7 +7,7 @@
 #include <common/cbasetypes.hpp>
 #include <common/mmo.hpp>
 
-struct block_list;
+struct BlockList;
 class map_session_data;
 namespace mobs{
 class MobData;

@@ -1125,7 +1125,7 @@ void achievement_update_objective(map_session_data *sd, enum e_achievement_group
  *   int Party ID
  *   int Mob ID
  */
-int achievement_update_objective_sub(block_list *bl, va_list ap)
+int achievement_update_objective_sub(BlockList *bl, va_list ap)
 {
 	map_session_data *sd;
 	int mob_id, party_id;

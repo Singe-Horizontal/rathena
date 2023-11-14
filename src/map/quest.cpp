@@ -691,7 +691,7 @@ int quest_delete(map_session_data *sd, int quest_id)
  *   int Mob Size
  *   int Mob Element
  */
-int quest_update_objective_sub(struct block_list *bl, va_list ap)
+int quest_update_objective_sub(BlockList *bl, va_list ap)
 {
 	nullpo_ret(bl);
 

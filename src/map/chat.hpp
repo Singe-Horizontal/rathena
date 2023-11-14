@@ -4,7 +4,7 @@
 #ifndef CHAT_HPP
 #define CHAT_HPP
 
-#include "map.hpp" // struct block_list, CHATROOM_TITLE_SIZE
+#include "map.hpp" // struct BlockList, CHATROOM_TITLE_SIZE
 
 class map_session_data;
 struct chat_data;
@@ -12,7 +12,7 @@ struct chat_data;
 #define MAX_CHAT_USERS 20
 
 struct chat_data {
-	struct block_list bl;            // data for this map object
+	BlockList bl;            // data for this map object
 	char title[CHATROOM_TITLE_SIZE]; // room title 
 	char pass[CHATROOM_PASS_SIZE];   // password
 	bool pub;                        // private/public flag
@@ -23,7 +23,7 @@ struct chat_data {
 	uint32 minLvl;					 // minimum base level to join
 	uint32 maxLvl;					 // maximum base level allowed to join
 	map_session_data* usersd[MAX_CHAT_USERS];
-	struct block_list* owner;
+	struct BlockList* owner;
 	char npc_event[EVENT_NAME_LENGTH];
 	DBMap* kick_list;				//DBMap of users who were kicked from this chat
 };
