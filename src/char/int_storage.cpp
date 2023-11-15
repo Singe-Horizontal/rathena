@@ -301,8 +301,8 @@ void mapif_itembound_ack(int fd, int account_id, int guild_id)
  * @param count
  * @author [Cydh]
  */
-void mapif_itembound_store2gstorage(int fd, int guild_id, struct item items[], unsigned short count) {
-	int size = 8 + sizeof(struct item) * MAX_INVENTORY, i;
+void mapif_itembound_store2gstorage(int fd, int guild_id, Item items[], unsigned short count) {
+	int size = 8 + sizeof(struct Item) * MAX_INVENTORY, i;
 
 	WFIFOHEAD(fd, size);
 	WFIFOW(fd, 0) = 0x3857;
@@ -311,7 +311,7 @@ void mapif_itembound_store2gstorage(int fd, int guild_id, struct item items[], u
 	for (i = 0; i < count && i < MAX_INVENTORY; i++) {
 		if (!&items[i])
 			continue;
-		memcpy(WFIFOP(fd, 8 + (i * sizeof(struct item))), &items[i], sizeof(struct item));
+		memcpy(WFIFOP(fd, 8 + (i * sizeof(struct Item))), &items[i], sizeof(struct Item));
 	}
 	WFIFOW(fd, 4) = i;
 	WFIFOSET(fd, size);
@@ -327,7 +327,7 @@ bool mapif_parse_itembound_retrieve(int fd)
 	StringBuf buf;
 	SqlStmt* stmt;
 	unsigned short i = 0, count = 0;
-	struct item item, items[MAX_INVENTORY];
+	Item item, items[MAX_INVENTORY];
 	int j, guild_id = RFIFOW(fd,10);
 	uint32 char_id = RFIFOL(fd,2), account_id = RFIFOL(fd,6);
 
@@ -375,7 +375,7 @@ bool mapif_parse_itembound_retrieve(int fd)
 	}
 	memset(&items, 0, sizeof(items));
 	while( SQL_SUCCESS == SqlStmt_NextRow(stmt) )
-		memcpy(&items[count++], &item, sizeof(struct item));
+		memcpy(&items[count++], &item, sizeof(struct Item));
 	Sql_FreeResult(sql_handle);
 
 	ShowInfo("Found '" CL_WHITE "%d" CL_RESET "' guild bound item(s) from CID = " CL_WHITE "%d" CL_RESET ", AID = %d, Guild ID = " CL_WHITE "%d" CL_RESET ".\n", count, char_id, account_id, guild_id);

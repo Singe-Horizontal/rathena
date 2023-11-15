@@ -344,7 +344,7 @@ int npc_chat_sub(BlockList* bl, va_list ap)
 	struct npc_parse* npcParse = (struct npc_parse *) nd->chatdb;
 	char* msg;
 	int len, i;
-	map_session_data* sd;
+	MapSessionData* sd;
 	struct npc_label_list* lst;
 	struct pcrematch_set* pcreset;
 	struct pcrematch_entry* e;
@@ -355,7 +355,7 @@ int npc_chat_sub(BlockList* bl, va_list ap)
 	
 	msg = va_arg(ap,char*);
 	len = va_arg(ap,int);
-	sd = va_arg(ap,map_session_data *);
+	sd = va_arg(ap,MapSessionData *);
 	
 	// iterate across all active sets
 	for (pcreset = npcParse->active; pcreset != NULL; pcreset = pcreset->next)

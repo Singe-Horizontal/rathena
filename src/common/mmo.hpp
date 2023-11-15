@@ -306,7 +306,7 @@ struct s_item_randomoption {
 	char param;
 } __attribute__((packed));
 
-struct item {
+struct Item {
 	int id;
 	t_itemid nameid;
 	short amount;
@@ -457,10 +457,10 @@ struct s_storage {
 		unsigned put : 1;
 	} state;
 	union { // Max for inventory, storage, cart, and guild storage are 818 each without changing this struct and struct item [2016/08/14]
-		struct item items_inventory[MAX_INVENTORY];
-		struct item items_storage[MAX_STORAGE];
-		struct item items_cart[MAX_CART];
-		struct item items_guild[MAX_GUILD_STORAGE];
+		Item items_inventory[MAX_INVENTORY];
+		Item items_storage[MAX_STORAGE];
+		Item items_cart[MAX_CART];
+		Item items_guild[MAX_GUILD_STORAGE];
 	} u;
 };
 
@@ -659,7 +659,7 @@ struct mail_message {
 	time_t timestamp; // marks when the message was sent
 
 	uint32 zeny;
-	struct item item[MAIL_MAX_ITEM];
+	Item item[MAIL_MAX_ITEM];
 };
 
 struct mail_data {
@@ -676,7 +676,7 @@ struct auction_data {
 	int buyer_id;
 	char buyer_name[NAME_LENGTH];
 
-	struct item item;
+	Item item;
 	// This data is required for searching, as itemdb is not read by char server
 	char item_name[ITEM_NAME_LENGTH];
 	short type;
@@ -707,14 +707,14 @@ struct party {
 	struct party_member member[MAX_PARTY];
 };
 
-class map_session_data;
+class MapSessionData;
 struct guild_member {
 	uint32 account_id, char_id;
 	short hair,hair_color,gender,class_,lv;
 	t_exp exp;
 	short online,position;
 	char name[NAME_LENGTH];
-	map_session_data *sd;
+	MapSessionData *sd;
 	unsigned char modified;
 	uint32 last_login;
 };
@@ -1142,7 +1142,7 @@ struct clan{
 	char master[NAME_LENGTH];
 	char map[MAP_NAME_LENGTH_EXT];
 	short max_member, connect_member;
-	map_session_data *members[MAX_CLAN];
+	MapSessionData *members[MAX_CLAN];
 	struct clan_alliance alliance[MAX_CLANALLIANCE];
 	unsigned short instance_id;
 };

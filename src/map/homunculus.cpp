@@ -30,7 +30,7 @@ using namespace rathena;
 static TIMER_FUNC(hom_hungry);
 
 //For holding the view data of npc classes. [Skotlex]
-static struct view_data hom_viewdb[MAX_HOMUNCULUS_CLASS];
+static ViewData hom_viewdb[MAX_HOMUNCULUS_CLASS];
 
 struct s_homun_intimacy_grade {
 	//const char *grade;
@@ -126,7 +126,7 @@ short hom_skill_get_index(uint16 skill_id) {
 * @param class_ Homunculus class
 * @return vd
 */
-struct view_data* hom_GetViewData(int class_)
+ViewData* hom_GetViewData(int class_)
 {	//Returns the viewdata for homunculus
 	if (homdb_checkid(class_))
 		return &hom_viewdb[class_-HM_CLASS_BASE];
@@ -243,7 +243,7 @@ void hom_damage(struct homun_data *hd) {
 int hom_dead(struct homun_data *hd)
 {
 	//There's no intimacy penalties on death (from Tharis)
-	map_session_data *sd = hd->master;
+	MapSessionData *sd = hd->master;
 
 	clif_emotion(&hd->bl, ET_KEK);
 
@@ -269,7 +269,7 @@ int hom_dead(struct homun_data *hd)
 * @param sd
 * @param flag 1: then HP needs to be 80% or above. 2: then set to morph state.
 */
-int hom_vaporize(map_session_data *sd, int flag)
+int hom_vaporize(MapSessionData *sd, int flag)
 {
 	struct homun_data *hd;
 
@@ -311,7 +311,7 @@ int hom_vaporize(map_session_data *sd, int flag)
 */
 int hom_delete(struct homun_data *hd, int emote)
 {
-	map_session_data *sd;
+	MapSessionData *sd;
 	nullpo_ret(hd);
 	sd = hd->master;
 
@@ -616,7 +616,7 @@ int hom_evolution(struct homun_data *hd)
 		return 0 ;
 	}
 
-	map_session_data *sd = hd->master;
+	MapSessionData *sd = hd->master;
 
 	if (!sd)
 		return 0;
@@ -671,7 +671,7 @@ int hom_evolution(struct homun_data *hd)
 int hom_mutate(struct homun_data *hd, int homun_id)
 {
 	struct s_homunculus *hom;
-	map_session_data *sd;
+	MapSessionData *sd;
 	int m_class, m_id, prev_class = 0;
 	nullpo_ret(hd);
 
@@ -764,7 +764,7 @@ void hom_gainexp(struct homun_data *hd,t_exp exp)
 
 	clif_specialeffect(&hd->bl,EF_HO_UP,AREA);
 	status_calc_homunculus(hd, SCO_NONE);
-	status_percent_heal(&hd->bl, 100, 100);
+	StatusPercentHeal(&hd->bl, 100, 100);
 }
 
 /**
@@ -837,7 +837,7 @@ void hom_save(struct homun_data *hd)
 * @param sd
 * @param type
 */
-void hom_menu(map_session_data *sd, int type)
+void hom_menu(MapSessionData *sd, int type)
 {
 	nullpo_retv(sd);
 	if (sd->hd == NULL)
@@ -863,7 +863,7 @@ void hom_menu(map_session_data *sd, int type)
 * @param sd
 * @param hd
 */
-int hom_food(map_session_data *sd, struct homun_data *hd)
+int hom_food(MapSessionData *sd, struct homun_data *hd)
 {
 	int i, foodID, emotion;
 
@@ -920,7 +920,7 @@ int hom_food(map_session_data *sd, struct homun_data *hd)
 * Timer to reduce hunger level
 */
 static TIMER_FUNC(hom_hungry){
-	map_session_data *sd;
+	MapSessionData *sd;
 	struct homun_data *hd;
 
 	sd = map_id2sd(id);
@@ -983,7 +983,7 @@ int hom_hungry_timer_delete(struct homun_data *hd)
 /**
 * Change homunculus name
 */
-int hom_change_name(map_session_data *sd,char *name)
+int hom_change_name(MapSessionData *sd,char *name)
 {
 	int i;
 	struct homun_data *hd;
@@ -1009,7 +1009,7 @@ int hom_change_name(map_session_data *sd,char *name)
 * @param name
 * @param flag
 */
-void hom_change_name_ack(map_session_data *sd, char* name, int flag)
+void hom_change_name_ack(MapSessionData *sd, char* name, int flag)
 {
 	struct homun_data *hd = sd->hd;
 	if (!hom_is_active(hd))
@@ -1032,7 +1032,7 @@ void hom_change_name_ack(map_session_data *sd, char* name, int flag)
 * @param sd
 * @param hom
 */
-void hom_alloc(map_session_data *sd, struct s_homunculus *hom)
+void hom_alloc(MapSessionData *sd, struct s_homunculus *hom)
 {
 	nullpo_retv(sd);
 
@@ -1103,7 +1103,7 @@ void hom_init_timers(struct homun_data * hd)
  * @param sd
  * @return False:failure, True:sucess
  */
-bool hom_call(map_session_data *sd)
+bool hom_call(MapSessionData *sd)
 {
 	struct homun_data *hd;
 
@@ -1159,7 +1159,7 @@ bool hom_call(map_session_data *sd)
  */
 int hom_recv_data(uint32 account_id, struct s_homunculus *sh, int flag)
 {
-	map_session_data *sd;
+	MapSessionData *sd;
 	struct homun_data *hd;
 	bool created = false;
 
@@ -1189,7 +1189,7 @@ int hom_recv_data(uint32 account_id, struct s_homunculus *sh, int flag)
 
 	hd = sd->hd;
 	if (created)
-		status_percent_heal(&hd->bl, 100, 100);
+		StatusPercentHeal(&hd->bl, 100, 100);
 
 	if(hd && hd->homunculus.hp && !hd->homunculus.vaporize && hd->bl.prev == NULL && sd->bl.prev != NULL)
 	{
@@ -1216,7 +1216,7 @@ int hom_recv_data(uint32 account_id, struct s_homunculus *sh, int flag)
 * @param class_
 * @return True:Success; False:Failed
 */
-bool hom_create_request(map_session_data *sd, int class_)
+bool hom_create_request(MapSessionData *sd, int class_)
 {
 	nullpo_ret(sd);
 
@@ -1262,7 +1262,7 @@ bool hom_create_request(map_session_data *sd, int class_)
  * @param y : Y map coordinate
  * @return 0:failure, 1:success
  */
-int hom_ressurect(map_session_data* sd, unsigned char per, short x, short y)
+int hom_ressurect(MapSessionData* sd, unsigned char per, short x, short y)
 {
 	struct homun_data* hd;
 	nullpo_ret(sd);
@@ -1310,7 +1310,7 @@ int hom_ressurect(map_session_data* sd, unsigned char per, short x, short y)
 */
 void hom_revive(struct homun_data *hd, unsigned int hp, unsigned int sp)
 {
-	map_session_data *sd = hd->master;
+	MapSessionData *sd = hd->master;
 	hd->homunculus.hp = hd->battle_status.hp;
 	if (!sd)
 		return;
@@ -1353,7 +1353,7 @@ void hom_reset_stats(struct homun_data *hd)
 */
 int hom_shuffle(struct homun_data *hd)
 {
-	map_session_data *sd;
+	MapSessionData *sd;
 	int lv, i, skillpts;
 	struct s_skill b_skill[MAX_HOMUNSKILL];
 
@@ -1396,7 +1396,7 @@ int hom_shuffle(struct homun_data *hd)
 	hd->homunculus.skillpts = skillpts;
 	clif_homskillinfoblock(sd);
 	status_calc_homunculus(hd, SCO_NONE);
-	status_percent_heal(&hd->bl, 100, 100);
+	StatusPercentHeal(&hd->bl, 100, 100);
 	clif_specialeffect(&hd->bl,EF_HO_UP,AREA);
 
 	return 1;
@@ -1539,7 +1539,7 @@ uint64 HomunculusDatabase::parseBodyNode(const ryml::NodeRef &node) {
 		if (!this->asString(node, "Food", food))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname(food.c_str());
+		std::shared_ptr<ItemData> item = item_db.search_aegisname(food.c_str());
 
 		if (item == nullptr) {
 			this->invalidWarning(node["Food"], "Invalid homunculus Food %s, skipping.\n", food.c_str());

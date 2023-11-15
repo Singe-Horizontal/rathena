@@ -145,7 +145,7 @@ static char log_feedingtype2char(e_log_feeding_type type) {
 static bool should_log_item(t_itemid nameid, int amount, int refine)
 {
 	int filter = log_config.filter;
-	std::shared_ptr<item_data> id = item_db.find(nameid);
+	std::shared_ptr<ItemData> id = item_db.find(nameid);
 
 	if( id == nullptr )
 		return false;
@@ -170,7 +170,7 @@ static bool should_log_item(t_itemid nameid, int amount, int refine)
 
 
 /// logs items, that summon monsters
-void log_branch(map_session_data* sd)
+void log_branch(MapSessionData* sd)
 {
 	nullpo_retv(sd);
 
@@ -206,7 +206,7 @@ void log_branch(map_session_data* sd)
 }
 
 /// logs item transactions (generic)
-void log_pick(int id, int16 m, e_log_pick_type type, int amount, struct item* itm)
+void log_pick(int id, int16 m, e_log_pick_type type, int amount, Item* itm)
 {
 	nullpo_retv(itm);
 	if( ( log_config.enable_logs&type ) == 0 )
@@ -263,7 +263,7 @@ void log_pick(int id, int16 m, e_log_pick_type type, int amount, struct item* it
 }
 
 /// logs item transactions (players)
-void log_pick_pc(map_session_data* sd, e_log_pick_type type, int amount, struct item* itm)
+void log_pick_pc(MapSessionData* sd, e_log_pick_type type, int amount, Item* itm)
 {
 	nullpo_retv(sd);
 	log_pick(sd->status.char_id, sd->bl.m, type, amount, itm);
@@ -271,7 +271,7 @@ void log_pick_pc(map_session_data* sd, e_log_pick_type type, int amount, struct 
 
 
 /// logs item transactions (monsters)
-void log_pick_mob(mobs::MobData* md, e_log_pick_type type, int amount, struct item* itm)
+void log_pick_mob(mobs::MobData* md, e_log_pick_type type, int amount, Item* itm)
 {
 	nullpo_retv(md);
 	log_pick(md->mob_id, md->bl.m, type, amount, itm);
@@ -279,7 +279,7 @@ void log_pick_mob(mobs::MobData* md, e_log_pick_type type, int amount, struct it
 
 /// logs zeny transactions
 // ids are char_ids
-void log_zeny(const map_session_data &target_sd, e_log_pick_type type, uint32 src_id, int amount)
+void log_zeny(const MapSessionData &target_sd, e_log_pick_type type, uint32 src_id, int amount)
 {
 	if( !log_config.zeny || ( log_config.zeny != 1 && abs(amount) < log_config.zeny ) )
 		return;
@@ -310,7 +310,7 @@ void log_zeny(const map_session_data &target_sd, e_log_pick_type type, uint32 sr
 
 
 /// logs MVP monster rewards
-void log_mvpdrop(map_session_data* sd, int monster_id, t_itemid nameid, t_exp exp )
+void log_mvpdrop(MapSessionData* sd, int monster_id, t_itemid nameid, t_exp exp )
 {
 	nullpo_retv(sd);
 
@@ -343,7 +343,7 @@ void log_mvpdrop(map_session_data* sd, int monster_id, t_itemid nameid, t_exp ex
 
 
 /// logs used atcommands
-void log_atcommand(map_session_data* sd, const char* message)
+void log_atcommand(MapSessionData* sd, const char* message)
 {
 	nullpo_retv(sd);
 
@@ -420,7 +420,7 @@ void log_npc( struct npc_data* nd, const char* message ){
 }
 
 /// logs messages passed to script command 'logmes'
-void log_npc(map_session_data* sd, const char* message)
+void log_npc(MapSessionData* sd, const char* message)
 {
 	nullpo_retv(sd);
 
@@ -506,7 +506,7 @@ void log_chat(e_log_chat_type type, int type_id, int src_charid, int src_accid, 
 }
 
 /// logs cash transactions
-void log_cash( map_session_data* sd, e_log_pick_type type, e_log_cash_type cash_type, int amount ){
+void log_cash( MapSessionData* sd, e_log_pick_type type, e_log_cash_type cash_type, int amount ){
 	nullpo_retv( sd );
 
 	if( !log_config.cash )
@@ -539,7 +539,7 @@ void log_cash( map_session_data* sd, e_log_pick_type type, e_log_cash_type cash_
  * @param type Log type, @see e_log_feeding_type
  * @param nameid Item used as food
  **/
-void log_feeding(map_session_data *sd, e_log_feeding_type type, t_itemid nameid) {
+void log_feeding(MapSessionData *sd, e_log_feeding_type type, t_itemid nameid) {
 	unsigned int target_id = 0, intimacy = 0;
 	unsigned short target_class = 0;
 

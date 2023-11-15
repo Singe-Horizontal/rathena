@@ -12,7 +12,7 @@
 
 #include "map.hpp"
 
-class map_session_data;
+class MapSessionData;
 enum e_size : uint8;
 
 struct s_quest_dropitem {
@@ -69,15 +69,15 @@ public:
 
 extern QuestDatabase quest_db;
 
-int quest_pc_login(map_session_data *sd);
+int quest_pc_login(MapSessionData *sd);
 
-int quest_add(map_session_data *sd, int quest_id);
-int quest_delete(map_session_data *sd, int quest_id);
-int quest_change(map_session_data *sd, int qid1, int qid2);
+int quest_add(MapSessionData *sd, int quest_id);
+int quest_delete(MapSessionData *sd, int quest_id);
+int quest_change(MapSessionData *sd, int qid1, int qid2);
 int quest_update_objective_sub(BlockList *bl, va_list ap);
-void quest_update_objective(map_session_data *sd, mobs::MobData* md);
-int quest_update_status(map_session_data *sd, int quest_id, e_quest_state status);
-int quest_check(map_session_data *sd, int quest_id, e_quest_check_type type);
+void quest_update_objective(MapSessionData *sd, mobs::MobData* md);
+int quest_update_status(MapSessionData *sd, int quest_id, e_quest_state status);
+int quest_check(MapSessionData *sd, int quest_id, e_quest_check_type type);
 
 std::shared_ptr<s_quest_db> quest_search(int quest_id);
 

@@ -52,14 +52,14 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt32(node, "Id", nameid))
 		return 0;
 
-	std::shared_ptr<item_data> item = this->find(nameid);
+	std::shared_ptr<ItemData> item = this->find(nameid);
 	bool exists = item != nullptr;
 
 	if (!exists) {
 		if (!this->nodesExist(node, { "AegisName", "Name" }))
 			return 0;
 
-		item = std::make_shared<item_data>();
+		item = std::make_shared<ItemData>();
 		item->nameid = nameid;
 		item->flag.available = true;
 	}
@@ -74,7 +74,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			this->invalidWarning(node["AegisName"], "AegisName \"%s\" exceeds maximum of %d characters, capping...\n", name.c_str(), ITEM_NAME_LENGTH - 1);
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 		if (id != nullptr && id->nameid != nameid) {
 			this->invalidWarning(node["AegisName"], "Found duplicate item Aegis name for %s, skipping.\n", name.c_str());
@@ -611,7 +611,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "AliasName", view))
 			return 0;
 
-		std::shared_ptr<item_data> view_data = item_db.search_aegisname( view.c_str() );
+		std::shared_ptr<ItemData> view_data = item_db.search_aegisname( view.c_str() );
 
 		if (view_data == nullptr) {
 			this->invalidWarning(node["AliasName"], "Unable to change the alias because %s is an unknown item.\n", view.c_str());
@@ -1116,7 +1116,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 void ItemDatabase::loadingFinished(){
 	for (auto &tmp_item : item_db) {
-		std::shared_ptr<item_data> item = tmp_item.second;
+		std::shared_ptr<ItemData> item = tmp_item.second;
 
 		// Items that are consumed only after target confirmation
 		if (item->type == IT_DELAYCONSUME) {
@@ -1178,7 +1178,7 @@ void ItemDatabase::loadingFinished(){
 
 	if( !this->exists( ITEMID_DUMMY ) ){
 		// Create dummy item
-		std::shared_ptr<item_data> dummy_item = std::make_shared<item_data>();
+		std::shared_ptr<ItemData> dummy_item = std::make_shared<ItemData>();
 
 		dummy_item->nameid = ITEMID_DUMMY;
 		dummy_item->weight = 1;
@@ -1201,7 +1201,7 @@ void ItemDatabase::loadingFinished(){
  * @param node: the already parsed item data.
  * @return gender that should be used.
  */
-e_sex ItemDatabase::defaultGender( const ryml::NodeRef& node, std::shared_ptr<item_data> id ){
+e_sex ItemDatabase::defaultGender( const ryml::NodeRef& node, std::shared_ptr<ItemData> id ){
 	if (id->nameid == WEDDING_RING_M) //Grom Ring
 		return SEX_MALE;
 	if (id->nameid == WEDDING_RING_F) //Bride Ring
@@ -1227,7 +1227,7 @@ e_sex ItemDatabase::defaultGender( const ryml::NodeRef& node, std::shared_ptr<it
 	return static_cast<e_sex>( id->sex );
 }
 
-std::shared_ptr<item_data> ItemDatabase::search_aegisname( const char* name ){
+std::shared_ptr<ItemData> ItemDatabase::search_aegisname( const char* name ){
 	// Create a copy
 	std::string lowername = name;
 	// Convert it to lower
@@ -1236,13 +1236,13 @@ std::shared_ptr<item_data> ItemDatabase::search_aegisname( const char* name ){
 	return util::umap_find( this->aegisNameToItemDataMap, lowername );
 }
 
-std::shared_ptr<item_data> ItemDatabase::searchname( const char *name ){
+std::shared_ptr<ItemData> ItemDatabase::searchname( const char *name ){
 	// Create a copy
 	std::string lowername = name;
 	// Convert it to lower
 	util::tolower( lowername );
 
-	std::shared_ptr<item_data> result = util::umap_find( this->aegisNameToItemDataMap, lowername );
+	std::shared_ptr<ItemData> result = util::umap_find( this->aegisNameToItemDataMap, lowername );
 
 	if( result != nullptr ){
 		return result;
@@ -1257,14 +1257,14 @@ std::shared_ptr<item_data> ItemDatabase::searchname( const char *name ){
 * @return <ITEML> string for the item
 * @author [Cydh]
 **/
-std::string ItemDatabase::create_item_link(struct item& item, std::shared_ptr<item_data>& data){
+std::string ItemDatabase::create_item_link(struct Item& item, std::shared_ptr<ItemData>& data){
 	if( data == nullptr ){
 		ShowError( "Tried to create itemlink for unknown item %u.\n", item.nameid );
 		return "Unknown item";
 	}
 
 	std::string itemstr;
-	struct item_data* id = data.get();
+	struct ItemData* id = data.get();
 
 // All these dates are unconfirmed
 #if PACKETVER >= 20151104
@@ -1351,20 +1351,20 @@ std::string ItemDatabase::create_item_link(struct item& item, std::shared_ptr<it
 	return itemstr;
 }
 
-std::string ItemDatabase::create_item_link( std::shared_ptr<item_data>& data ){
-	struct item it = {};
+std::string ItemDatabase::create_item_link( std::shared_ptr<ItemData>& data ){
+	Item it = {};
 	it.nameid = data->nameid;
 
 	return this->create_item_link( it, data );
 }
 
-std::string ItemDatabase::create_item_link(struct item& item) {
-	std::shared_ptr<item_data> data = this->find(item.nameid);
+std::string ItemDatabase::create_item_link(struct Item& item) {
+	std::shared_ptr<ItemData> data = this->find(item.nameid);
 
 	return this->create_item_link(item, data);
 }
 
-std::string ItemDatabase::create_item_link_for_mes( std::shared_ptr<item_data>& data, bool use_brackets, const char* name ){
+std::string ItemDatabase::create_item_link_for_mes( std::shared_ptr<ItemData>& data, bool use_brackets, const char* name ){
 	if( data == nullptr ){
 		return "Unknown item";
 	}
@@ -1454,7 +1454,7 @@ bool ItemGroupDatabase::item_exists(uint16 group_id, t_itemid nameid)
  * @param group_id: Item Group ID
  * @return Item's index if found or -1 otherwise
  */
-int16 ItemGroupDatabase::item_exists_pc(map_session_data *sd, uint16 group_id)
+int16 ItemGroupDatabase::item_exists_pc(MapSessionData *sd, uint16 group_id)
 {
 	std::shared_ptr<s_item_group_db> group = this->find(group_id);
 
@@ -1487,7 +1487,7 @@ uint64 LaphineSynthesisDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1557,7 +1557,7 @@ uint64 LaphineSynthesisDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+			std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 			if( id == nullptr ){
 				this->invalidWarning( requirementNode["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1658,7 +1658,7 @@ uint64 LaphineUpgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1709,7 +1709,7 @@ uint64 LaphineUpgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+			std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 			if( id == nullptr ){
 				this->invalidWarning( targetNode["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1873,7 +1873,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1906,7 +1906,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+				std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 				if( id == nullptr ){
 					this->invalidWarning( baseNode["BaseItem"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2007,7 +2007,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+					std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 					if( id == nullptr ){
 						this->invalidWarning( materialNode["Material"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2048,7 +2048,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+				std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 				if( id == nullptr ){
 					this->invalidWarning( baseNode["ResultItem"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2157,7 +2157,7 @@ bool ItemEnchantDatabase::parseMaterials( const ryml::NodeRef& node, std::unorde
 				return false;
 			}
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname( name.c_str() );
+			std::shared_ptr<ItemData> item = item_db.search_aegisname( name.c_str() );
 
 			if( item == nullptr ){
 				this->invalidWarning( materialNode["Material"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2223,7 +2223,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 			c4::from_chars( it.key(), &name );
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname( name.c_str() );
+			std::shared_ptr<ItemData> item = item_db.search_aegisname( name.c_str() );
 
 			if( item == nullptr ){
 				this->invalidWarning( it, "Unknown item \"%s\".\n", name.c_str() );
@@ -2482,7 +2482,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 								return 0;
 							}
 
-							std::shared_ptr<item_data> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
+							std::shared_ptr<ItemData> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
 
 							if( enchant_item == nullptr ){
 								this->invalidWarning( itemNode["Item"], "Unknown item \"%s\".\n", enchant_name.c_str() );
@@ -2531,7 +2531,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
+					std::shared_ptr<ItemData> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
 
 					if( enchant_item == nullptr ){
 						this->invalidWarning( enchantNode["Item"], "Unknown item \"%s\".\n", enchant_name.c_str() );
@@ -2583,7 +2583,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
+					std::shared_ptr<ItemData> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
 
 					if( enchant_item == nullptr ){
 						this->invalidWarning( upgradeNode["Enchant"], "Unknown item \"%s\".\n", enchant_name.c_str() );
@@ -2609,7 +2609,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 							return 0;
 						}
 
-						std::shared_ptr<item_data> upgrade_item = item_db.search_aegisname( upgrade_name.c_str() );
+						std::shared_ptr<ItemData> upgrade_item = item_db.search_aegisname( upgrade_name.c_str() );
 
 						if( upgrade_item == nullptr ){
 							this->invalidWarning( upgradeNode["Upgrade"], "Unknown item \"%s\".\n", upgrade_name.c_str() );
@@ -2677,7 +2677,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2726,7 +2726,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+				std::shared_ptr<ItemData> id = item_db.search_aegisname( name.c_str() );
 
 				if( id == nullptr ){
 					this->invalidWarning( itemNode["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2848,10 +2848,10 @@ ItemPackageDatabase item_package_db;
  * @param str
  * @return Number of matches item
  *------------------------------------------*/
-uint16 itemdb_searchname_array(std::map<t_itemid, std::shared_ptr<item_data>> &data, uint16 size, const char *str)
+uint16 itemdb_searchname_array(std::map<t_itemid, std::shared_ptr<ItemData>> &data, uint16 size, const char *str)
 {
 	for (const auto &item : item_db) {
-		std::shared_ptr<item_data> id = item.second;
+		std::shared_ptr<ItemData> id = item.second;
 
 		if (id == nullptr)
 			continue;
@@ -2921,11 +2921,11 @@ t_itemid ItemGroupDatabase::get_random_item_id(uint16 group_id, uint8 sub_group)
 * @param group_id: The group ID of item that obtained by player
 * @param *group: struct s_item_group from itemgroup_db[group_id].random[idx] or itemgroup_db[group_id].must[sub_group][idx]
 */
-static void itemdb_pc_get_itemgroup_sub(map_session_data *sd, bool identify, std::shared_ptr<s_item_group_entry> data) {
+static void itemdb_pc_get_itemgroup_sub(MapSessionData *sd, bool identify, std::shared_ptr<s_item_group_entry> data) {
 	if (data == nullptr)
 		return;
 
-	item tmp = {};
+	Item tmp = {};
 
 	tmp.nameid = data->nameid;
 	tmp.bound = data->bound;
@@ -2986,7 +2986,7 @@ static void itemdb_pc_get_itemgroup_sub(map_session_data *sd, bool identify, std
 * @param nameid: The item that trigger this item group
 * @return val: 0:success, 1:no sd, 2:invalid item group
 */
-uint8 ItemGroupDatabase::pc_get_itemgroup(uint16 group_id, bool identify, map_session_data *sd) {
+uint8 ItemGroupDatabase::pc_get_itemgroup(uint16 group_id, bool identify, MapSessionData *sd) {
 	nullpo_retr(1,sd);
 
 	std::shared_ptr<s_item_group_db> group = this->find(group_id);
@@ -3017,11 +3017,11 @@ uint8 ItemGroupDatabase::pc_get_itemgroup(uint16 group_id, bool identify, map_se
 	return 0;
 }
 
-/** Searches for the item_data. Use this to check if item exists or not.
+/** Searches for the ItemData. Use this to check if item exists or not.
 * @param nameid
-* @return *item_data if item is exist, or NULL if not
+* @return *ItemData if item is exist, or NULL if not
 */
-std::shared_ptr<item_data> itemdb_exists(t_itemid nameid) {
+std::shared_ptr<ItemData> itemdb_exists(t_itemid nameid) {
 	return item_db.find(nameid);
 }
 
@@ -3106,10 +3106,10 @@ static void itemdb_jobid2mapid(uint64 bclass[3], e_mapid jobmask, bool active)
 /*==========================================
  * Loads an item from the db. If not found, it will return the dummy item.
  * @param nameid
- * @return *item_data or *dummy_item if item not found
+ * @return *ItemData or *dummy_item if item not found
  *------------------------------------------*/
-struct item_data* itemdb_search(t_itemid nameid) {
-	std::shared_ptr<item_data> id;
+struct ItemData* itemdb_search(t_itemid nameid) {
+	std::shared_ptr<ItemData> id;
 
 	if (!(id = item_db.find(nameid))) {
 		ShowWarning("itemdb_search: Item ID %u does not exists in the item_db. Using dummy data.\n", nameid);
@@ -3122,7 +3122,7 @@ struct item_data* itemdb_search(t_itemid nameid) {
 * @param id Item data
 * @return True if item is equip, false otherwise
 */
-bool itemdb_isequip2(struct item_data *id) {
+bool itemdb_isequip2(struct ItemData *id) {
 	nullpo_ret(id);
 	switch (id->type) {
 		case IT_WEAPON:
@@ -3139,7 +3139,7 @@ bool itemdb_isequip2(struct item_data *id) {
 * @param id Item data
 * @return True if item is stackable, false otherwise
 */
-bool itemdb_isstackable2(struct item_data *id)
+bool itemdb_isstackable2(struct ItemData *id)
 {
 	nullpo_ret(id);
 	return id->isStackable();
@@ -3148,54 +3148,54 @@ bool itemdb_isstackable2(struct item_data *id)
 /*==========================================
  * Trade Restriction functions [Skotlex]
  *------------------------------------------*/
-bool itemdb_isdropable_sub(struct item_data *item, int gmlv, int unused) {
+bool itemdb_isdropable_sub(struct ItemData *item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.drop) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_cantrade_sub(struct item_data* item, int gmlv, int gmlv2) {
+bool itemdb_cantrade_sub(struct ItemData* item, int gmlv, int gmlv2) {
 	return (item && (!(item->flag.trade_restriction.trade) || gmlv >= item->gm_lv_trade_override || gmlv2 >= item->gm_lv_trade_override));
 }
 
-bool itemdb_canpartnertrade_sub(struct item_data* item, int gmlv, int gmlv2) {
+bool itemdb_canpartnertrade_sub(struct ItemData* item, int gmlv, int gmlv2) {
 	return (item && (item->flag.trade_restriction.trade_partner || gmlv >= item->gm_lv_trade_override || gmlv2 >= item->gm_lv_trade_override));
 }
 
-bool itemdb_cansell_sub(struct item_data* item, int gmlv, int unused) {
+bool itemdb_cansell_sub(struct ItemData* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.sell) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_cancartstore_sub(struct item_data* item, int gmlv, int unused) {
+bool itemdb_cancartstore_sub(struct ItemData* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.cart) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_canstore_sub(struct item_data* item, int gmlv, int unused) {
+bool itemdb_canstore_sub(struct ItemData* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.storage) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_canguildstore_sub(struct item_data* item, int gmlv, int unused) {
+bool itemdb_canguildstore_sub(struct ItemData* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.guild_storage) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_canmail_sub(struct item_data* item, int gmlv, int unused) {
+bool itemdb_canmail_sub(struct ItemData* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.mail) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_canauction_sub(struct item_data* item, int gmlv, int unused) {
+bool itemdb_canauction_sub(struct ItemData* item, int gmlv, int unused) {
 	return (item && (!(item->flag.trade_restriction.auction) || gmlv >= item->gm_lv_trade_override));
 }
 
-bool itemdb_isrestricted(struct item* item, int gmlv, int gmlv2, bool (*func)(struct item_data*, int, int))
+bool itemdb_isrestricted(Item* item, int gmlv, int gmlv2, bool (*func)(struct ItemData*, int, int))
 {
-	struct item_data* item_data = itemdb_search(item->nameid);
+	struct ItemData* itemData = itemdb_search(item->nameid);
 	int i;
 
-	if (!func(item_data, gmlv, gmlv2))
+	if (!func(itemData, gmlv, gmlv2))
 		return false;
 
-	if(item_data->slots == 0 || itemdb_isspecial(item->card[0]))
+	if(itemData->slots == 0 || itemdb_isspecial(item->card[0]))
 		return true;
 
-	for(i = 0; i < item_data->slots; i++) {
+	for(i = 0; i < itemData->slots; i++) {
 		if (!item->card[i]) continue;
 		if (!func(itemdb_search(item->card[i]), gmlv, gmlv2))
 			return false;
@@ -3203,7 +3203,7 @@ bool itemdb_isrestricted(struct item* item, int gmlv, int gmlv2, bool (*func)(st
 	return true;
 }
 
-bool itemdb_ishatched_egg(struct item* item) {
+bool itemdb_ishatched_egg(Item* item) {
 	if (item && item->card[0] == CARD0_PET && item->attribute == 1)
 		return true;
 	return false;
@@ -3328,7 +3328,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 					random->data[index] = entry;
 				}
 
-				std::shared_ptr<item_data> item = nullptr;
+				std::shared_ptr<ItemData> item = nullptr;
 
 				if (this->nodeExists(listit, "Item")) {
 					std::string item_name;
@@ -3560,7 +3560,7 @@ static bool itemdb_read_noequip(char* str[], int columns, int current) {
 	nameid = strtoul(str[0], nullptr, 10);
 	flag = atoi(str[1]);
 
-	std::shared_ptr<item_data> id = item_db.find(nameid);
+	std::shared_ptr<ItemData> id = item_db.find(nameid);
 
 	if( id == nullptr )
 	{
@@ -3624,7 +3624,7 @@ uint64 ComboDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			std::string item_name;
 			c4::from_chars(it.val(), &item_name);
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname(item_name.c_str());
+			std::shared_ptr<ItemData> item = item_db.search_aegisname(item_name.c_str());
 
 			if (item == nullptr) {
 				this->invalidWarning(it, "Invalid item %s, skipping.\n", item_name.c_str());
@@ -3718,10 +3718,10 @@ uint64 ComboDatabase::parseBodyNode(const ryml::NodeRef& node) {
 }
 
 void ComboDatabase::loadingFinished() {
-	// Populate item_data to refer to the combo
+	// Populate ItemData to refer to the combo
 	for (const auto &combo : *this) {
 		for (const auto &itm : combo.second->nameid) {
-			std::shared_ptr<item_data> it = item_db.find(itm);
+			std::shared_ptr<ItemData> it = item_db.find(itm);
 
 			if (it != nullptr)
 				it->combos.push_back(combo.second);
@@ -4226,7 +4226,7 @@ static int itemdb_read_sqldb(void) {
 * @param m Map ID
 * @return true: can't be used; false: can be used
 */
-bool itemdb_isNoEquip(struct item_data *id, uint16 m) {
+bool itemdb_isNoEquip(struct ItemData *id, uint16 m) {
 	if (!id->flag.no_equip)
 		return false;
 	
@@ -4436,7 +4436,7 @@ bool RandomOptionGroupDatabase::add_option(const ryml::NodeRef& node, std::share
 	return true;
 }
 
-void s_random_opt_group::apply( struct item& item ){
+void s_random_opt_group::apply( struct Item& item ){
 	auto apply_sub = []( s_item_randomoption& item_option, const std::shared_ptr<s_random_opt_group_entry>& option ){
 		item_option.id = option->id;
 		item_option.value = rnd_value( option->min_value, option->max_value );
@@ -4716,7 +4716,7 @@ static void itemdb_read(void) {
  * Initialize / Finalize
  *------------------------------------------*/
 
-bool item_data::isStackable()
+bool ItemData::isStackable()
 {
 	switch (this->type) {
 		case IT_WEAPON:
@@ -4729,7 +4729,7 @@ bool item_data::isStackable()
 	return true;
 }
 
-int item_data::inventorySlotNeeded(int quantity)
+int ItemData::inventorySlotNeeded(int quantity)
 {
 	return (this->flag.guid || !this->isStackable()) ? quantity : 1;
 }
@@ -4739,12 +4739,12 @@ void itemdb_gen_itemmoveinfo()
 	ShowInfo("itemdb_gen_itemmoveinfo: Generating itemmoveinfov5.txt.\n");
 	auto starttime = std::chrono::system_clock::now();
 	auto os = std::ofstream("./generated/clientside/data/itemmoveinfov5.txt", std::ios::trunc);
-	std::map<t_itemid, std::shared_ptr<item_data>> sorted_itemdb(item_db.begin(), item_db.end());
+	std::map<t_itemid, std::shared_ptr<ItemData>> sorted_itemdb(item_db.begin(), item_db.end());
 
 	os << "// ItemID,\tDrop,\tVending,\tStorage,\tCart,\tNpc Sale,\tMail,\tAuction,\tGuildStorage\n";
 	os << "// This format does not accept blank lines. Be careful.\n";
 
-	item_data tmp_id{};
+	ItemData tmp_id{};
 	for (auto it = sorted_itemdb.begin(); it != sorted_itemdb.end(); ++it) {
 		if (it->second->type == IT_UNKNOWN)
 			continue;
@@ -4765,7 +4765,7 @@ void itemdb_gen_itemmoveinfo()
 */
 void itemdb_reload(void) {
 	struct s_mapiterator* iter;
-	map_session_data* sd;
+	MapSessionData* sd;
 
 	do_final_itemdb();
 
@@ -4777,7 +4777,7 @@ void itemdb_reload(void) {
 
 	// readjust itemdb pointer cache for each player
 	iter = mapit_geteachpc();
-	for( sd = (map_session_data*)mapit_first(iter); mapit_exists(iter); sd = (map_session_data*)mapit_next(iter) ) {
+	for( sd = (MapSessionData*)mapit_first(iter); mapit_exists(iter); sd = (MapSessionData*)mapit_next(iter) ) {
 		memset(sd->item_delay, 0, sizeof(sd->item_delay));  // reset item delays
 		sd->combos.clear(); // clear combo bonuses
 		pc_setinventorydata(sd);

@@ -317,9 +317,9 @@ int mapif_parse_achievement_reward(int fd){
 		char mail_receiver[NAME_LENGTH];
 		char mail_title[MAIL_TITLE_LENGTH];
 		char mail_text[MAIL_BODY_LENGTH];
-		struct item item;
+		Item item;
 
-		memset(&item, 0, sizeof(struct item));
+		memset(&item, 0, sizeof(struct Item));
 		item.nameid = RFIFOL(fd, 10);
 		item.amount = RFIFOW(fd, 14);
 		item.identify = 1;

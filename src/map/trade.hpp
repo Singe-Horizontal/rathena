@@ -4,14 +4,14 @@
 #ifndef TRADE_HPP
 #define TRADE_HPP
 
-class map_session_data;
+class MapSessionData;
 
-void trade_traderequest(map_session_data *sd, map_session_data *target_sd);
-void trade_tradeack(map_session_data *sd,int type);
-void trade_tradeadditem(map_session_data *sd,short index,short amount);
-void trade_tradeaddzeny(map_session_data *sd,int amount);
-void trade_tradeok(map_session_data *sd);
-void trade_tradecancel(map_session_data *sd);
-void trade_tradecommit(map_session_data *sd);
+void trade_traderequest(MapSessionData *sd, MapSessionData *target_sd);
+void trade_tradeack(MapSessionData *sd,int type);
+void trade_tradeadditem(MapSessionData *sd,short index,short amount);
+void trade_tradeaddzeny(MapSessionData *sd,int amount);
+void trade_tradeok(MapSessionData *sd);
+void trade_tradecancel(MapSessionData *sd);
+void trade_tradecommit(MapSessionData *sd);
 
 #endif /* TRADE_HPP */

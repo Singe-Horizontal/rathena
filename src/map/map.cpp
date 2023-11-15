@@ -435,7 +435,7 @@ int map_delblock(BlockList* bl)
 int map_moveblock(BlockList *bl, int x1, int y1, t_tick tick)
 {
 	int x0 = bl->x, y0 = bl->y;
-	status_change *sc = NULL;
+	StatusChange *sc = NULL;
 	int moveblock = ( x0/BLOCK_SIZE != x1/BLOCK_SIZE || y0/BLOCK_SIZE != y1/BLOCK_SIZE);
 
 	if (!bl->prev) {
@@ -1845,7 +1845,7 @@ bool map_closest_freecell(int16 m, int16 *x, int16 *y, int type, int flag)
 /*==========================================
  * Add an item in floor to location (m,x,y) and add restriction for those who could pickup later
  * NB : If charids are null their no restriction for pickup
- * @param item_data : item attributes
+ * @param ItemData : item attributes
  * @param amount : items quantity
  * @param m : mapid
  * @param x : x coordinates
@@ -1858,7 +1858,7 @@ bool map_closest_freecell(int16 m, int16 *x, int16 *y, int type, int flag)
  * @param canShowEffect: enable pillar effect on the dropped item (if set in the database)
  * @return 0:failure, x:item_gid [MIN_FLOORITEM;MAX_FLOORITEM]==[2;START_ACCOUNT_NUM]
  *------------------------------------------*/
-int map_addflooritem(struct item *item, int amount, int16 m, int16 x, int16 y, int first_charid, int second_charid, int third_charid, int flags, unsigned short mob_id, bool canShowEffect)
+int map_addflooritem(Item *item, int amount, int16 m, int16 x, int16 y, int first_charid, int second_charid, int third_charid, int flags, unsigned short mob_id, bool canShowEffect)
 {
 	int r;
 	struct flooritem_data *fitem = NULL;
@@ -1929,7 +1929,7 @@ void map_addnickdb(int charid, const char* nick)
 	safestrncpy(p->nick, nick, sizeof(p->nick));
 
 	while( p->requests ) {
-		map_session_data* sd;
+		MapSessionData* sd;
 		struct charid_request* req;
 		req = p->requests;
 		p->requests = req->next;
@@ -1952,7 +1952,7 @@ void map_delnickdb(int charid, const char* name)
 
 	while( p->requests ) {
 		struct charid_request* req;
-		map_session_data* sd;
+		MapSessionData* sd;
 		req = p->requests;
 		p->requests = req->next;
 		sd = map_charid2sd(req->charid);
@@ -1966,11 +1966,11 @@ void map_delnickdb(int charid, const char* name)
 /// Notifies sd of the nick of charid.
 /// Uses the name in the character if online.
 /// Uses the name in nick_db if offline.
-void map_reqnickdb(map_session_data * sd, int charid)
+void map_reqnickdb(MapSessionData * sd, int charid)
 {
 	struct charid2nick* p;
 	struct charid_request* req;
-	map_session_data* tsd;
+	MapSessionData* tsd;
 
 	nullpo_retv(sd);
 
@@ -2050,7 +2050,7 @@ void map_deliddb(BlockList *bl)
 /*==========================================
  * Standard call when a player connection is closed.
  *------------------------------------------*/
-int map_quit(map_session_data *sd) {
+int map_quit(MapSessionData *sd) {
 	int i;
 
 	if (sd->state.keepshop == false) { // Close vending/buyingstore
@@ -2132,7 +2132,7 @@ int map_quit(map_session_data *sd) {
 	// Return loot to owner
 	if( sd->pd ) pet_lootitem_drop(sd->pd, sd);
 
-	if (sd->ed) // Remove effects here rather than units::remove_map_pc so we don't clear on Teleport/map change.
+	if (sd->ed) // Remove effects here rather than units::RemoveMapPc so we don't clear on Teleport/map change.
 		elemental_clean_effect(sd->ed);
 
 	if (sd->state.permanent_speed == 1) sd->state.permanent_speed = 0; // Remove lock so speed is set back to normal at login.
@@ -2142,7 +2142,7 @@ int map_quit(map_session_data *sd) {
 	if( mapdata->instance_id > 0 )
 		instance_delusers(mapdata->instance_id);
 
-	units::remove_map_pc(sd,CLR_RESPAWN);
+	units::RemoveMapPc(sd,CLR_RESPAWN);
 
 	if (sd->state.vending)
 		idb_remove(vending_getdb(), sd->status.char_id);
@@ -2164,9 +2164,9 @@ int map_quit(map_session_data *sd) {
 /*==========================================
  * Lookup, id to session (player,mob,npc,homon,merc..)
  *------------------------------------------*/
-map_session_data * map_id2sd(int id){
+MapSessionData * map_id2sd(int id){
 	if (id <= 0) return NULL;
-	return (map_session_data*)idb_get(pc_db,id);
+	return (MapSessionData*)idb_get(pc_db,id);
 }
 
 mobs::MobData * map_id2md(int id){
@@ -2208,7 +2208,7 @@ struct chat_data* map_id2cd(int id){
 const char* map_charid2nick(int charid)
 {
 	struct charid2nick *p;
-	map_session_data* sd;
+	MapSessionData* sd;
 
 	sd = map_charid2sd(charid);
 	if( sd )
@@ -2223,9 +2223,9 @@ const char* map_charid2nick(int charid)
 }
 
 /// Returns the map_session_data of the charid or NULL if the char is not online.
-map_session_data* map_charid2sd(int charid)
+MapSessionData* map_charid2sd(int charid)
 {
-	return (map_session_data*)uidb_get(charid_db, charid);
+	return (MapSessionData*)uidb_get(charid_db, charid);
 }
 
 /*==========================================
@@ -2233,10 +2233,10 @@ map_session_data* map_charid2sd(int charid)
  * (without sensitive case if necessary)
  * return map_session_data pointer or NULL
  *------------------------------------------*/
-map_session_data * map_nick2sd(const char *nick, bool allow_partial)
+MapSessionData * map_nick2sd(const char *nick, bool allow_partial)
 {
-	map_session_data* sd;
-	map_session_data* found_sd;
+	MapSessionData* sd;
+	MapSessionData* found_sd;
 	struct s_mapiterator* iter;
 	size_t nicklen;
 	int qty = 0;
@@ -2325,13 +2325,13 @@ mobs::MobData * map_id2boss(int id)
 
 /// Applies func to all the players in the db.
 /// Stops iterating if func returns -1.
-void map_foreachpc(int (*func)(map_session_data* sd, va_list args), ...)
+void map_foreachpc(int (*func)(MapSessionData* sd, va_list args), ...)
 {
 	DBIterator* iter;
-	map_session_data* sd;
+	MapSessionData* sd;
 
 	iter = db_iterator(pc_db);
-	for( sd = (map_session_data*)dbi_first(iter); dbi_exists(iter); sd = (map_session_data*)dbi_next(iter) )
+	for( sd = (MapSessionData*)dbi_first(iter); dbi_exists(iter); sd = (MapSessionData*)dbi_next(iter) )
 	{
 		va_list args;
 		int ret;
@@ -2727,10 +2727,10 @@ int map_addinstancemap(int src_m, int instance_id, bool no_mapflag)
  *------------------------------------------*/
 static int map_instancemap_leave(BlockList *bl, va_list ap)
 {
-	map_session_data* sd;
+	MapSessionData* sd;
 
 	nullpo_retr(0, bl);
-	nullpo_retr(0, sd = (map_session_data *)bl);
+	nullpo_retr(0, sd = (MapSessionData *)bl);
 
 	pc_setpos_savepoint( *sd );
 
@@ -3347,7 +3347,7 @@ bool map_iwall_set(int16 m, int16 x, int16 y, int size, int8 dir, bool shootable
 	return true;
 }
 
-void map_iwall_get(map_session_data *sd) {
+void map_iwall_get(MapSessionData *sd) {
 	struct iwall_data *iwall;
 	DBIterator* iter;
 	int16 x1, y1;
@@ -3877,7 +3877,7 @@ int parse_console(const char* buf){
 	int16 x = 0;
 	int16 y = 0;
 	int n;
-	map_session_data sd;
+	MapSessionData sd;
 
 	strcpy(sd.status.name, "console");
 
@@ -4354,7 +4354,7 @@ int cleanup_sub(BlockList *bl, va_list ap)
 
 	switch(bl->type) {
 		case BL_PC:
-			map_quit((map_session_data *) bl);
+			map_quit((MapSessionData *) bl);
 			break;
 		case BL_NPC:
 			npc_unload((struct npc_data *)bl,false);
@@ -4418,7 +4418,7 @@ void map_skill_duration_add(struct map_data *mapd, uint16 skill_id, uint16 per) 
  */
 static int map_mapflag_pvp_start_sub(BlockList *bl, va_list ap)
 {
-	map_session_data *sd = map_id2sd(bl->id);
+	MapSessionData *sd = map_id2sd(bl->id);
 
 	nullpo_retr(0, sd);
 
@@ -4443,7 +4443,7 @@ static int map_mapflag_pvp_start_sub(BlockList *bl, va_list ap)
  */
 static int map_mapflag_pvp_stop_sub(BlockList *bl, va_list ap)
 {
-	map_session_data* sd = map_id2sd(bl->id);
+	MapSessionData* sd = map_id2sd(bl->id);
 
 	clif_pvpset(sd, 0, 0, 2);
 
@@ -4586,7 +4586,7 @@ bool map_setmapflag_sub(int16 m, enum e_mapflag mapflag, bool status, union u_ma
 			if (!status) {
 				clif_map_property_mapall(m, MAPPROPERTY_NOTHING);
 				map_foreachinmap(map_mapflag_pvp_stop_sub, m, BL_PC);
-				map_foreachinmap(units::stopattack, m, BL_CHAR, 0);
+				map_foreachinmap(units::StopAttack_sub, m, BL_CHAR, 0);
 			} else {
 				if (!battle_config.pk_mode) {
 					clif_map_property_mapall(m, MAPPROPERTY_FREEPVPZONE);
@@ -4623,7 +4623,7 @@ bool map_setmapflag_sub(int16 m, enum e_mapflag mapflag, bool status, union u_ma
 			mapdata->setMapFlag(mapflag, status); // Must come first to properly set map property
 			if (!status) {
 				clif_map_property_mapall(m, MAPPROPERTY_NOTHING);
-				map_foreachinmap(units::stopattack, m, BL_CHAR, 0);
+				map_foreachinmap(units::StopAttack_sub, m, BL_CHAR, 0);
 			} else {
 				clif_map_property_mapall(m, MAPPROPERTY_AGITZONE);
 				if (mapdata->getMapFlag(MF_PVP)) {
@@ -4832,7 +4832,7 @@ void MapServer::finalize(){
 
 	//Ladies and babies first.
 	struct s_mapiterator* iter = mapit_getallusers();
-	for( map_session_data* sd = (TBL_PC*)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC*)mapit_next(iter) )
+	for( MapSessionData* sd = (TBL_PC*)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC*)mapit_next(iter) )
 		map_quit(sd);
 	mapit_free(iter);
 
@@ -4928,7 +4928,7 @@ void MapServer::finalize(){
 	ShowStatus("Finished.\n");
 }
 
-static int map_abort_sub(map_session_data* sd, va_list ap)
+static int map_abort_sub(MapSessionData* sd, va_list ap)
 {
 	chrif_save(sd, CSAVE_QUIT|CSAVE_INVENTORY|CSAVE_CART);
 	return 1;
@@ -5044,7 +5044,7 @@ int map_msg_config_read(const char *cfgName, int lang){
 	}
 	return 0;
 }
-const char* map_msg_txt(map_session_data *sd, int msg_number){
+const char* map_msg_txt(MapSessionData *sd, int msg_number){
 	struct msg_data *mdb;
 	uint8 lang = 0; //default
 	if(sd && sd->langtype) lang = sd->langtype;
@@ -5136,7 +5136,7 @@ void map_data::copyFlags(const map_data& other) {
 void MapServer::handle_shutdown(){
 	ShowStatus("Shutting down...\n");
 
-	map_session_data* sd;
+	MapSessionData* sd;
 	struct s_mapiterator* iter = mapit_getallusers();
 	for( sd = (TBL_PC*)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC*)mapit_next(iter) )
 		clif_GM_kick(NULL, sd);

@@ -529,12 +529,12 @@ int char_mmo_char_tosql(uint32 char_id, struct mmo_charstatus* p){
 }
 
 /// Saves an array of 'item' entries into the specified table.
-int char_memitemdata_to_sql(const struct item items[], int max, int id, enum storage_type tableswitch, uint8 stor_id) {
+int char_memitemdata_to_sql(const Item items[], int max, int id, enum storage_type tableswitch, uint8 stor_id) {
 	StringBuf buf;
 	SqlStmt* stmt;
 	int i, j, offset = 0, errors = 0;
 	const char *tablename, *selectoption, *printname;
-	struct item item; // temp storage variable
+	Item item; // temp storage variable
 	bool* flag; // bit array for inventory matching
 	bool found;
 
@@ -749,7 +749,7 @@ bool char_memitemdata_from_sql(struct s_storage* p, int max, int id, enum storag
 	StringBuf buf;
 	SqlStmt* stmt;
 	int i,j, offset = 0, max2;
-	struct item item, *storage;
+	Item item, *storage;
 	const char *tablename, *selectoption, *printname;
 
 	switch (tableswitch) {

@@ -6,7 +6,7 @@
 
 #include <common/cbasetypes.hpp>
 
-class map_session_data;
+class MapSessionData;
 struct duel {
 	int members_count;
 	int invites_count;
@@ -19,13 +19,13 @@ size_t duel_counttotal();
 size_t duel_countactives();
 
 //Duel functions // [LuzZza]
-size_t duel_create(map_session_data* sd, const unsigned int maxpl);
-bool duel_invite(const size_t did, map_session_data* sd, map_session_data* target_sd);
-bool duel_accept(const size_t did, map_session_data* sd);
-bool duel_reject(const size_t did, map_session_data* sd);
-bool duel_leave(const size_t did, map_session_data* sd);
-void duel_showinfo(const size_t did, map_session_data* sd);
-bool duel_checktime(map_session_data* sd);
+size_t duel_create(MapSessionData* sd, const unsigned int maxpl);
+bool duel_invite(const size_t did, MapSessionData* sd, MapSessionData* target_sd);
+bool duel_accept(const size_t did, MapSessionData* sd);
+bool duel_reject(const size_t did, MapSessionData* sd);
+bool duel_leave(const size_t did, MapSessionData* sd);
+void duel_showinfo(const size_t did, MapSessionData* sd);
+bool duel_checktime(MapSessionData* sd);
 bool duel_check_player_limit( struct duel& pDuel );
 
 void do_init_duel(void);

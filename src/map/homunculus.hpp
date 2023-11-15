@@ -10,7 +10,7 @@
 #include <common/database.hpp>
 
 #include "mob.hpp"
-#include "status.hpp" // struct status_data, struct status_change
+#include "status.hpp" // struct StatusData, struct StatusChange
 #include "unit.hpp" // units::UnitData
 
 #ifdef RENEWAL
@@ -87,15 +87,15 @@ enum e_hom_state2 : uint8 {
 struct homun_data {
 	BlockList bl;
 	units::UnitData ud;
-	struct view_data *vd;
-	struct status_data base_status, battle_status;
-	status_change sc;
-	struct regen_data regen;
+	ViewData *vd;
+	struct StatusData base_status, battle_status;
+	StatusChange sc;
+	struct RegenData regen;
 	std::shared_ptr<s_homunculus_db> homunculusDB;	//[orn]
 	struct s_homunculus homunculus;	//[orn]
 
 	int masterteleport_timer;
-	map_session_data *master; //pointer back to its master
+	MapSessionData *master; //pointer back to its master
 	int hungry_timer;	//[orn]
 	t_exp exp_next;
 	std::vector<uint16> blockskill;	// [orn]
@@ -206,7 +206,7 @@ extern HomunculusDatabase homunculus_db;
 // merc_is_hom_alive(struct homun_data *)
 #define hom_is_active(x) ((x) && (x)->homunculus.vaporize == HOM_ST_ACTIVE && (x)->battle_status.hp > 0)
 int hom_recv_data(uint32 account_id, struct s_homunculus *sh, int flag); //albator
-struct view_data* hom_GetViewData(int class_);
+ViewData* hom_GetViewData(int class_);
 int hom_class2mapid(int hom_class);
 enum homun_type hom_class2type(int class_);
 void hom_damage(struct homun_data *hd);
@@ -220,21 +220,21 @@ int hom_levelup(struct homun_data *hd);
 int hom_evolution(struct homun_data *hd);
 int hom_mutate(struct homun_data *hd,int homun_id);
 void hom_heal(struct homun_data *hd);
-int hom_vaporize(map_session_data *sd, int flag);
-int hom_ressurect(map_session_data *sd, unsigned char per, short x, short y);
+int hom_vaporize(MapSessionData *sd, int flag);
+int hom_ressurect(MapSessionData *sd, unsigned char per, short x, short y);
 void hom_revive(struct homun_data *hd, unsigned int hp, unsigned int sp);
 void hom_reset_stats(struct homun_data *hd);
 int hom_shuffle(struct homun_data *hd); // [Zephyrus]
 void hom_save(struct homun_data *hd);
-bool hom_call(map_session_data *sd);
-bool hom_create_request(map_session_data *sd, int class_);
-void hom_menu(map_session_data *sd,int type);
-int hom_food(map_session_data *sd, struct homun_data *hd);
+bool hom_call(MapSessionData *sd);
+bool hom_create_request(MapSessionData *sd, int class_);
+void hom_menu(MapSessionData *sd,int type);
+int hom_food(MapSessionData *sd, struct homun_data *hd);
 int hom_hungry_timer_delete(struct homun_data *hd);
-int hom_change_name(map_session_data *sd,char *name);
-void hom_change_name_ack(map_session_data *sd, char* name, int flag);
-#define hom_stop_walking(hd, type) units::stop_walking(&(hd)->bl, type)
-#define hom_stop_attack(hd) units::stop_attack(&(hd)->bl)
+int hom_change_name(MapSessionData *sd,char *name);
+void hom_change_name_ack(MapSessionData *sd, char* name, int flag);
+#define hom_stop_walking(hd, type) units::StopWalking(&(hd)->bl, type)
+#define hom_stop_attack(hd) units::StopAttack(&(hd)->bl)
 int hom_increase_intimacy(struct homun_data * hd, unsigned int value);
 int hom_decrease_intimacy(struct homun_data * hd, unsigned int value);
 int hom_skill_tree_get_max(int skill_id, int b_class);

@@ -10,10 +10,10 @@
 #include <common/mmo.hpp> // struct item
 #include <common/timer.hpp>
 
-#include "status.hpp" // struct status data, struct status_change
-#include "unit.hpp" // units::stop_walking(), units::stop_attack()
+#include "status.hpp" // struct status data, struct StatusChange
+#include "unit.hpp" // units::StopWalking(), units::StopAttack()
 
-struct guardian_data;
+struct GuardianData;
 
 //This is the distance at which @autoloot works,
 //if the item drops farther from the player than this,
@@ -288,7 +288,7 @@ struct spawn_info {
 
 /// Loooitem struct
 struct s_mob_lootitem {
-	struct item item;	   ///< Item info
+	Item item;	   ///< Item info
 	unsigned short mob_id; ///< ID of monster that dropped the item
 };
 
@@ -310,8 +310,8 @@ struct s_mob_db {
 	std::vector<e_race2> race2{};	// celest
 	uint16 lv{ 1 };
 	s_mob_drop dropitem[MAX_MOB_DROP_TOTAL]{}, mvpitem[MAX_MVP_DROP_TOTAL]{};
-	status_data status{};
-	view_data vd{};
+	StatusData status{};
+	ViewData vd{};
 	uint32 option{};
 	std::vector<std::shared_ptr<s_mob_skill>> skill{};
 	uint16 damagetaken{ 100 };
@@ -366,10 +366,10 @@ class MobData {
 public:
 	BlockList bl;
 	units::UnitData ud;
-	struct view_data *vd;
+	ViewData *vd;
 	bool vd_changed;
-	struct status_data status, *base_status; //Second one is in case of leveling up mobs, or tiny/large mobs.
-	status_change sc;
+	struct StatusData status, *base_status; //Second one is in case of leveling up mobs, or tiny/large mobs.
+	StatusChange sc;
 	std::shared_ptr<s_mob_db> db;	//For quick data access (saves doing mob_db(md->mob_id) all the time) [Skotlex]
 	char name[NAME_LENGTH];
 	struct s_specialState {
@@ -391,7 +391,7 @@ public:
 		unsigned char attacked_count; //For rude attacked.
 		int provoke_flag; // Celest
 	} state;
-	struct guardian_data* guardian_data;
+	struct GuardianData* GuardianData;
 	struct s_dmglog {
 		int id; //char id
 		unsigned int dmg;
@@ -437,11 +437,11 @@ public:
 
 	int SetDelaySpawn();
 	void LogDamage(BlockList* src, int damage);
-	void damage(BlockList* src, int damage);
-	int dead(BlockList* src, int type);
-	void revive(unsigned int hp);
-	void heal(unsigned int heal);
-	int spawn();
+	void Damage(BlockList* src, int damage);
+	int Dead(BlockList* src, int type);
+	void Revive(unsigned int hp);
+	void Heal(unsigned int heal);
+	int Spawn();
 
 	int RandomWalk(t_tick tick);
 	int WarpChase(BlockList* target);
@@ -510,12 +510,12 @@ public:
 
 // The data structures for storing delayed item drops
 struct ItemDrop {
-	struct item item_data;
+	struct Item item;
 	unsigned short mob_id;
 	enum bl_type src_type;
 	struct ItemDrop* next;
 };
-struct item_drop_list {
+struct ItemDropList {
 	int16 m, x, y;                       // coordinates
 	int first_charid, second_charid, third_charid; // charid's of players with higher pickup priority
 	struct ItemDrop* item;            // linked list of drops
@@ -525,15 +525,15 @@ std::shared_ptr<s_mob_db> MobDbSearchAegisName( const char* str );
 uint16 MobDbSearchName(const char * const str);
 uint16 MobDbSearchNameArray(const char *str, uint16 * out, uint16 size);
 int MobDbCheckId(const int id);
-struct view_data* GetViewData(int mob_id);
+ViewData* GetViewData(int mob_id);
 
 
 MobData* OnceSpawn_sub(BlockList *bl, int16 m, int16 x, int16 y, const char *mobname, int mob_id, const char *event, unsigned int size, enum mob_ai ai);
 
-int OnceSpawn(map_session_data* sd, int16 m, int16 x, int16 y,
+int OnceSpawn(MapSessionData* sd, int16 m, int16 x, int16 y,
 	const char* mobname, int mob_id, int amount, const char* event, unsigned int size, enum mob_ai ai);
 
-int OnceSpawnArea(map_session_data* sd, int16 m,
+int OnceSpawnArea(MapSessionData* sd, int16 m,
 	int16 x0, int16 y0, int16 x1, int16 y1, const char* mobname, int mob_id, int amount, const char* event, unsigned int size, enum mob_ai ai);
 
 bool KsProtected (BlockList *src, BlockList *target);
@@ -561,7 +561,7 @@ int Count_sub(BlockList *bl, va_list ap);
 
 int IsClone(int mob_id);
 
-int CloneSpawn(map_session_data *sd, int16 m, int16 x, int16 y, const char *event, int master_id, enum e_mode mode, int flag, unsigned int duration);
+int CloneSpawn(MapSessionData *sd, int16 m, int16 x, int16 y, const char *event, int master_id, enum e_mode mode, int flag, unsigned int duration);
 
 void ReloadItemMobData(void);
 void reload(void);
@@ -575,7 +575,7 @@ int GetDropRate(BlockList *src, std::shared_ptr<s_mob_db> mob, int base_rate, in
 int MvpTombSetDelaySpawn(struct npc_data *nd);
 TIMER_FUNC(MvpTombDelaySpawn);
 
-void SetDropItemOption(struct item *itm, struct s_mob_drop *mobdrop);
+void SetDropItemOption(Item *itm, struct s_mob_drop *mobdrop);
 
 }
 #define CHK_MOBSIZE(size) ((size) >= SZ_SMALL && (size) < SZ_MAX) /// Check valid Monster Size

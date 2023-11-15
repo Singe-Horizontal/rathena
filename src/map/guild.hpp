@@ -14,11 +14,11 @@ struct mmo_guild;
 struct guild_member;
 struct guild_position;
 struct guild_castle;
-class map_session_data;
+class MapSessionData;
 class MobData;
 
 //For quick linking to a guardian's info. [Skotlex]
-struct guardian_data {
+struct GuardianData {
 	int number; //0-MAX_GUARDIANS-1 = Guardians. MAX_GUARDIANS = Emperium.
 	int guild_id;
 	int emblem_id;
@@ -47,54 +47,54 @@ std::shared_ptr<MapGuild> guild_search(int guild_id);
 std::shared_ptr<MapGuild> guild_searchname(const char *str);
 std::shared_ptr<MapGuild> guild_searchnameid(const char *str);
 
-map_session_data* guild_getavailablesd(const struct mmo_guild &g);
+MapSessionData* guild_getavailablesd(const struct mmo_guild &g);
 int guild_getindex(const struct mmo_guild &g, uint32 account_id, uint32 char_id);
-int guild_getposition(const map_session_data &sd);
-t_exp guild_payexp(map_session_data *sd,t_exp exp);
-t_exp guild_getexp(map_session_data *sd,t_exp exp); // [Celest]
+int guild_getposition(const MapSessionData &sd);
+t_exp guild_payexp(MapSessionData *sd,t_exp exp);
+t_exp guild_getexp(MapSessionData *sd,t_exp exp); // [Celest]
 
-int guild_create(map_session_data *sd, const char *name);
+int guild_create(MapSessionData *sd, const char *name);
 int guild_created(uint32 account_id,int guild_id);
 int guild_request_info(int guild_id);
 int guild_recv_noinfo(int guild_id);
 int guild_recv_info(const struct mmo_guild &sg);
 int guild_npc_request_info(int guild_id,const char *ev);
-int guild_invite(map_session_data *sd,map_session_data *tsd);
-int guild_reply_invite(map_session_data *sd,int guild_id,int flag);
-void guild_member_joined(map_session_data *sd);
+int guild_invite(MapSessionData *sd,MapSessionData *tsd);
+int guild_reply_invite(MapSessionData *sd,int guild_id,int flag);
+void guild_member_joined(MapSessionData *sd);
 int guild_member_added(int guild_id,uint32 account_id,uint32 char_id,int flag);
-int guild_leave(map_session_data *sd,int guild_id,
+int guild_leave(MapSessionData *sd,int guild_id,
 	uint32 account_id,uint32 char_id,const char *mes);
 int guild_member_withdraw(int guild_id,uint32 account_id,uint32 char_id,int flag,
 	const char *name,const char *mes);
-int guild_expulsion(map_session_data *sd,int guild_id,
+int guild_expulsion(MapSessionData *sd,int guild_id,
 	uint32 account_id,uint32 char_id,const char *mes);
-void guild_skillup(map_session_data* sd, uint16 skill_id);
-void guild_block_skill(map_session_data *sd, int time);
-int guild_reqalliance(map_session_data *sd,map_session_data *tsd);
-int guild_reply_reqalliance(map_session_data *sd,uint32 account_id,int flag);
+void guild_skillup(MapSessionData* sd, uint16 skill_id);
+void guild_block_skill(MapSessionData *sd, int time);
+int guild_reqalliance(MapSessionData *sd,MapSessionData *tsd);
+int guild_reply_reqalliance(MapSessionData *sd,uint32 account_id,int flag);
 int guild_allianceack(int guild_id1,int guild_id2,uint32 account_id1,uint32 account_id2,
 	int flag,const char *name1,const char *name2);
-int guild_delalliance(map_session_data *sd,int guild_id,int flag);
-int guild_opposition(map_session_data *sd,map_session_data *tsd);
+int guild_delalliance(MapSessionData *sd,int guild_id,int flag);
+int guild_opposition(MapSessionData *sd,MapSessionData *tsd);
 int guild_check_alliance(int guild_id1, int guild_id2, int flag);
 
-int guild_send_memberinfoshort(map_session_data *sd,int online);
+int guild_send_memberinfoshort(MapSessionData *sd,int online);
 int guild_recv_memberinfoshort(int guild_id,uint32 account_id,uint32 char_id,int online,int lv,int class_);
 int guild_change_memberposition(int guild_id,uint32 account_id,uint32 char_id,short idx);
 int guild_memberposition_changed(struct mmo_guild &g,int idx,int pos);
 int guild_change_position(int guild_id,int idx,int mode,int exp_mode,const char *name);
 int guild_position_changed(int guild_id,int idx,struct guild_position *p);
-int guild_change_notice(map_session_data *sd,int guild_id,const char *mes1,const char *mes2);
+int guild_change_notice(MapSessionData *sd,int guild_id,const char *mes1,const char *mes2);
 int guild_notice_changed(int guild_id,const char *mes1,const char *mes2);
-int guild_change_emblem(map_session_data *sd,int len,const char *data);
-int guild_change_emblem_version(map_session_data* sd, int version);
+int guild_change_emblem(MapSessionData *sd,int len,const char *data);
+int guild_change_emblem_version(MapSessionData* sd, int version);
 int guild_emblem_changed(int len,int guild_id,int emblem_id,const char *data);
-int guild_send_message(map_session_data *sd,const char *mes,int len);
+int guild_send_message(MapSessionData *sd,const char *mes,int len);
 int guild_recv_message(int guild_id,uint32 account_id,const char *mes,int len);
-int guild_send_dot_remove(map_session_data *sd);
+int guild_send_dot_remove(MapSessionData *sd);
 int guild_skillupack(int guild_id,uint16 skill_id,uint32 account_id);
-int guild_break(map_session_data *sd,char *name);
+int guild_break(MapSessionData *sd,char *name);
 int guild_broken(int guild_id,int flag);
 int guild_gm_change(int guild_id, uint32 char_id);
 int guild_gm_changed(int guild_id, uint32 account_id, uint32 char_id, time_t time);
@@ -118,7 +118,7 @@ void guild_flag_add(struct npc_data *nd);
 void guild_flag_remove(struct npc_data *nd);
 void guild_flags_clear(void);
 
-void guild_guildaura_refresh(map_session_data *sd, uint16 skill_id, uint16 skill_lv);
+void guild_guildaura_refresh(MapSessionData *sd, uint16 skill_id, uint16 skill_lv);
 #ifdef BOUND_ITEMS
 void guild_retrieveitembound(uint32 char_id,uint32 account_id,int guild_id);
 #endif

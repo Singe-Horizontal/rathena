@@ -42,12 +42,12 @@ size_t duel_countactives()
 	return count; 
 } 
 
-static void duel_set(const size_t did, map_session_data* sd);
+static void duel_set(const size_t did, MapSessionData* sd);
 
 /*
  * Save the current time of the duel in PC_LAST_DUEL_TIME
  */
-void duel_savetime(map_session_data* sd)
+void duel_savetime(MapSessionData* sd)
 {
 	time_t timer;
 	struct tm *t;
@@ -61,7 +61,7 @@ void duel_savetime(map_session_data* sd)
 /*
  * Check if the time elapsed between last duel is enough to launch another.
  */
-bool duel_checktime(map_session_data* sd)
+bool duel_checktime(MapSessionData* sd)
 {
 	int64 diff;
 	time_t timer;
@@ -90,9 +90,9 @@ bool duel_check_player_limit(struct duel& pDuel)
 /*
  * Display opponents name of sd
  */
-static int duel_showinfo_sub(map_session_data* sd, va_list va)
+static int duel_showinfo_sub(MapSessionData* sd, va_list va)
 {
-	map_session_data *ssd = va_arg(va, map_session_data*);
+	MapSessionData *ssd = va_arg(va, MapSessionData*);
 	int *p = va_arg(va, int*);
 
 	if (sd->duel_group != ssd->duel_group) 
@@ -108,7 +108,7 @@ static int duel_showinfo_sub(map_session_data* sd, va_list va)
  * Display duel infos,
  * Number of duely...
  */
-void duel_showinfo(const size_t did, map_session_data* sd)
+void duel_showinfo(const size_t did, MapSessionData* sd)
 {
 	//std::lock_guard<std::recursive_mutex> _(duel_list_mutex); //or shared_ptr	
 	if ( !duel_exist( did ) )
@@ -136,7 +136,7 @@ void duel_showinfo(const size_t did, map_session_data* sd)
 /*
 * Moves sd to duel
 */
-static void duel_set(const size_t did, map_session_data* sd) {
+static void duel_set(const size_t did, MapSessionData* sd) {
 	sd->state.changemap = 1;
 	sd->state.warping = 1;
 
@@ -157,7 +157,7 @@ static void duel_set(const size_t did, map_session_data* sd) {
  * Create a new duel for sd
  * return new duel_id or 0 when fail
  */
-size_t duel_create(map_session_data* sd, const unsigned int maxpl)
+size_t duel_create(MapSessionData* sd, const unsigned int maxpl)
 {
 	static size_t lastID=0;
 	lastID++;
@@ -184,7 +184,7 @@ size_t duel_create(map_session_data* sd, const unsigned int maxpl)
  * @sd = inviting player
  * @target_sd = invited player
  */
-bool duel_invite(const size_t did, map_session_data* sd, map_session_data* target_sd)
+bool duel_invite(const size_t did, MapSessionData* sd, MapSessionData* target_sd)
 {
 	//std::lock_guard<std::recursive_mutex> _(duel_list_mutex);
 	if ( !duel_exist( did ) )
@@ -208,7 +208,7 @@ bool duel_invite(const size_t did, map_session_data* sd, map_session_data* targe
  * @sd = leaving player
  * @va = list(only contain duel_id atm)
  */
-static int duel_leave_sub(map_session_data* sd, va_list va)
+static int duel_leave_sub(MapSessionData* sd, va_list va)
 {
 	size_t did = va_arg(va, size_t);
 	if (sd->duel_invite == did)
@@ -221,7 +221,7 @@ static int duel_leave_sub(map_session_data* sd, va_list va)
  * @did = duel id
  * @sd = leaving player
  */
-bool duel_leave(const size_t did, map_session_data* sd)
+bool duel_leave(const size_t did, MapSessionData* sd)
 {
 	//std::lock_guard<std::recursive_mutex> _(duel_list_mutex);
 	if ( !duel_exist( did ) )
@@ -249,7 +249,7 @@ bool duel_leave(const size_t did, map_session_data* sd)
  * @did = duel id
  * @sd = player accepting duel
  */
-bool duel_accept(const size_t did, map_session_data* sd)
+bool duel_accept(const size_t did, MapSessionData* sd)
 {
 	{ //mutex scope
 		//std::lock_guard<std::recursive_mutex> _(duel_list_mutex);
@@ -276,7 +276,7 @@ bool duel_accept(const size_t did, map_session_data* sd)
  * @did = duel id
  * @sd = player refusing duel
  */
-bool duel_reject(const size_t did, map_session_data* sd)
+bool duel_reject(const size_t did, MapSessionData* sd)
 {
 	{
 		//std::lock_guard<std::recursive_mutex> _(duel_list_mutex);

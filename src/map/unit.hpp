@@ -12,7 +12,7 @@
 
 enum sc_type : int16;
 struct BlockList;
-class map_session_data;
+class MapSessionData;
 enum clr_type : uint8;
 
 
@@ -20,7 +20,7 @@ enum clr_type : uint8;
 extern const short dirx[DIR_MAX]; ///lookup to know where will move to x according dir
 extern const short diry[DIR_MAX]; ///lookup to know where will move to y according dir
 
-struct view_data {
+struct ViewData {
 	uint16 class_;
 	t_itemid
 		weapon,
@@ -48,7 +48,7 @@ enum e_unit_blown {
 	UB_TARGET_TRAP, // Target is a trap that cannot be knocked back
 };
 
-/// Enum for stop_walking
+/// Enum for StopWalking
 enum e_stop_walking {
 	USW_NONE = 0x0, /// Unit will keep walking to their original destination
 	USW_FIXPOS = 0x1, /// Issue a fixpos packet afterwards
@@ -88,7 +88,7 @@ public:
 	unsigned char target_count;
 	struct s_udState {
 		unsigned change_walk_target : 1 ;
-		unsigned skillcastcancel : 1 ;
+		unsigned skill_cast_cancel : 1 ;
 		unsigned attack_continue : 1 ;
 		unsigned step_attack : 1;
 		unsigned walk_easy : 1 ;
@@ -120,14 +120,14 @@ public:
 // Does walk action for unit
 int walktoxy(BlockList *bl, short x, short y, unsigned char flag);
 int walktobl(BlockList *bl, BlockList *target, int range, unsigned char flag);
-void run_hit(BlockList *bl, status_change *sc, map_session_data *sd, enum sc_type type);
-bool run(BlockList *bl, map_session_data *sd, enum sc_type type);
+void run_hit(BlockList *bl, StatusChange *sc, MapSessionData *sd, enum sc_type type);
+bool run(BlockList *bl, MapSessionData *sd, enum sc_type type);
 int calc_pos(BlockList *bl, int tx, int ty, uint8 dir);
 TIMER_FUNC(delay_walktoxy_timer);
 TIMER_FUNC(delay_walktobl_timer);
 
 // Causes the target object to stop moving.
-int stop_walking(BlockList *bl,int type);
+int StopWalking(BlockList *bl,int type);
 bool can_move(BlockList *bl);
 int is_walking(BlockList *bl);
 int set_walkdelay(BlockList *bl, t_tick tick, t_tick delay, int type);
@@ -147,8 +147,8 @@ bool CanReachPos(BlockList *bl,int x,int y,int easy);
 bool CanReachBl(BlockList *bl,BlockList *tbl, int range, int easy, short *x, short *y);
 
 // Unit attack functions
-int stopattack(BlockList *bl, va_list ap);
-void stop_attack(BlockList *bl);
+int StopAttack_sub(BlockList *bl, va_list ap);
+void StopAttack(BlockList *bl);
 int attack(BlockList *src,int target_id,int continuous);
 int cancel_combo(BlockList *bl);
 bool can_attack(BlockList *bl, int target_id);
@@ -164,7 +164,7 @@ TIMER_FUNC(step_timer);
 void stop_stepaction(BlockList *bl);
 
 // Cancel unit cast
-int skillcastcancel(BlockList *bl, char type);
+int SkillCastCancel(BlockList *bl, char type);
 
 int counttargeted(BlockList *bl);
 
@@ -173,13 +173,13 @@ void dataset(BlockList *bl);
 
 // Remove unit
 UnitData* bl2ud(BlockList *bl);
-void remove_map_pc(map_session_data *sd, clr_type clrtype);
+void RemoveMapPc(MapSessionData *sd, clr_type clrtype);
 void refresh(BlockList *bl, bool walking = false);
-void free_pc(map_session_data *sd);
+void free_pc(MapSessionData *sd);
 #define unit_remove_map(bl,clrtype) units::remove_map_(bl,clrtype,__FILE__,__LINE__,__func__)
 int remove_map_(BlockList *bl, clr_type clrtype, const char* file, int line, const char* func);
 int free(BlockList *bl, clr_type clrtype);
-int changeviewsize(BlockList *bl,short size);
+int ChangeViewSize(BlockList *bl,short size);
 int changetarget(BlockList *bl,va_list ap);
 
 void do_init_unit(void);

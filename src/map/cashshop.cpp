@@ -66,7 +66,7 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		std::shared_ptr<ItemData> item = item_db.search_aegisname( item_name.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( it["Item"], "Cash item %s does not exist, skipping.\n", item_name.c_str() );
@@ -390,7 +390,7 @@ struct sale_item_data* sale_find_item( t_itemid nameid, bool onsale ){
 	return sale_items.item[i];
 }
 
-void sale_notify_login( map_session_data* sd ){
+void sale_notify_login( MapSessionData* sd ){
 	int i;
 
 	for( i = 0; i < sale_items.count; i++ ){
@@ -438,7 +438,7 @@ static void cashshop_read_db( void ){
  * @param item_list Array of item ID
  * @return true: success, false: fail
  */
-bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int n, struct PACKET_CZ_SE_PC_BUY_CASHITEM_LIST_sub* item_list ){
+bool cashshop_buylist( MapSessionData* sd, uint32 kafrapoints, int n, struct PACKET_CZ_SE_PC_BUY_CASHITEM_LIST_sub* item_list ){
 	uint32 totalcash = 0;
 	uint32 totalweight = 0;
 	int i,new_;
@@ -471,7 +471,7 @@ bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int n, struct P
 		}
 
 
-		std::shared_ptr<item_data> id = item_db.find(nameid);
+		std::shared_ptr<ItemData> id = item_db.find(nameid);
 
 		if( !id ){
 			clif_cashshop_result( sd, nameid, CASHSHOP_RESULT_ERROR_UNKONWN_ITEM );
@@ -543,7 +543,7 @@ bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int n, struct P
 #if PACKETVER_SUPPORTS_SALES
 		uint16 tab = item_list[i].tab;
 #endif
-		struct item_data *id = itemdb_search(nameid);
+		struct ItemData *id = itemdb_search(nameid);
 
 		if (!id)
 			continue;
@@ -577,7 +577,7 @@ bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int n, struct P
 
 		for (uint32 j = 0; j < quantity; j += get_amt) {
 			if( !pet_create_egg( sd, nameid ) ){
-				struct item item_tmp = { 0 };
+				Item item_tmp = { 0 };
 
 				item_tmp.nameid = nameid;
 				item_tmp.identify = 1;

@@ -24,16 +24,16 @@ enum mail_attach_result {
 	MAIL_ATTACH_EQUIPSWITCH = 99,
 };
 
-void mail_clear(map_session_data *sd);
-int mail_removeitem(map_session_data *sd, short flag, int idx, int amount);
-bool mail_removezeny(map_session_data *sd, bool flag);
-enum mail_attach_result mail_setitem(map_session_data *sd, short idx, uint32 amount);
-bool mail_setattachment(map_session_data *sd, struct mail_message *msg);
-void mail_getattachment(map_session_data* sd, struct mail_message* msg, int zeny, struct item* item);
-int mail_openmail(map_session_data *sd);
-void mail_deliveryfail(map_session_data *sd, struct mail_message *msg);
-bool mail_invalid_operation(map_session_data *sd);
-void mail_send(map_session_data *sd, const char *dest_name, const char *title, const char *body_msg, int body_len);
-void mail_refresh_remaining_amount( map_session_data* sd );
+void mail_clear(MapSessionData *sd);
+int mail_removeitem(MapSessionData *sd, short flag, int idx, int amount);
+bool mail_removezeny(MapSessionData *sd, bool flag);
+enum mail_attach_result mail_setitem(MapSessionData *sd, short idx, uint32 amount);
+bool mail_setattachment(MapSessionData *sd, struct mail_message *msg);
+void mail_getattachment(MapSessionData* sd, struct mail_message* msg, int zeny, Item* item);
+int mail_openmail(MapSessionData *sd);
+void mail_deliveryfail(MapSessionData *sd, struct mail_message *msg);
+bool mail_invalid_operation(MapSessionData *sd);
+void mail_send(MapSessionData *sd, const char *dest_name, const char *title, const char *body_msg, int body_len);
+void mail_refresh_remaining_amount( MapSessionData* sd );
 
 #endif /* MAIL_HPP */

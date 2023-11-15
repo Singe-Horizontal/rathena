@@ -31,7 +31,7 @@ using namespace rathena;
 
 ElementalDatabase elemental_db;
 
-struct view_data * elemental_GetViewData(int class_) {
+ViewData * elemental_GetViewData(int class_) {
 	std::shared_ptr<s_elemental_db> db = elemental_db.find(class_);
 	if (db == nullptr)
 		return 0;
@@ -39,7 +39,7 @@ struct view_data * elemental_GetViewData(int class_) {
 	return &db->vd;
 }
 
-int elemental_create(map_session_data *sd, int class_, unsigned int lifetime) {
+int elemental_create(MapSessionData *sd, int class_, unsigned int lifetime) {
 	nullpo_retr(1,sd);
 
 	std::shared_ptr<s_elemental_db> db = elemental_db.find(class_);
@@ -165,7 +165,7 @@ int elemental_save(s_elemental_data *ed) {
 }
 
 static TIMER_FUNC(elemental_summon_end){
-	map_session_data *sd;
+	MapSessionData *sd;
 
 	if( (sd = map_id2sd(id)) == NULL )
 		return 1;
@@ -196,7 +196,7 @@ void elemental_summon_stop(s_elemental_data *ed) {
 int elemental_delete(s_elemental_data *ed) {
 	nullpo_ret(ed);
 
-	map_session_data *sd = ed->master;
+	MapSessionData *sd = ed->master;
 	ed->elemental.life_time = 0;
 
 	elemental_clean_effect(ed);
@@ -225,7 +225,7 @@ void elemental_summon_init(s_elemental_data *ed) {
  * @return 0:failed, 1:sucess
  */
 int elemental_data_received(s_elemental *ele, bool flag) {
-	map_session_data *sd;
+	MapSessionData *sd;
 	t_tick tick = gettick();
 
 	if( (sd = map_charid2sd(ele->char_id)) == NULL )
@@ -349,7 +349,7 @@ int elemental_action(s_elemental_data *ed, BlockList *bl, t_tick tick) {
 	s_skill_condition req = elemental_skill_get_requirements(skill_id, skill_lv);
 
 	if(req.hp || req.sp){
-		map_session_data *sd = BL_CAST(BL_PC, battle_get_master(&ed->bl));
+		MapSessionData *sd = BL_CAST(BL_PC, battle_get_master(&ed->bl));
 		if( sd ){
 			if( sd->skill_id_old != SO_EL_ACTION && //regardless of remaining HP/SP it can be cast
 				(status_get_hp(&ed->bl) < req.hp || status_get_sp(&ed->bl) < req.sp) )
@@ -480,7 +480,7 @@ struct s_skill_condition elemental_skill_get_requirements(uint16 skill_id, uint1
 	return req;
 }
 
-int elemental_set_target( map_session_data *sd, BlockList *bl ) {
+int elemental_set_target( MapSessionData *sd, BlockList *bl ) {
 	s_elemental_data *ed = sd->ed;
 
 	nullpo_ret(ed);
@@ -535,7 +535,7 @@ static int elemental_ai_sub_timer_activesearch(BlockList *bl, va_list ap) {
 	return 0;
 }
 
-static int elemental_ai_sub_timer(s_elemental_data *ed, map_session_data *sd, t_tick tick) {
+static int elemental_ai_sub_timer(s_elemental_data *ed, MapSessionData *sd, t_tick tick) {
 	nullpo_ret(ed);
 	nullpo_ret(sd);
 
@@ -645,7 +645,7 @@ static int elemental_ai_sub_timer(s_elemental_data *ed, map_session_data *sd, t_
 	return 0;
 }
 
-static int elemental_ai_sub_foreachclient(map_session_data *sd, va_list ap) {
+static int elemental_ai_sub_foreachclient(MapSessionData *sd, va_list ap) {
 	t_tick tick = va_arg(ap,t_tick);
 	if(sd->status.ele_id && sd->ed)
 		elemental_ai_sub_timer(sd->ed,sd,tick);

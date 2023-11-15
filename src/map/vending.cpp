@@ -55,7 +55,7 @@ static int vending_getuid(void)
  * Make a player close his shop
  * @param sd : player session
  */
-void vending_closevending(map_session_data* sd)
+void vending_closevending(MapSessionData* sd)
 {
 	nullpo_retv(sd);
 
@@ -77,9 +77,9 @@ void vending_closevending(map_session_data* sd)
  * @param sd : player requestion the list
  * @param id : vender account id (gid)
  */
-void vending_vendinglistreq(map_session_data* sd, int id)
+void vending_vendinglistreq(MapSessionData* sd, int id)
 {
-	map_session_data* vsd;
+	MapSessionData* vsd;
 	nullpo_retv(sd);
 
 	if( (vsd = map_id2sd(id)) == NULL )
@@ -103,7 +103,7 @@ void vending_vendinglistreq(map_session_data* sd, int id)
  * @param zeny: Total amount to tax
  * @return Total amount after taxes
  */
-static double vending_calc_tax(map_session_data *sd, double zeny)
+static double vending_calc_tax(MapSessionData *sd, double zeny)
 {
 	if (battle_config.vending_tax && zeny >= battle_config.vending_tax_min)
 		zeny -= zeny * (battle_config.vending_tax / 10000.);
@@ -120,12 +120,12 @@ static double vending_calc_tax(map_session_data *sd, double zeny)
  *	data := {<index>.w <amount>.w }[count]
  * @param count : number of different items he's trying to buy
  */
-void vending_purchasereq(map_session_data* sd, int aid, int uid, const uint8* data, int count)
+void vending_purchasereq(MapSessionData* sd, int aid, int uid, const uint8* data, int count)
 {
 	int i, j, cursor, w, new_ = 0, blank, vend_list[MAX_VENDING];
 	double z;
 	struct s_vending vending[MAX_VENDING]; // against duplicate packets
-	map_session_data* vsd = map_id2sd(aid);
+	MapSessionData* vsd = map_id2sd(aid);
 
 	nullpo_retv(sd);
 	if( vsd == NULL || !vsd->state.vending || vsd->bl.id == sd->bl.id )
@@ -295,7 +295,7 @@ void vending_purchasereq(map_session_data* sd, int aid, int uid, const uint8* da
  * @param at Autotrader info, or NULL if requetsed not from autotrade persistance
  * @return 0 If success, 1 - Cannot open (die, not state.prevend, trading), 2 - No cart, 3 - Count issue, 4 - Cart data isn't saved yet, 5 - No valid item found
  */
-int8 vending_openvending(map_session_data* sd, const char* message, const uint8* data, int count, struct s_autotrader *at)
+int8 vending_openvending(MapSessionData* sd, const char* message, const uint8* data, int count, struct s_autotrader *at)
 {
 	int i, j;
 	int vending_skill_lvl;
@@ -401,7 +401,7 @@ int8 vending_openvending(map_session_data* sd, const char* message, const uint8*
  * @param nameid : item id
  * @return 0:not selling it, 1: yes
  */
-bool vending_search(map_session_data* sd, t_itemid nameid)
+bool vending_search(MapSessionData* sd, t_itemid nameid)
 {
 	int i;
 
@@ -423,11 +423,11 @@ bool vending_search(map_session_data* sd, t_itemid nameid)
  * @param s : parameter of the search (see s_search_store_search)
  * @return Whether or not the search should be continued.
  */
-bool vending_searchall(map_session_data* sd, const struct s_search_store_search* s)
+bool vending_searchall(MapSessionData* sd, const struct s_search_store_search* s)
 {
 	int i, c, slot;
 	unsigned int idx, cidx;
-	struct item* it;
+	Item* it;
 
 	if( !sd->state.vending ) // not vending
 		return true;
@@ -494,7 +494,7 @@ bool vending_searchall(map_session_data* sd, const struct s_search_store_search*
 * Open vending for Autotrader
 * @param sd Player as autotrader
 */
-void vending_reopen( map_session_data* sd )
+void vending_reopen( MapSessionData* sd )
 {
 	struct s_autotrader *at = NULL;
 	int8 fail = -1;
@@ -616,7 +616,7 @@ void do_init_vending_autotrade(void)
 					at->sit = battle_config.feature_autotrade_sit;
 
 				// initialize player
-				CREATE(at->sd, map_session_data, 1); // TODO: Dont use Memory Manager allocation anymore and rely on the C++ container
+				CREATE(at->sd, MapSessionData, 1); // TODO: Dont use Memory Manager allocation anymore and rely on the C++ container
 				pc_setnewpc(at->sd, at->account_id, at->char_id, 0, gettick(), at->sex, 0);
 				at->sd->state.autotrade = 1|2;
 				if (battle_config.autotrade_monsterignore)
@@ -714,7 +714,7 @@ static int vending_autotrader_free(DBKey key, DBData *data, va_list ap) {
 * Update vendor location
 * @param sd: Player's session data
 */
-void vending_update(map_session_data &sd)
+void vending_update(MapSessionData &sd)
 {
 	if (Sql_Query(mmysql_handle, "UPDATE `%s` SET `map` = '%s', `x` = '%d', `y` = '%d', `body_direction` = '%d', `head_direction` = '%d', `sit` = '%d', `autotrade` = '%d' WHERE `id` = '%d'",
 		vendings_table, map_getmapdata(sd.bl.m)->name, sd.bl.x, sd.bl.y, sd.ud.dir, sd.head_dir, pc_issit(&sd), sd.state.autotrade,

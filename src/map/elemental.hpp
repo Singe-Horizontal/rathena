@@ -8,7 +8,7 @@
 #include <common/mmo.hpp>
 #include <common/timer.hpp>
 
-#include "status.hpp" // struct status_data, struct status_change
+#include "status.hpp" // struct StatusData, struct StatusChange
 #include "unit.hpp" // units::UnitData
 
 const t_tick MIN_ELETHINKTIME = 100;
@@ -67,24 +67,24 @@ struct s_elemental_db {
 	std::string sprite, name;
 	uint16 lv;
 	uint16 range2, range3;
-	status_data status;
-	view_data vd;
+	StatusData status;
+	ViewData vd;
 	std::unordered_map<e_elemental_skillmode, std::shared_ptr<s_elemental_skill>> skill;	/// mode, skill
 };
 
 struct s_elemental_data {
 	BlockList bl;
 	units::UnitData ud;
-	view_data *vd;
-	status_data base_status, battle_status;
-	status_change sc;
-	regen_data regen;
+	ViewData *vd;
+	StatusData base_status, battle_status;
+	StatusChange sc;
+	RegenData regen;
 
 	std::shared_ptr<s_elemental_db> db;
 	s_elemental elemental;
 
 	int masterteleport_timer;
-	map_session_data *master;
+	MapSessionData *master;
 	int summon_timer;
 	int skill_timer;
 
@@ -105,9 +105,9 @@ public:
 
 extern ElementalDatabase elemental_db;
 
-struct view_data * elemental_GetViewData(int class_);
+ViewData * elemental_GetViewData(int class_);
 
-int elemental_create(map_session_data *sd, int class_, unsigned int lifetime);
+int elemental_create(MapSessionData *sd, int class_, unsigned int lifetime);
 int elemental_data_received(s_elemental *ele, bool flag);
 int elemental_save(s_elemental_data *ed);
 
@@ -124,13 +124,13 @@ t_tick elemental_get_lifetime(s_elemental_data *ed);
 
 int elemental_unlocktarget(s_elemental_data *ed);
 bool elemental_skillnotok(uint16 skill_id, s_elemental_data *ed);
-int elemental_set_target( map_session_data *sd, BlockList *bl );
+int elemental_set_target( MapSessionData *sd, BlockList *bl );
 int elemental_clean_effect(s_elemental_data *ed);
 int elemental_action(s_elemental_data *ed, BlockList *bl, t_tick tick);
 struct s_skill_condition elemental_skill_get_requirements(uint16 skill_id, uint16 skill_lv);
 
-#define elemental_stop_walking(ed, type) units::stop_walking(&(ed)->bl, type)
-#define elemental_stop_attack(ed) units::stop_attack(&(ed)->bl)
+#define elemental_stop_walking(ed, type) units::StopWalking(&(ed)->bl, type)
+#define elemental_stop_attack(ed) units::StopAttack(&(ed)->bl)
 
 void do_init_elemental(void);
 void do_final_elemental(void);

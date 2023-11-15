@@ -291,7 +291,7 @@ std::shared_ptr<s_instance_db> instance_search_db_name(const char *instance_name
  * @param sd: Pointer to player data
  * @param target: Target display type
  */
-void instance_getsd(int instance_id, map_session_data *&sd, enum send_target *target) {
+void instance_getsd(int instance_id, MapSessionData *&sd, enum send_target *target) {
 	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
 
 	if (!idata) {
@@ -346,7 +346,7 @@ static TIMER_FUNC(instance_subscription_timer){
 	if (!idata)
 		return 0;
 
-	map_session_data *sd;
+	MapSessionData *sd;
 	struct party_data *pd;
 	std::shared_ptr<MapGuild> gd;
 	struct clan *cd;
@@ -611,7 +611,7 @@ int instance_create(int owner_id, const char *name, e_instance_mode mode) {
 		return -1;
 	}
 
-	map_session_data *sd = nullptr;
+	MapSessionData *sd = nullptr;
 	struct party_data *pd;
 	std::shared_ptr<MapGuild> gd;
 	struct clan* cd;
@@ -845,7 +845,7 @@ int16 instance_mapid(int16 m, int instance_id)
  * Removes an instance, all its maps, and NPCs invoked by the client button.
  * @param sd: Player data
  */
-void instance_destroy_command(map_session_data *sd) {
+void instance_destroy_command(MapSessionData *sd) {
 	nullpo_retv(sd);
 
 	std::shared_ptr<s_instance_data> idata;
@@ -936,7 +936,7 @@ bool instance_destroy(int instance_id)
 	if (!idata)
 		return false;
 
-	map_session_data *sd;
+	MapSessionData *sd;
 	struct party_data *pd;
 	std::shared_ptr<MapGuild> gd;
 	struct clan *cd;
@@ -1046,7 +1046,7 @@ bool instance_destroy(int instance_id)
  * @param y: Y coordinate
  * @return e_instance_enter value
  */
-e_instance_enter instance_enter(map_session_data *sd, int instance_id, const char *name, short x, short y)
+e_instance_enter instance_enter(MapSessionData *sd, int instance_id, const char *name, short x, short y)
 {
 	nullpo_retr(IE_OTHER, sd);
 	
@@ -1141,7 +1141,7 @@ e_instance_enter instance_enter(map_session_data *sd, int instance_id, const cha
  * @param instance_id: Instance to request
  * @return True on success or false on failure
  */
-bool instance_reqinfo(map_session_data *sd, int instance_id)
+bool instance_reqinfo(MapSessionData *sd, int instance_id)
 {
 	nullpo_retr(false, sd);
 
@@ -1242,7 +1242,7 @@ void do_reload_instance(void)
 
 	// Reset player to instance beginning
 	struct s_mapiterator *iter = mapit_getallusers();
-	map_session_data *sd;
+	MapSessionData *sd;
 
 	for (sd = (TBL_PC *)mapit_first(iter); mapit_exists(iter); sd = (TBL_PC *)mapit_next(iter)) {
 		struct map_data *mapdata = map_getmapdata(sd->bl.m);

@@ -2147,7 +2147,7 @@ struct s_random_opt_group {
 	std::vector<std::shared_ptr<s_random_opt_group_entry>> random_options;
 
 public:
-	void apply( struct item& item );
+	void apply( struct Item& item );
 };
 
 class RandomOptionDatabase : public TypesafeYamlDatabase<uint16, s_random_opt_data> {
@@ -2227,7 +2227,7 @@ struct s_roulette_db {
 extern struct s_roulette_db rd;
 
 ///Main item data struct
-struct item_data
+struct ItemData
 {
 	t_itemid nameid;
 	std::string name, ename;
@@ -2298,7 +2298,7 @@ struct item_data
 		sc_type sc; ///< Use delay group if any instead using player's item_delay data [Cydh]
 	} delay;
 
-	~item_data() {
+	~ItemData() {
 		if (this->script){
 			script_free_code(this->script);
 			this->script = nullptr;
@@ -2321,14 +2321,14 @@ struct item_data
 	int inventorySlotNeeded(int quantity);
 };
 
-class ItemDatabase : public TypesafeCachedYamlDatabase<t_itemid, item_data> {
+class ItemDatabase : public TypesafeCachedYamlDatabase<t_itemid, ItemData> {
 private:
-	std::unordered_map<std::string, std::shared_ptr<item_data>> nameToItemDataMap;
-	std::unordered_map<std::string, std::shared_ptr<item_data>> aegisNameToItemDataMap;
+	std::unordered_map<std::string, std::shared_ptr<ItemData>> nameToItemDataMap;
+	std::unordered_map<std::string, std::shared_ptr<ItemData>> aegisNameToItemDataMap;
 
-	e_sex defaultGender( const ryml::NodeRef& node, std::shared_ptr<item_data> id );
+	e_sex defaultGender( const ryml::NodeRef& node, std::shared_ptr<ItemData> id );
 
-	std::string create_item_link(struct item& item, std::shared_ptr<item_data>& data);
+	std::string create_item_link(struct Item& item, std::shared_ptr<ItemData>& data);
 
 	struct s_pricevalue {
 		bool has_buy;
@@ -2353,11 +2353,11 @@ public:
 	}
 
 	// Additional
-	std::shared_ptr<item_data> searchname( const char* name );
-	std::shared_ptr<item_data> search_aegisname( const char *name );
-	std::string create_item_link(struct item& item);
-	std::string create_item_link( std::shared_ptr<item_data>& data );
-	std::string create_item_link_for_mes( std::shared_ptr<item_data>& data, bool use_brackets, const char* name );
+	std::shared_ptr<ItemData> searchname( const char* name );
+	std::shared_ptr<ItemData> search_aegisname( const char *name );
+	std::string create_item_link(struct Item& item);
+	std::string create_item_link( std::shared_ptr<ItemData>& data );
+	std::string create_item_link_for_mes( std::shared_ptr<ItemData>& data, bool use_brackets, const char* name );
 };
 
 extern ItemDatabase item_db;
@@ -2374,10 +2374,10 @@ public:
 
 	// Additional
 	bool item_exists(uint16 group_id, t_itemid nameid);
-	int16 item_exists_pc(map_session_data *sd, uint16 group_id);
+	int16 item_exists_pc(MapSessionData *sd, uint16 group_id);
 	t_itemid get_random_item_id(uint16 group_id, uint8 sub_group);
 	std::shared_ptr<s_item_group_entry> get_random_entry(uint16 group_id, uint8 sub_group);
-	uint8 pc_get_itemgroup(uint16 group_id, bool identify, map_session_data *sd);
+	uint8 pc_get_itemgroup(uint16 group_id, bool identify, MapSessionData *sd);
 };
 
 extern ItemGroupDatabase itemdb_group;
@@ -2564,11 +2564,11 @@ public:
 
 extern ItemPackageDatabase item_package_db;
 
-uint16 itemdb_searchname_array(std::map<t_itemid, std::shared_ptr<item_data>> &data, uint16 size, const char *str);
-struct item_data* itemdb_search(t_itemid nameid);
+uint16 itemdb_searchname_array(std::map<t_itemid, std::shared_ptr<ItemData>> &data, uint16 size, const char *str);
+struct ItemData* itemdb_search(t_itemid nameid);
 
 [[deprecated("Please upgrade your code to item_db.exists() or item_db.find()! This function will be dropped soon!")]]
-std::shared_ptr<item_data> itemdb_exists(t_itemid nameid);
+std::shared_ptr<ItemData> itemdb_exists(t_itemid nameid);
 
 #define itemdb_name(n) itemdb_search(n)->name.c_str()
 #define itemdb_ename(n) itemdb_search(n)->ename.c_str()
@@ -2595,17 +2595,17 @@ const char *itemdb_typename_ammo (e_ammo_type ammo);
 #define itemdb_value_buy(n) itemdb_search(n)->value_buy
 #define itemdb_value_sell(n) itemdb_search(n)->value_sell
 //Item trade restrictions [Skotlex]
-bool itemdb_isdropable_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_cantrade_sub(struct item_data *itd, int gmlv, int gmlv2);
-bool itemdb_canpartnertrade_sub(struct item_data *itd, int gmlv, int gmlv2);
-bool itemdb_cansell_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_cancartstore_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_canstore_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_canguildstore_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_canmail_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_canauction_sub(struct item_data *itd, int gmlv, int unused);
-bool itemdb_isrestricted(struct item* item, int gmlv, int gmlv2, bool (*func)(struct item_data*, int, int));
-bool itemdb_ishatched_egg(struct item* item);
+bool itemdb_isdropable_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_cantrade_sub(struct ItemData *itd, int gmlv, int gmlv2);
+bool itemdb_canpartnertrade_sub(struct ItemData *itd, int gmlv, int gmlv2);
+bool itemdb_cansell_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_cancartstore_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_canstore_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_canguildstore_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_canmail_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_canauction_sub(struct ItemData *itd, int gmlv, int unused);
+bool itemdb_isrestricted(Item* item, int gmlv, int gmlv2, bool (*func)(struct ItemData*, int, int));
+bool itemdb_ishatched_egg(Item* item);
 #define itemdb_isdropable(item, gmlv) itemdb_isrestricted(item, gmlv, 0, itemdb_isdropable_sub)
 #define itemdb_cantrade(item, gmlv, gmlv2) itemdb_isrestricted(item, gmlv, gmlv2, itemdb_cantrade_sub)
 #define itemdb_canpartnertrade(item, gmlv, gmlv2) itemdb_isrestricted(item, gmlv, gmlv2, itemdb_canpartnertrade_sub)
@@ -2616,12 +2616,12 @@ bool itemdb_ishatched_egg(struct item* item);
 #define itemdb_canmail(item, gmlv) itemdb_isrestricted(item , gmlv, 0, itemdb_canmail_sub)
 #define itemdb_canauction(item, gmlv) itemdb_isrestricted(item , gmlv, 0, itemdb_canauction_sub)
 
-bool itemdb_isequip2(struct item_data *id);
+bool itemdb_isequip2(struct ItemData *id);
 #define itemdb_isequip(nameid) itemdb_isequip2(itemdb_search(nameid))
 char itemdb_isidentified(t_itemid nameid);
-bool itemdb_isstackable2(struct item_data *id);
+bool itemdb_isstackable2(struct ItemData *id);
 #define itemdb_isstackable(nameid) itemdb_isstackable2(itemdb_search(nameid))
-bool itemdb_isNoEquip(struct item_data *id, uint16 m);
+bool itemdb_isNoEquip(struct ItemData *id, uint16 m);
 
 bool itemdb_parse_roulette_db(void);
 

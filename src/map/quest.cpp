@@ -394,7 +394,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(dropNode, "Item", item_name))
 					return 0;
 
-				std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+				std::shared_ptr<ItemData> item = item_db.search_aegisname( item_name.c_str() );
 
 				if (!item) {
 					this->invalidWarning(dropNode["Item"], "Item %s does not exist, skipping.\n", item_name.c_str());
@@ -501,7 +501,7 @@ std::shared_ptr<s_quest_db> quest_search(int quest_id)
  * @param sd : Player's data
  * @return 0 in case of success, nonzero otherwise (i.e. the player has no quests)
  */
-int quest_pc_login(map_session_data *sd)
+int quest_pc_login(MapSessionData *sd)
 {
 	if (!sd->avail_quests)
 		return 1;
@@ -552,7 +552,7 @@ static time_t quest_time(std::shared_ptr<s_quest_db> qi)
  * @param quest_id : ID of the quest to add.
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_add(map_session_data *sd, int quest_id)
+int quest_add(MapSessionData *sd, int quest_id)
 {
 	std::shared_ptr<s_quest_db> qi = quest_search(quest_id);
 
@@ -598,7 +598,7 @@ int quest_add(map_session_data *sd, int quest_id)
  * @param qid2 : New quest to add
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_change(map_session_data *sd, int qid1, int qid2)
+int quest_change(MapSessionData *sd, int qid1, int qid2)
 {
 	std::shared_ptr<s_quest_db> qi = quest_search(qid2);
 
@@ -647,7 +647,7 @@ int quest_change(map_session_data *sd, int qid1, int qid2)
  * @param quest_id : ID of the quest to remove
  * @return 0 in case of success, nonzero otherwise
  */
-int quest_delete(map_session_data *sd, int quest_id)
+int quest_delete(MapSessionData *sd, int quest_id)
 {
 	int i;
 
@@ -695,7 +695,7 @@ int quest_update_objective_sub(BlockList *bl, va_list ap)
 {
 	nullpo_ret(bl);
 
-	map_session_data *sd = BL_CAST(BL_PC, bl);
+	MapSessionData *sd = BL_CAST(BL_PC, bl);
 
 	nullpo_ret(sd);
 
@@ -719,7 +719,7 @@ int quest_update_objective_sub(BlockList *bl, va_list ap)
  * @param mob_size: Monster Size
  * @param mob_element: Monster Element
  */
-void quest_update_objective(map_session_data *sd, mobs::MobData* md)
+void quest_update_objective(MapSessionData *sd, mobs::MobData* md)
 {
 	nullpo_retv(sd);
 
@@ -780,7 +780,7 @@ void quest_update_objective(map_session_data *sd, mobs::MobData* md)
 			if (!item_db.exists(it->nameid))
 				continue;
 
-			struct item entry = {};
+			Item entry = {};
 
 			entry.nameid = it->nameid;
 			entry.identify = itemdb_isidentified(it->nameid);
@@ -811,7 +811,7 @@ void quest_update_objective(map_session_data *sd, mobs::MobData* md)
  * @return 0 in case of success, nonzero otherwise
  * @author [Inkfish]
  */
-int quest_update_status(map_session_data *sd, int quest_id, e_quest_state status)
+int quest_update_status(MapSessionData *sd, int quest_id, e_quest_state status)
 {
 	int i;
 
@@ -860,7 +860,7 @@ int quest_update_status(map_session_data *sd, int quest_id, e_quest_state status
  *              1 if the quest's timeout has expired
  *              0 otherwise
  */
-int quest_check(map_session_data *sd, int quest_id, e_quest_check_type type)
+int quest_check(MapSessionData *sd, int quest_id, e_quest_check_type type)
 {
 	int i;
 
@@ -902,7 +902,7 @@ int quest_check(map_session_data *sd, int quest_id, e_quest_check_type type)
  * @param sd : Character's data
  * @param ap : Ignored
  */
-static int quest_reload_check_sub(map_session_data *sd, va_list ap)
+static int quest_reload_check_sub(MapSessionData *sd, va_list ap)
 {
 	nullpo_ret(sd);
 

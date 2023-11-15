@@ -43,7 +43,7 @@ namespace rathena{
 }
 
 struct npc_data;
-struct item_data;
+struct ItemData;
 struct Channel;
 
 struct map_data *map_getmapdata(int16 m);
@@ -51,7 +51,7 @@ struct map_data *map_getmapdata(int16 m);
 #define msg_txt(sd,msg_number) map_msg_txt(sd,msg_number)
 #define do_final_msg() map_do_final_msg()
 int map_msg_config_read(const char *cfgName,int lang);
-const char* map_msg_txt(map_session_data *sd,int msg_number);
+const char* map_msg_txt(MapSessionData *sd,int msg_number);
 void map_do_final_msg(void);
 void map_msg_reload(void);
 
@@ -473,7 +473,7 @@ struct flooritem_data {
 	int cleartimer;
 	int first_get_charid,second_get_charid,third_get_charid;
 	t_tick first_get_tick,second_get_tick,third_get_tick;
-	struct item item;
+	Item item;
 	unsigned short mob_id; ///< ID of monster who dropped it. 0 for non-monster who dropped it.
 };
 
@@ -1114,7 +1114,7 @@ int map_get_new_object_id(void);
 int map_search_freecell(BlockList *src, int16 m, int16 *x, int16 *y, int16 rx, int16 ry, int flag);
 bool map_closest_freecell(int16 m, int16 *x, int16 *y, int type, int flag);
 //
-int map_quit(map_session_data *);
+int map_quit(MapSessionData *);
 // npc
 bool map_addnpc(int16 m,struct npc_data *);
 
@@ -1122,7 +1122,7 @@ bool map_addnpc(int16 m,struct npc_data *);
 TIMER_FUNC(map_clearflooritem_timer);
 TIMER_FUNC(map_removemobs_timer);
 void map_clearflooritem(BlockList* bl);
-int map_addflooritem(struct item *item, int amount, int16 m, int16 x, int16 y, int first_charid, int second_charid, int third_charid, int flags, unsigned short mob_id, bool canShowEffect = false);
+int map_addflooritem(Item *item, int amount, int16 m, int16 x, int16 y, int first_charid, int second_charid, int third_charid, int flags, unsigned short mob_id, bool canShowEffect = false);
 
 // instances
 int map_addinstancemap(int src_m, int instance_id, bool no_mapflag);
@@ -1133,11 +1133,11 @@ void map_data_copy(struct map_data *dst_map, struct map_data *src_map);
 // player to map session
 void map_addnickdb(int charid, const char* nick);
 void map_delnickdb(int charid, const char* nick);
-void map_reqnickdb(map_session_data* sd,int charid);
+void map_reqnickdb(MapSessionData* sd,int charid);
 const char* map_charid2nick(int charid);
-map_session_data* map_charid2sd(int charid);
+MapSessionData* map_charid2sd(int charid);
 
-map_session_data * map_id2sd(int id);
+MapSessionData * map_id2sd(int id);
 namespace mobs {
 class MobData;
 }
@@ -1161,12 +1161,12 @@ int map_eraseipport(unsigned short map, uint32 ip, uint16 port);
 int map_eraseallipport(void);
 void map_addiddb(BlockList *);
 void map_deliddb(BlockList *bl);
-void map_foreachpc(int (*func)(map_session_data* sd, va_list args), ...);
+void map_foreachpc(int (*func)(MapSessionData* sd, va_list args), ...);
 void map_foreachmob(int (*func)(mobs::MobData* md, va_list args), ...);
 void map_foreachnpc(int (*func)(struct npc_data* nd, va_list args), ...);
 void map_foreachregen(int (*func)(BlockList* bl, va_list args), ...);
 void map_foreachiddb(int (*func)(BlockList* bl, va_list args), ...);
-map_session_data * map_nick2sd(const char* nick, bool allow_partial);
+MapSessionData * map_nick2sd(const char* nick, bool allow_partial);
 mobs::MobData *map_getmob_boss(int16 m);
 mobs::MobData *map_id2boss(int id);
 
@@ -1207,7 +1207,7 @@ void map_flags_init(void);
 
 bool map_iwall_exist(const char* wall_name);
 bool map_iwall_set(int16 m, int16 x, int16 y, int size, int8 dir, bool shootable, const char* wall_name);
-void map_iwall_get(map_session_data *sd);
+void map_iwall_get(MapSessionData *sd);
 bool map_iwall_remove(const char *wall_name);
 
 int map_addmobtolist(unsigned short m, struct SpawnData *spawn_data);	// [Wizputer]
@@ -1244,7 +1244,7 @@ extern const char*MSG_CONF_NAME_POR;
 extern const char*MSG_CONF_NAME_THA;
 
 //Useful typedefs from jA [Skotlex]
-typedef map_session_data TBL_PC;
+typedef MapSessionData TBL_PC;
 typedef struct npc_data         TBL_NPC;
 typedef struct flooritem_data   TBL_ITEM;
 typedef struct chat_data        TBL_CHAT;

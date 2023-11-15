@@ -6,7 +6,7 @@
 
 #include <common/cbasetypes.hpp>
 
-#include "status.hpp" // struct status_data, struct status_change
+#include "status.hpp" // struct StatusData, struct StatusChange
 #include "unit.hpp" // units::UnitData
 
 // number of cells that a mercenary can walk to from it's master before being warped
@@ -33,31 +33,31 @@ struct s_mercenary_db {
 	std::string sprite, name;
 	uint16 lv;
 	uint16 range2, range3;
-	status_data status;
-	view_data vd;
+	StatusData status;
+	ViewData vd;
 	std::unordered_map<uint16, uint16> skill;
 };
 
 struct s_mercenary_data {
 	BlockList bl;
 	units::UnitData ud;
-	view_data *vd;
-	status_data base_status, battle_status;
-	status_change sc;
-	regen_data regen;
+	ViewData *vd;
+	StatusData base_status, battle_status;
+	StatusChange sc;
+	RegenData regen;
 
 	std::shared_ptr<s_mercenary_db> db;
 	s_mercenary mercenary;
 	std::vector<uint16> blockskill;
 
 	int masterteleport_timer;
-	map_session_data *master;
+	MapSessionData *master;
 	int contract_timer;
 
 	unsigned devotion_flag : 1;
 };
 
-struct view_data * mercenary_GetViewData(uint16 class_);
+ViewData * mercenary_GetViewData(uint16 class_);
 
 class MercenaryDatabase : public TypesafeYamlDatabase<int32, s_mercenary_db> {
 public:
@@ -71,7 +71,7 @@ public:
 
 extern MercenaryDatabase mercenary_db;
 
-bool mercenary_create(map_session_data *sd, uint16 class_, unsigned int lifetime);
+bool mercenary_create(MapSessionData *sd, uint16 class_, unsigned int lifetime);
 bool mercenary_recv_data(s_mercenary *merc, bool flag);
 void mercenary_save(s_mercenary_data *md);
 

@@ -13,13 +13,13 @@
 
 #include "clif.hpp" //
 #include "map.hpp" // struct BlockList
-#include "status.hpp" // struct status_change
+#include "status.hpp" // struct StatusChange
 #include "unit.hpp" // units::UnitData
 #include "navi.hpp" // navi stuff
 
 struct BlockList;
 struct npc_data;
-struct view_data;
+struct ViewData;
 
 struct npc_timerevent_list {
 	int timer,pos;
@@ -125,7 +125,7 @@ extern BarterDatabase barter_db;
 struct s_barter_purchase{
 	std::shared_ptr<s_npc_barter_item> item;
 	uint32 amount;
-	item_data* data;
+	ItemData* data;
 };
 
 struct s_questinfo {
@@ -157,8 +157,8 @@ enum e_npcv_status : uint8 {
 struct npc_data {
 	BlockList bl;
 	units::UnitData ud; //Because they need to be able to move....
-	struct view_data vd;
-	status_change sc; //They can't have status changes, but.. they want the visual opt values.
+	ViewData vd;
+	StatusChange sc; //They can't have status changes, but.. they want the visual opt values.
 	struct npc_data *master_nd;
 	short class_,speed;
 	char name[NPC_NAME_LENGTH+1];// display name
@@ -170,7 +170,7 @@ struct npc_data {
 
 	unsigned size : 2;
 
-	struct status_data status;
+	struct StatusData status;
 	unsigned int level,stat_point;
 	struct s_npc_params {
 		unsigned short str, agi, vit, int_, dex, luk;
@@ -216,7 +216,7 @@ struct npc_data {
 		} barter;
 	} u;
 
-	struct sc_display_entry **sc_display;
+	struct ScDisplayEntry **sc_display;
 	unsigned char sc_display_count;
 
 	std::vector<std::shared_ptr<s_questinfo>> qi_data;
@@ -1508,35 +1508,35 @@ enum npce_event : uint8 {
 	NPCE_MAX
 };
 
-struct view_data* npc_GetViewData(int class_);
+ViewData* npc_GetViewData(int class_);
 int npc_chat_sub(BlockList* bl, va_list ap);
-int npc_event_dequeue(map_session_data* sd,bool free_script_stack=true);
-int npc_event_process(map_session_data* sd, const char* eventname, int ontouch);
-int npc_touch_areanpc(map_session_data* sd, int16 m, int16 x, int16 y, struct npc_data* nd);
-int npc_touch_area_allnpc(map_session_data* sd, int16 m, int16 x, int16 y);
+int npc_event_dequeue(MapSessionData* sd,bool free_script_stack=true);
+int npc_event_process(MapSessionData* sd, const char* eventname, int ontouch);
+int npc_touch_areanpc(MapSessionData* sd, int16 m, int16 x, int16 y, struct npc_data* nd);
+int npc_touch_area_allnpc(MapSessionData* sd, int16 m, int16 x, int16 y);
 int npc_touch_areanpc2(mobs::MobData *md); // [Skotlex]
 int npc_check_areanpc(int flag, int16 m, int16 x, int16 y, int16 range);
-int npc_touchnext_areanpc(map_session_data* sd,bool leavemap);
-int npc_click(map_session_data* sd, struct npc_data* nd);
-bool npc_scriptcont(map_session_data* sd, int id, bool closing);
-struct npc_data* npc_checknear(map_session_data* sd, struct BlockList* bl);
-int npc_buysellsel(map_session_data* sd, int id, int type);
-e_purchase_result npc_buylist(map_session_data* sd, std::vector<s_npc_buy_list>& item_list);
-static int npc_buylist_sub(map_session_data* sd, std::vector<s_npc_buy_list>& item_list, struct npc_data* nd);
-uint8 npc_selllist(map_session_data* sd, int list_length, PACKET_CZ_PC_SELL_ITEMLIST_sub* item_list);
-e_purchase_result npc_barter_purchase( map_session_data& sd, std::shared_ptr<s_npc_barter> barter, std::vector<s_barter_purchase>& purchases );
+int npc_touchnext_areanpc(MapSessionData* sd,bool leavemap);
+int npc_click(MapSessionData* sd, struct npc_data* nd);
+bool npc_scriptcont(MapSessionData* sd, int id, bool closing);
+struct npc_data* npc_checknear(MapSessionData* sd, struct BlockList* bl);
+int npc_buysellsel(MapSessionData* sd, int id, int type);
+e_purchase_result npc_buylist(MapSessionData* sd, std::vector<s_npc_buy_list>& item_list);
+static int npc_buylist_sub(MapSessionData* sd, std::vector<s_npc_buy_list>& item_list, struct npc_data* nd);
+uint8 npc_selllist(MapSessionData* sd, int list_length, PACKET_CZ_PC_SELL_ITEMLIST_sub* item_list);
+e_purchase_result npc_barter_purchase( MapSessionData& sd, std::shared_ptr<s_npc_barter> barter, std::vector<s_barter_purchase>& purchases );
 void npc_parse_mob2(struct SpawnData* mob);
 struct npc_data* npc_add_warp(char* name, short from_mapid, short from_x, short from_y, short xs, short ys, unsigned short to_mapindex, short to_x, short to_y);
 int npc_globalmessage(const char* name,const char* mes);
 const char *npc_get_script_event_name(int npce_index);
-npc_data* npc_duplicate_npc( npc_data& nd, char name[NPC_NAME_LENGTH + 1], int16 mapid, int16 x, int16 y, int class_, uint8 dir, int16 xs, int16 ys, map_session_data* owner = nullptr );
-struct npc_data* npc_duplicate_npc_for_player( struct npc_data& nd, map_session_data& sd );
+npc_data* npc_duplicate_npc( npc_data& nd, char name[NPC_NAME_LENGTH + 1], int16 mapid, int16 x, int16 y, int class_, uint8 dir, int16 xs, int16 ys, MapSessionData* owner = nullptr );
+struct npc_data* npc_duplicate_npc_for_player( struct npc_data& nd, MapSessionData& sd );
 
 void npc_setcells(struct npc_data* nd);
 void npc_unsetcells(struct npc_data* nd);
 bool npc_movenpc(struct npc_data* nd, int16 x, int16 y);
-bool npc_is_cloaked(struct npc_data* nd, map_session_data* sd);
-bool npc_is_hidden_dynamicnpc( struct npc_data& nd, map_session_data& tsd );
+bool npc_is_cloaked(struct npc_data* nd, MapSessionData* sd);
+bool npc_is_hidden_dynamicnpc( struct npc_data& nd, MapSessionData& tsd );
 bool npc_enable_target(npc_data& nd, uint32 char_id, e_npcv_status flag);
 #define npc_enable(nd, flag) npc_enable_target(nd, 0, flag)
 void npc_setdisplayname(struct npc_data* nd, const char* newname);
@@ -1564,7 +1564,7 @@ int npc_event_doall_path(const char* event_name, const char* path);
 
 int npc_timerevent_start(struct npc_data* nd, int rid);
 int npc_timerevent_stop(struct npc_data* nd);
-void npc_timerevent_quit(map_session_data* sd);
+void npc_timerevent_quit(MapSessionData* sd);
 t_tick npc_gettimerevent_tick(struct npc_data* nd);
 int npc_settimerevent_tick(struct npc_data* nd, int newtimer);
 int npc_remove_map(struct npc_data* nd);
@@ -1572,18 +1572,18 @@ void npc_unload_duplicates (struct npc_data* nd);
 int npc_unload(struct npc_data* nd, bool single);
 int npc_reload(void);
 void npc_read_event_script(void);
-int npc_script_event(map_session_data* sd, enum npce_event type);
+int npc_script_event(MapSessionData* sd, enum npce_event type);
 
 int npc_duplicate4instance(struct npc_data *snd, int16 m);
 int npc_instanceinit(struct npc_data* nd);
 int npc_instancedestroy(struct npc_data* nd);
-int npc_cashshop_buy(map_session_data *sd, t_itemid nameid, int amount, int points);
+int npc_cashshop_buy(MapSessionData *sd, t_itemid nameid, int amount, int points);
 
-void npc_shop_currency_type(map_session_data *sd, struct npc_data *nd, int cost[2], bool display);
+void npc_shop_currency_type(MapSessionData *sd, struct npc_data *nd, int cost[2], bool display);
 
 extern struct npc_data* fake_nd;
 
-int npc_cashshop_buylist( map_session_data *sd, int points, std::vector<s_npc_buy_list>& item_list );
+int npc_cashshop_buylist( MapSessionData *sd, int points, std::vector<s_npc_buy_list>& item_list );
 bool npc_shop_discount(struct npc_data* nd);
 
 #if PACKETVER >= 20131223
@@ -1596,7 +1596,7 @@ void npc_market_delfromsql_(const char *exname, t_itemid nameid, bool clear);
 #endif
 
 // @commands (script-based)
-int npc_do_atcmd_event(map_session_data* sd, const char* command, const char* message, const char* eventname);
+int npc_do_atcmd_event(MapSessionData* sd, const char* command, const char* message, const char* eventname);
 
 bool npc_unloadfile( const char* path );
 

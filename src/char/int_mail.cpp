@@ -223,7 +223,7 @@ bool mail_loadmessage(int mail_id, struct mail_message* msg)
 		return false;
 	}
 
-	memset(msg->item, 0, sizeof(struct item) * MAIL_MAX_ITEM);
+	memset(msg->item, 0, sizeof(struct Item) * MAIL_MAX_ITEM);
 
 	for( i = 0; i < MAIL_MAX_ITEM && SQL_SUCCESS == Sql_NextRow(sql_handle); i++ ){
 		Sql_GetData(sql_handle,0, &data, NULL); msg->item[i].amount = (short)atoi(data);
@@ -418,9 +418,9 @@ void mapif_Mail_getattach(int fd, uint32 char_id, int mail_id, int type)
 	if( type == MAIL_ATT_NONE )
 		return; // No Attachment
 
-	WFIFOHEAD(fd, sizeof(struct item)*MAIL_MAX_ITEM + 16);
+	WFIFOHEAD(fd, sizeof(struct Item)*MAIL_MAX_ITEM + 16);
 	WFIFOW(fd,0) = 0x384a;
-	WFIFOW(fd,2) = sizeof(struct item)*MAIL_MAX_ITEM + 16;
+	WFIFOW(fd,2) = sizeof(struct Item)*MAIL_MAX_ITEM + 16;
 	WFIFOL(fd,4) = char_id;
 	WFIFOL(fd,8) = mail_id;
 	if( type & MAIL_ATT_ZENY ){
@@ -429,9 +429,9 @@ void mapif_Mail_getattach(int fd, uint32 char_id, int mail_id, int type)
 		WFIFOL(fd, 12) = 0;
 	}
 	if( type & MAIL_ATT_ITEM ){
-		memcpy(WFIFOP(fd, 16), &msg.item, sizeof(struct item)*MAIL_MAX_ITEM);
+		memcpy(WFIFOP(fd, 16), &msg.item, sizeof(struct Item)*MAIL_MAX_ITEM);
 	}else{
-		memset(WFIFOP(fd, 16), 0, sizeof(struct item)*MAIL_MAX_ITEM);
+		memset(WFIFOP(fd, 16), 0, sizeof(struct Item)*MAIL_MAX_ITEM);
 	}
 	WFIFOSET(fd,WFIFOW(fd,2));
 }
@@ -665,7 +665,7 @@ void mapif_parse_Mail_send(int fd)
 	mapif_Mail_new(&msg); // notify recipient
 }
 
-bool mail_sendmail(int send_id, const char* send_name, int dest_id, const char* dest_name, const char* title, const char* body, int zeny, struct item *item, int amount)
+bool mail_sendmail(int send_id, const char* send_name, int dest_id, const char* dest_name, const char* title, const char* body, int zeny, Item *item, int amount)
 {
 	struct mail_message msg;
 	memset(&msg, 0, sizeof(struct mail_message));
@@ -681,7 +681,7 @@ bool mail_sendmail(int send_id, const char* send_name, int dest_id, const char* 
 		int i;
 
 		for( i = 0; i < amount && i < MAIL_MAX_ITEM; i++ ){
-			memcpy(&msg.item[i], &item[i], sizeof(struct item));
+			memcpy(&msg.item[i], &item[i], sizeof(struct Item));
 		}
 	}
 

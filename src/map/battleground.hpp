@@ -16,7 +16,7 @@
 
 struct s_battleground_member_data {
 	unsigned short x, y;
-	map_session_data *sd;
+	MapSessionData *sd;
 	unsigned afk : 1;
 	struct point entry_point; ///< Battleground queue entry point
 };
@@ -58,8 +58,8 @@ enum e_queue_state : uint16 {
 struct s_battleground_queue {
 	int queue_id; ///< Battlegrounds Queue ID
 	int id; ///< Battlegrounds database ID
-	std::vector<map_session_data *> teama_members; ///< List of members on team A
-	std::vector<map_session_data *> teamb_members; ///< List of members on team B
+	std::vector<MapSessionData *> teama_members; ///< List of members on team A
+	std::vector<MapSessionData *> teamb_members; ///< List of members on team B
 	int required_players; ///< Amount of players required on each side to start
 	int max_players; ///< Maximum amount of players on each side
 	int accepted_players; ///< Amount of players who accepted the offer to enter the battleground
@@ -128,32 +128,32 @@ extern std::vector<std::shared_ptr<s_battleground_queue>> bg_queues;
 
 std::shared_ptr<s_battleground_type> bg_search_name(const char *name);
 std::shared_ptr<s_battleground_queue> bg_search_queue(int queue_id);
-void bg_send_dot_remove(map_session_data *sd);
+void bg_send_dot_remove(MapSessionData *sd);
 int bg_team_get_id(struct BlockList *bl);
-map_session_data *bg_getavailablesd(s_battleground_data *bg);
+MapSessionData *bg_getavailablesd(s_battleground_data *bg);
 
 bool bg_queue_reservation(const char *name, bool state, bool ended);
 #define bg_queue_reserve(name, end) (bg_queue_reservation(name, true, end))
 #define bg_queue_unbook(name) (bg_queue_reservation(name, false, false))
 
 int bg_create(uint16 mapindex, s_battleground_team* team);
-bool bg_team_join(int bg_id, map_session_data *sd, bool is_queue);
+bool bg_team_join(int bg_id, MapSessionData *sd, bool is_queue);
 bool bg_team_delete(int bg_id);
-int bg_team_leave(map_session_data *sd, bool quit, bool deserter);
+int bg_team_leave(MapSessionData *sd, bool quit, bool deserter);
 bool bg_team_warp(int bg_id, unsigned short mapindex, short x, short y);
-bool bg_player_is_in_bg_map(map_session_data *sd);
-bool bg_queue_check_joinable(std::shared_ptr<s_battleground_type> bg, map_session_data *sd, const char *name);
-void bg_queue_join_solo(const char *name, map_session_data *sd);
-void bg_queue_join_party(const char *name, map_session_data *sd);
-void bg_queue_join_guild(const char *name, map_session_data *sd);
-void bg_queue_join_multi(const char *name, map_session_data *sd, std::vector<map_session_data *> list);
+bool bg_player_is_in_bg_map(MapSessionData *sd);
+bool bg_queue_check_joinable(std::shared_ptr<s_battleground_type> bg, MapSessionData *sd, const char *name);
+void bg_queue_join_solo(const char *name, MapSessionData *sd);
+void bg_queue_join_party(const char *name, MapSessionData *sd);
+void bg_queue_join_guild(const char *name, MapSessionData *sd);
+void bg_queue_join_multi(const char *name, MapSessionData *sd, std::vector<MapSessionData *> list);
 void bg_queue_clear(std::shared_ptr<s_battleground_queue> queue, bool ended);
-bool bg_queue_leave(map_session_data *sd, bool apply_sc = true);
+bool bg_queue_leave(MapSessionData *sd, bool apply_sc = true);
 bool bg_queue_on_ready(const char *name, std::shared_ptr<s_battleground_queue> queue);
-void bg_queue_on_accept_invite(map_session_data *sd);
+void bg_queue_on_accept_invite(MapSessionData *sd);
 void bg_queue_start_battleground(std::shared_ptr<s_battleground_queue> queue);
-bool bg_member_respawn(map_session_data *sd);
-void bg_send_message(map_session_data *sd, const char *mes, int len);
+bool bg_member_respawn(MapSessionData *sd);
+void bg_send_message(MapSessionData *sd, const char *mes, int len);
 
 void do_init_battleground(void);
 void do_final_battleground(void);

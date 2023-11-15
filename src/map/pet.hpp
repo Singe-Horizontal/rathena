@@ -123,7 +123,7 @@ struct pet_skill_support { //Support Skill
 };
 
 struct pet_loot {
-	struct item *item;
+	Item *item;
 	unsigned short count;
 	unsigned short weight;
 	unsigned short max;
@@ -183,9 +183,9 @@ extern std::unordered_map<std::string, std::shared_ptr<s_pet_autobonus_wrapper>>
 struct pet_data {
 	BlockList bl;
 	units::UnitData ud;
-	struct view_data vd;
+	ViewData vd;
 	struct s_pet pet;
-	struct status_data status;
+	struct StatusData status;
 	std::shared_ptr<mobs::s_mob_db> db;
 	int pet_hungry_timer;
 	int target_id;
@@ -204,7 +204,7 @@ struct pet_data {
 	std::vector<std::shared_ptr<s_petautobonus>> autobonus, autobonus2, autobonus3;
 
 	int masterteleport_timer;
-	map_session_data *master;
+	MapSessionData *master;
 
 	std::shared_ptr<s_pet_db> get_pet_db() {
 		return pet_db.find(this->pet.class_);
@@ -223,43 +223,43 @@ struct pet_data {
 	}
 };
 
-bool pet_create_egg(map_session_data *sd, t_itemid item_id);
+bool pet_create_egg(MapSessionData *sd, t_itemid item_id);
 int pet_hungry_val(struct pet_data *pd);
 void pet_set_intimate(struct pet_data *pd, int value);
 int pet_target_check(struct pet_data *pd,BlockList *bl,int type);
 void pet_unlocktarget(struct pet_data *pd);
-int pet_sc_check(map_session_data *sd, int type); //Skotlex
+int pet_sc_check(MapSessionData *sd, int type); //Skotlex
 std::shared_ptr<s_pet_db> pet_db_search(int key, enum e_pet_itemtype type);
 int pet_hungry_timer_delete(struct pet_data *pd);
-bool pet_data_init(map_session_data *sd, struct s_pet *pet);
-bool pet_return_egg( map_session_data *sd, struct pet_data *pd );
-int pet_birth_process(map_session_data *sd, struct s_pet *pet);
+bool pet_data_init(MapSessionData *sd, struct s_pet *pet);
+bool pet_return_egg( MapSessionData *sd, struct pet_data *pd );
+int pet_birth_process(MapSessionData *sd, struct s_pet *pet);
 int pet_recv_petdata(uint32 account_id,struct s_pet *p,int flag);
-int pet_select_egg(map_session_data *sd,short egg_index);
-int pet_catch_process1(map_session_data *sd,int target_class);
-int pet_catch_process2(map_session_data *sd,int target_id);
+int pet_select_egg(MapSessionData *sd,short egg_index);
+int pet_catch_process1(MapSessionData *sd,int target_class);
+int pet_catch_process2(MapSessionData *sd,int target_id);
 bool pet_get_egg(uint32 account_id, short pet_class, int pet_id);
-int pet_menu(map_session_data *sd,int menunum);
-int pet_change_name(map_session_data *sd,char *name);
-int pet_change_name_ack(map_session_data *sd, char* name, int flag);
-int pet_equipitem(map_session_data *sd,int index);
-int pet_lootitem_drop(struct pet_data *pd,map_session_data *sd);
+int pet_menu(MapSessionData *sd,int menunum);
+int pet_change_name(MapSessionData *sd,char *name);
+int pet_change_name_ack(MapSessionData *sd, char* name, int flag);
+int pet_equipitem(MapSessionData *sd,int index);
+int pet_lootitem_drop(struct pet_data *pd,MapSessionData *sd);
 int pet_attackskill(struct pet_data *pd, int target_id);
 TIMER_FUNC(pet_skill_support_timer); // [Skotlex]
 TIMER_FUNC(pet_skill_bonus_timer); // [Valaris]
 TIMER_FUNC(pet_recovery_timer); // [Valaris]
 TIMER_FUNC(pet_heal_timer); // [Valaris]
-int pet_egg_search(map_session_data *sd, int pet_id);
-void pet_evolution(map_session_data *sd, int16 pet_id);
-int pet_food(map_session_data *sd, struct pet_data *pd);
-void pet_clear_support_bonuses(map_session_data *sd);
+int pet_egg_search(MapSessionData *sd, int pet_id);
+void pet_evolution(MapSessionData *sd, int16 pet_id);
+int pet_food(MapSessionData *sd, struct pet_data *pd);
+void pet_clear_support_bonuses(MapSessionData *sd);
 
-#define pet_stop_walking(pd, type) units::stop_walking(&(pd)->bl, type)
-#define pet_stop_attack(pd) units::stop_attack(&(pd)->bl)
+#define pet_stop_walking(pd, type) units::StopWalking(&(pd)->bl, type)
+#define pet_stop_attack(pd) units::StopAttack(&(pd)->bl)
 
 bool pet_addautobonus(std::vector<std::shared_ptr<s_petautobonus>> &bonus, const std::string &script, int16 rate, uint32 dur, uint16 atk_type, const std::string &other_script, bool onskill);
-void pet_exeautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_petautobonus>> *bonus, std::shared_ptr<s_petautobonus> &autobonus);
-void pet_delautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_petautobonus>> &bonus, bool restore);
+void pet_exeautobonus(MapSessionData &sd, std::vector<std::shared_ptr<s_petautobonus>> *bonus, std::shared_ptr<s_petautobonus> &autobonus);
+void pet_delautobonus(MapSessionData &sd, std::vector<std::shared_ptr<s_petautobonus>> &bonus, bool restore);
 
 void do_init_pet(void);
 void do_final_pet(void);

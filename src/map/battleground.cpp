@@ -439,7 +439,7 @@ std::shared_ptr<s_battleground_queue> bg_search_queue(int queue_id)
  * @param bg: Battleground data
  * @return map_session_data
  */
-map_session_data* bg_getavailablesd(s_battleground_data *bg)
+MapSessionData* bg_getavailablesd(s_battleground_data *bg)
 {
 	nullpo_retr(nullptr, bg);
 
@@ -500,7 +500,7 @@ bool bg_team_warp(int bg_id, unsigned short mapindex, short x, short y)
  * Remove a player's Battleground map marker
  * @param sd: Player data
  */
-void bg_send_dot_remove(map_session_data *sd)
+void bg_send_dot_remove(MapSessionData *sd)
 {
 	nullpo_retv(sd);
 
@@ -516,7 +516,7 @@ void bg_send_dot_remove(map_session_data *sd)
  * @param is_queue: Joined from queue
  * @return True on success or false otherwise
  */
-bool bg_team_join(int bg_id, map_session_data *sd, bool is_queue)
+bool bg_team_join(int bg_id, MapSessionData *sd, bool is_queue)
 {
 	if (!sd || sd->bg_id)
 		return false;
@@ -562,7 +562,7 @@ bool bg_team_join(int bg_id, map_session_data *sd, bool is_queue)
  * @param deserter: Whether to apply the deserter status or not
  * @return Remaining count in Battleground team or -1 on failure
  */
-int bg_team_leave(map_session_data *sd, bool quit, bool deserter)
+int bg_team_leave(MapSessionData *sd, bool quit, bool deserter)
 {
 	if (!sd || !sd->bg_id)
 		return -1;
@@ -623,7 +623,7 @@ int bg_team_leave(map_session_data *sd, bool quit, bool deserter)
  * @param sd: Player data
  * @return True on success or false otherwise
  */
-bool bg_member_respawn(map_session_data *sd)
+bool bg_member_respawn(MapSessionData *sd)
 {
 	if (!sd || !sd->bg_id || !pc_isdead(sd))
 		return false;
@@ -691,7 +691,7 @@ int bg_team_get_id(BlockList *bl)
 				return ((TBL_PET*)bl)->master->bg_id;
 			break;
 		case BL_MOB: {
-			map_session_data *msd;
+			MapSessionData *msd;
 			mobs::MobData *md = (mobs::MobData*)bl;
 
 			if( md->special_state.ai && (msd = map_id2sd(md->master_id)) != nullptr )
@@ -720,7 +720,7 @@ int bg_team_get_id(BlockList *bl)
  * @param mes: Message
  * @param len: Message length
  */
-void bg_send_message(map_session_data *sd, const char *mes, int len)
+void bg_send_message(MapSessionData *sd, const char *mes, int len)
 {
 	nullpo_retv(sd);
 
@@ -741,7 +741,7 @@ void bg_send_message(map_session_data *sd, const char *mes, int len)
  */
 int bg_send_xy_timer_sub(std::shared_ptr<s_battleground_data> bg)
 {
-	map_session_data *sd;
+	MapSessionData *sd;
 
 	for (auto &pl_sd : bg->members) {
 		sd = pl_sd.sd;
@@ -860,7 +860,7 @@ static TIMER_FUNC(bg_on_ready_start)
  * @param sd: Player data
  * @return True if in a battleground or false otherwise
  */
-bool bg_player_is_in_bg_map(map_session_data *sd)
+bool bg_player_is_in_bg_map(MapSessionData *sd)
 {
 	nullpo_retr(false, sd);
 
@@ -880,7 +880,7 @@ bool bg_player_is_in_bg_map(map_session_data *sd)
  * @param name: Battleground name
  * @return True if the player is good to join a queue or false otherwise
  */
-static bool bg_queue_check_status(map_session_data* sd, const char *name)
+static bool bg_queue_check_status(MapSessionData* sd, const char *name)
 {
 	nullpo_retr(false, sd);
 
@@ -915,7 +915,7 @@ static bool bg_queue_check_status(map_session_data* sd, const char *name)
  * @param name: Battleground name
  * @return True on success or false otherwise
  */
-bool bg_queue_check_joinable(std::shared_ptr<s_battleground_type> bg, map_session_data *sd, const char *name)
+bool bg_queue_check_joinable(std::shared_ptr<s_battleground_type> bg, MapSessionData *sd, const char *name)
 {
 	nullpo_retr(false, sd);
 
@@ -990,7 +990,7 @@ bool bg_queue_reservation(const char *name, bool state, bool ended)
  * @param name: Battleground name
  * @param sd: Player who requested to join the battlegrounds
  */
-void bg_queue_join_solo(const char *name, map_session_data *sd)
+void bg_queue_join_solo(const char *name, MapSessionData *sd)
 {
 	if (!sd) {
 		ShowError("bg_queue_join_solo: Tried to join non-existent player\n.");
@@ -1017,7 +1017,7 @@ void bg_queue_join_solo(const char *name, map_session_data *sd)
  * @param name: Battleground name
  * @param sd: Player who requested to join the battlegrounds
  */
-void bg_queue_join_party(const char *name, map_session_data *sd)
+void bg_queue_join_party(const char *name, MapSessionData *sd)
 {
 	if (!sd) {
 		ShowError("bg_queue_join_party: Tried to join non-existent player\n.");
@@ -1058,14 +1058,14 @@ void bg_queue_join_party(const char *name, map_session_data *sd)
 			return; // Too many party members online
 		}
 
-		std::vector<map_session_data *> list;
+		std::vector<MapSessionData *> list;
 
 		for (const auto &it : p->party.member) {
 			if (list.size() == bg->max_players)
 				break;
 
 			if (it.online) {
-				map_session_data *pl_sd = map_charid2sd(it.char_id);
+				MapSessionData *pl_sd = map_charid2sd(it.char_id);
 
 				if (pl_sd)
 					list.push_back(pl_sd);
@@ -1085,7 +1085,7 @@ void bg_queue_join_party(const char *name, map_session_data *sd)
  * @param name: Battleground name
  * @param sd: Player who requested to join the battlegrounds
  */
-void bg_queue_join_guild(const char *name, map_session_data *sd)
+void bg_queue_join_guild(const char *name, MapSessionData *sd)
 {
 	if (!sd) {
 		ShowError("bg_queue_join_guild: Tried to join non-existent player\n.");
@@ -1117,14 +1117,14 @@ void bg_queue_join_guild(const char *name, map_session_data *sd)
 			return; // Too many guild members online
 		}
 
-		std::vector<map_session_data *> list;
+		std::vector<MapSessionData *> list;
 
 		for (const auto &it : g->guild.member) {
 			if (list.size() == bg->max_players)
 				break;
 
 			if (it.online) {
-				map_session_data *pl_sd = map_charid2sd(it.char_id);
+				MapSessionData *pl_sd = map_charid2sd(it.char_id);
 
 				if (pl_sd)
 					list.push_back(pl_sd);
@@ -1145,7 +1145,7 @@ void bg_queue_join_guild(const char *name, map_session_data *sd)
  * @param sd: Player who requested to join the battlegrounds
  * @param list: Contains all players including the player who requested to join
  */
-void bg_queue_join_multi(const char *name, map_session_data *sd, std::vector <map_session_data *> list)
+void bg_queue_join_multi(const char *name, MapSessionData *sd, std::vector <MapSessionData *> list)
 {
 	if (!sd) {
 		ShowError("bg_queue_join_multi: Tried to join non-existent player\n.");
@@ -1173,7 +1173,7 @@ void bg_queue_join_multi(const char *name, map_session_data *sd, std::vector <ma
 		}
 
 		bool r = rnd() % 2 != 0;
-		std::vector<map_session_data *> *team = r ? &queue->teamb_members : &queue->teama_members;
+		std::vector<MapSessionData *> *team = r ? &queue->teamb_members : &queue->teama_members;
 
 		if (queue->state == QUEUE_STATE_ACTIVE) {
 			// If one team has lesser members try to balance (on an active BG)
@@ -1188,7 +1188,7 @@ void bg_queue_join_multi(const char *name, map_session_data *sd, std::vector <ma
 		}
 
 		while (!list.empty() && team->size() < bg->max_players) {
-			map_session_data *sd2 = list.back();
+			MapSessionData *sd2 = list.back();
 
 			list.pop_back();
 
@@ -1275,7 +1275,7 @@ void bg_queue_clear(std::shared_ptr<s_battleground_queue> queue, bool ended)
  * @param apply_sc: Apply the SC_ENTRY_QUEUE_APPLY_DELAY status on queue leave (default: true)
  * @return True on success or false otherwise
  */
-static bool bg_queue_leave_sub(map_session_data *sd, std::vector<map_session_data *> &members, bool apply_sc)
+static bool bg_queue_leave_sub(MapSessionData *sd, std::vector<MapSessionData *> &members, bool apply_sc)
 {
 	if (!sd)
 		return false;
@@ -1305,7 +1305,7 @@ static bool bg_queue_leave_sub(map_session_data *sd, std::vector<map_session_dat
  * @param apply_sc: Apply the SC_ENTRY_QUEUE_APPLY_DELAY status on queue leave (default: true)
  * @return True on success or false otherwise
  */
-bool bg_queue_leave(map_session_data *sd, bool apply_sc)
+bool bg_queue_leave(MapSessionData *sd, bool apply_sc)
 {
 	if (!sd || sd->bg_queue_id == 0)
 		return false;
@@ -1380,7 +1380,7 @@ bool bg_queue_on_ready(const char *name, std::shared_ptr<s_battleground_queue> q
  * @param sd: Player to send in
  * @param queue: Queue data
  */
-void bg_join_active(map_session_data *sd, std::shared_ptr<s_battleground_queue> queue)
+void bg_join_active(MapSessionData *sd, std::shared_ptr<s_battleground_queue> queue)
 {
 	if (sd == nullptr || queue == nullptr)
 		return;
@@ -1493,7 +1493,7 @@ bool bg_mapflag_check(std::shared_ptr<s_battleground_queue> queue) {
  * @param queue: Battleground queue
  * @param sd: Player data
  */
-void bg_queue_on_accept_invite(map_session_data *sd)
+void bg_queue_on_accept_invite(MapSessionData *sd)
 {
 	nullpo_retv(sd);
 

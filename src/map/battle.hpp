@@ -14,7 +14,7 @@
 #include "skill.hpp"
 
 //fwd declaration
-class map_session_data;
+class MapSessionData;
 class MobData;
 struct BlockList;
 enum e_damage_type : uint8;
@@ -93,7 +93,7 @@ struct Damage battle_calc_attack(int attack_type,BlockList *bl,BlockList *target
 
 int64 battle_calc_return_damage(BlockList *bl, BlockList *src, int64 *, int flag, uint16 skill_id, bool status_reflect);
 
-void battle_drain(map_session_data *sd, BlockList *tbl, int64 rdamage, int64 ldamage, int race, int class_);
+void battle_drain(MapSessionData *sd, BlockList *tbl, int64 rdamage, int64 ldamage, int race, int class_);
 
 int64 battle_attr_fix(BlockList *src, BlockList *target, int64 damage,int atk_elem,int def_type, int def_lv);
 int battle_calc_cardfix(int attack_type, BlockList *src, BlockList *target, std::bitset<NK_MAX> nk, int s_ele, int s_ele_, int64 damage, int left, int flag);
@@ -107,7 +107,7 @@ int64 battle_calc_pk_damage(BlockList &src, BlockList &bl, int64 damage, uint16 
 void battle_damage(BlockList *src, BlockList *target, int64 damage, t_tick delay, uint16 skill_lv, uint16 skill_id, enum damage_lv dmg_lv, unsigned short attack_type, bool additional_effects, t_tick tick, bool spdamage);
 int battle_delay_damage (t_tick tick, int amotion, BlockList *src, BlockList *target, int attack_type, uint16 skill_id, uint16 skill_lv, int64 damage, enum damage_lv dmg_lv, t_tick ddelay, bool additional_effects, bool spdamage);
 
-int battle_calc_chorusbonus(map_session_data *sd);
+int battle_calc_chorusbonus(MapSessionData *sd);
 
 // Summary normal attack treatment (basic attack)
 enum damage_lv battle_weapon_attack( BlockList *bl,BlockList *target,t_tick tick,int flag);
@@ -123,7 +123,7 @@ int battle_check_undead(int race,int element);
 int battle_check_target(BlockList *src, BlockList *target,int flag);
 bool battle_check_range(BlockList *src,BlockList *bl,int range);
 
-void battle_consume_ammo(map_session_data* sd, int skill, int lv);
+void battle_consume_ammo(MapSessionData* sd, int skill, int lv);
 
 bool is_infinite_defense(BlockList *target, int flag);
 

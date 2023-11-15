@@ -13,7 +13,7 @@ TIMER_FUNC(mail_return_timer);
 TIMER_FUNC(mail_delete_timer);
 
 int inter_mail_parse_frommap(int fd);
-bool mail_sendmail(int send_id, const char* send_name, int dest_id, const char* dest_name, const char* title, const char* body, int zeny, struct item *item, int amount);
+bool mail_sendmail(int send_id, const char* send_name, int dest_id, const char* dest_name, const char* title, const char* body, int zeny, struct Item *item, int amount);
 
 int inter_mail_sql_init(void);
 void inter_mail_sql_final(void);
