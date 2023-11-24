@@ -26,6 +26,7 @@
 #include "status.hpp" // unit_data
 #include "unit.hpp" // unit_data
 #include "vending.hpp" // struct s_vending
+#include "battle.hpp"
 
 enum AtCommandType : uint8;
 enum e_instance_mode : uint8;
@@ -35,39 +36,39 @@ enum sc_type : int16;
 
 class MapGuild;
 
-#define MAX_PC_BONUS 50 /// Max bonus, usually used by item bonus
-#define MAX_PC_FEELHATE 3 /// Max feel hate info
-#define DAMAGELOG_SIZE_PC 100	/// Damage log
-#define MAX_SPIRITBALL 15 /// Max spirit balls
-#define MAX_DEVOTION 5 /// Max Devotion slots
-#define MAX_SPIRITCHARM 10 /// Max spirit charms
-#define MAX_SOUL_BALL 20 /// Max soul ball
-#define MAX_STELLAR_MARKS 5 /// Max stellar marks
-#define MAX_UNITED_SOULS 12 /// Max united souls
-#define MAX_SERVANTBALL 5 /// Max servant weapons
-#define MAX_SERVANT_SIGN 5 /// Max servant signs
-#define MAX_ABYSSBALL 5 /// Max abyss spheres
+inline constexpr unsigned int MAX_PC_BONUS = 50; /// Max bonus, usually used by item bonus
+inline constexpr unsigned int MAX_PC_FEELHATE = 3; /// Max feel hate info
+inline constexpr unsigned int DAMAGELOG_SIZE_PC = 100;	/// Damage log
+inline constexpr unsigned int MAX_SPIRITBALL = 15; /// Max spirit balls
+inline constexpr unsigned int MAX_DEVOTION = 5; /// Max Devotion slots
+inline constexpr unsigned int MAX_SPIRITCHARM = 10; /// Max spirit charms
+inline constexpr unsigned int MAX_SOUL_BALL = 20; /// Max soul ball
+inline constexpr unsigned int MAX_STELLAR_MARKS = 5; /// Max stellar marks
+inline constexpr unsigned int MAX_UNITED_SOULS = 12; /// Max united souls
+inline constexpr unsigned int MAX_SERVANTBALL = 5; /// Max servant weapons
+inline constexpr unsigned int MAX_SERVANT_SIGN = 5; /// Max servant signs
+inline constexpr unsigned int MAX_ABYSSBALL = 5; /// Max abyss spheres
 
-#define LANGTYPE_VAR "#langtype"
-#define CASHPOINT_VAR "#CASHPOINTS"
-#define KAFRAPOINT_VAR "#KAFRAPOINTS"
-#define BANK_VAULT_VAR "#BANKVAULT"
-#define ROULETTE_BRONZE_VAR "RouletteBronze"
-#define ROULETTE_SILVER_VAR "RouletteSilver"
-#define ROULETTE_GOLD_VAR "RouletteGold"
-#define COOKMASTERY_VAR "COOK_MASTERY"
-#define PCDIECOUNTER_VAR "PC_DIE_COUNTER"
-#define JOBCHANGE2ND_VAR "jobchange_level"
-#define JOBCHANGE3RD_VAR "jobchange_level_3rd"
-#define JOBCHANGE4TH_VAR "jobchange_level_4th"
-#define TKMISSIONID_VAR "TK_MISSION_ID"
-#define TKMISSIONCOUNT_VAR "TK_MISSION_COUNT"
-#define ATTENDANCE_DATE_VAR "#AttendanceDate"
-#define ATTENDANCE_COUNT_VAR "#AttendanceCounter"
-#define ACHIEVEMENTLEVEL "AchievementLevel"
+inline constexpr auto LANGTYPE_VAR = "#langtype";
+inline constexpr auto CASHPOINT_VAR = "#CASHPOINTS";
+inline constexpr auto KAFRAPOINT_VAR = "#KAFRAPOINTS";
+inline constexpr auto BANK_VAULT_VAR = "#BANKVAULT";
+inline constexpr auto ROULETTE_BRONZE_VAR = "RouletteBronze";
+inline constexpr auto ROULETTE_SILVER_VAR = "RouletteSilver";
+inline constexpr auto ROULETTE_GOLD_VAR = "RouletteGold";
+inline constexpr auto COOKMASTERY_VAR = "COOK_MASTERY";
+inline constexpr auto PCDIECOUNTER_VAR = "PC_DIE_COUNTER";
+inline constexpr auto JOBCHANGE2ND_VAR = "jobchange_level";
+inline constexpr auto JOBCHANGE3RD_VAR = "jobchange_level_3rd";
+inline constexpr auto JOBCHANGE4TH_VAR = "jobchange_level_4th";
+inline constexpr auto TKMISSIONID_VAR = "TK_MISSION_ID";
+inline constexpr auto TKMISSIONCOUNT_VAR = "TK_MISSION_COUNT";
+inline constexpr auto ATTENDANCE_DATE_VAR = "#AttendanceDate";
+inline constexpr auto ATTENDANCE_COUNT_VAR = "#AttendanceCounter";
+inline constexpr auto ACHIEVEMENTLEVEL = "AchievementLevel";
 
 //Total number of classes (for data storage)
-#define CLASS_COUNT (JOB_MAX - JOB_NOVICE_HIGH + JOB_MAX_BASIC)
+inline constexpr auto CLASS_COUNT = JOB_MAX - JOB_NOVICE_HIGH + JOB_MAX_BASIC;
 
 //Equip indexes constants. (eg: sd->equip_index[EQI_AMMO] returns the index
 //where the arrows are equipped)
@@ -123,13 +124,13 @@ enum e_additem_result : uint8 {
 };
 
 #ifndef CAPTCHA_ANSWER_SIZE
-	#define CAPTCHA_ANSWER_SIZE 16
+	inline constexpr unsigned int CAPTCHA_ANSWER_SIZE = 16;
 #endif
 #ifndef CAPTCHA_BMP_SIZE
-	#define CAPTCHA_BMP_SIZE (2 + 52 + (3 * 220 * 90)) // sizeof("BM") + sizeof(BITMAPV2INFOHEADER) + 24bits 220x90 BMP
+	inline constexpr unsigned int CAPTCHA_BMP_SIZE = 2 + 52 + (3 * 220 * 90); // sizeof("BM") + sizeof(BITMAPV2INFOHEADER) + 24bits 220x90 BMP
 #endif
 #ifndef MAX_CAPTCHA_CHUNK_SIZE
-	#define MAX_CAPTCHA_CHUNK_SIZE 1024
+	inline constexpr unsigned int MAX_CAPTCHA_CHUNK_SIZE = 1024;
 #endif
 
 struct s_captcha_data {
@@ -212,7 +213,7 @@ enum e_params {
 	PARAM_MAX
 };
 
-static const char* parameter_names[PARAM_MAX] = {
+inline constexpr char* const parameter_names[PARAM_MAX] = {
 	"Str",
 	"Agi",
 	"Vit",
@@ -227,9 +228,38 @@ static const char* parameter_names[PARAM_MAX] = {
 	"Crt"
 };
 
-extern unsigned int equip_bitmask[EQI_MAX];
 
-#define equip_index_check(i) ( (i) >= EQI_ACC_L && (i) < EQI_MAX )
+/**
+ * Translation table from athena equip index to aegis bitmask
+*/
+
+inline constexpr unsigned int equip_bitmask[EQI_MAX] = {
+	EQP_ACC_L,				// EQI_ACC_L
+	EQP_ACC_R,				// EQI_ACC_R
+	EQP_SHOES,				// EQI_SHOES
+	EQP_GARMENT,			// EQI_GARMENT
+	EQP_HEAD_LOW,			// EQI_HEAD_LOW
+	EQP_HEAD_MID,			// EQI_HEAD_MID
+	EQP_HEAD_TOP,			// EQI_HEAD_TOP
+	EQP_ARMOR,				// EQI_ARMOR
+	EQP_HAND_L,				// EQI_HAND_L
+	EQP_HAND_R,				// EQI_HAND_R
+	EQP_COSTUME_HEAD_TOP,	// EQI_COSTUME_HEAD_TOP
+	EQP_COSTUME_HEAD_MID,	// EQI_COSTUME_HEAD_MID
+	EQP_COSTUME_HEAD_LOW,	// EQI_COSTUME_HEAD_LOW
+	EQP_COSTUME_GARMENT,	// EQI_COSTUME_GARMENT
+	EQP_AMMO,				// EQI_AMMO
+	EQP_SHADOW_ARMOR,		// EQI_SHADOW_ARMOR
+	EQP_SHADOW_WEAPON,		// EQI_SHADOW_WEAPON
+	EQP_SHADOW_SHIELD,		// EQI_SHADOW_SHIELD
+	EQP_SHADOW_SHOES,		// EQI_SHADOW_SHOES
+	EQP_SHADOW_ACC_R,		// EQI_SHADOW_ACC_R
+	EQP_SHADOW_ACC_L		// EQI_SHADOW_ACC_L
+};
+
+inline bool equip_index_check(int i){
+	return i >= EQI_ACC_L && i < EQI_MAX;
+}
 
 /// Miscellaneous item bonus struct
 struct s_item_bonus {
@@ -991,7 +1021,7 @@ enum weapon_type : uint8 {
 	W_SHIELD = MAX_WEAPON_TYPE,
 };
 
-#define WEAPON_TYPE_ALL ((1<<MAX_WEAPON_TYPE)-1)
+inline constexpr int WEAPON_TYPE_ALL = (1<<MAX_WEAPON_TYPE)-1;
 
 enum e_ammo_type : uint8 {
 	AMMO_NONE = 0,
@@ -1110,33 +1140,48 @@ public:
 
 extern JobDatabase job_db;
 
-#define EQP_WEAPON EQP_HAND_R
-#define EQP_SHIELD EQP_HAND_L
-#define EQP_ARMS (EQP_HAND_R|EQP_HAND_L)
-#define EQP_HELM (EQP_HEAD_LOW|EQP_HEAD_MID|EQP_HEAD_TOP)
-#define EQP_ACC (EQP_ACC_L|EQP_ACC_R)
-#define EQP_COSTUME (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW|EQP_COSTUME_GARMENT)
-#define EQP_COSTUME_HELM (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW)
-#define EQP_SHADOW_GEAR (EQP_SHADOW_ARMOR|EQP_SHADOW_WEAPON|EQP_SHADOW_SHIELD|EQP_SHADOW_SHOES|EQP_SHADOW_ACC_R|EQP_SHADOW_ACC_L)
-#define EQP_SHADOW_ACC (EQP_SHADOW_ACC_R|EQP_SHADOW_ACC_L)
-#define EQP_SHADOW_ARMS (EQP_SHADOW_WEAPON|EQP_SHADOW_SHIELD)
+inline constexpr auto EQP_WEAPON = EQP_HAND_R;
+inline constexpr auto EQP_SHIELD = EQP_HAND_L;
+inline constexpr auto EQP_ARMS = (EQP_HAND_R|EQP_HAND_L);
+inline constexpr auto EQP_HELM = (EQP_HEAD_LOW|EQP_HEAD_MID|EQP_HEAD_TOP);
+inline constexpr auto EQP_ACC = (EQP_ACC_L|EQP_ACC_R);
+inline constexpr auto EQP_COSTUME = (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW|EQP_COSTUME_GARMENT);
+inline constexpr auto EQP_COSTUME_HELM = (EQP_COSTUME_HEAD_TOP|EQP_COSTUME_HEAD_MID|EQP_COSTUME_HEAD_LOW);
+inline constexpr auto EQP_SHADOW_GEAR = (EQP_SHADOW_ARMOR|EQP_SHADOW_WEAPON|EQP_SHADOW_SHIELD|EQP_SHADOW_SHOES|EQP_SHADOW_ACC_R|EQP_SHADOW_ACC_L);
+inline constexpr auto EQP_SHADOW_ACC = (EQP_SHADOW_ACC_R|EQP_SHADOW_ACC_L);
+inline constexpr auto EQP_SHADOW_ARMS = (EQP_SHADOW_WEAPON|EQP_SHADOW_SHIELD);
 
 /// Equip positions that use a visible sprite
 #if PACKETVER < 20110111
-	#define EQP_VISIBLE EQP_HELM
+	inline const int EQP_VISIBLE = EQP_HELM;
 #else
-	#define EQP_VISIBLE (EQP_HELM|EQP_GARMENT|EQP_COSTUME)
+	inline const int EQP_VISIBLE = (EQP_HELM|EQP_GARMENT|EQP_COSTUME);
 #endif
 
-#define pc_setdead(sd)        ( (sd)->state.dead_sit = (sd)->vd.dead_sit = 1 )
-#define pc_setsit(sd)         { pc_stop_walking((sd), 1|4); pc_stop_attack((sd)); (sd)->state.dead_sit = (sd)->vd.dead_sit = 2; }
-#define pc_isdead(sd)         ( (sd)->state.dead_sit == 1 )
-#define pc_issit(sd)          ( (sd)->vd.dead_sit == 2 )
-#define pc_isidle_party(sd)   ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime) >= battle_config.idle_no_share )
-#define pc_isidle_hom(sd)     ( (sd)->hd && ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime_hom) >= battle_config.hom_idle_no_share ) )
-#define pc_isidle_mer(sd)     ( (sd)->md && ( (sd)->chatID || (sd)->state.vending || (sd)->state.buyingstore || DIFF_TICK(last_tick, (sd)->idletime_mer) >= battle_config.mer_idle_no_share ) )
-#define pc_istrading(sd)      ( (sd)->npc_id || (sd)->state.vending || (sd)->state.buyingstore || (sd)->state.trading )
-static bool pc_cant_act2( map_session_data* sd ){
+inline void pc_setdead(map_session_data *sd){
+	sd->state.dead_sit = sd->vd.dead_sit = 1;
+}
+
+inline bool pc_isdead(map_session_data *sd){
+	return sd->state.dead_sit == 1;
+}
+inline bool pc_issit(map_session_data *sd){
+	return sd->vd.dead_sit == 2;
+}
+extern time_t last_tick;
+inline bool pc_isidle_party(map_session_data *sd){
+	return sd->chatID || sd->state.vending || sd->state.buyingstore || DIFF_TICK(last_tick, sd->idletime) >= battle_config.idle_no_share;
+}
+inline bool pc_isidle_hom(map_session_data *sd){
+	return sd->hd && ( sd->chatID || sd->state.vending || sd->state.buyingstore || DIFF_TICK(last_tick, sd->idletime_hom) >= battle_config.hom_idle_no_share );
+}
+inline bool pc_isidle_mer(map_session_data *sd){
+	return sd->md && ( sd->chatID || sd->state.vending || sd->state.buyingstore || DIFF_TICK(last_tick, sd->idletime_mer) >= battle_config.mer_idle_no_share );
+}
+inline bool pc_istrading(map_session_data *sd){
+	return sd->npc_id || sd->state.vending || sd->state.buyingstore || sd->state.trading;
+}
+inline bool pc_cant_act2(map_session_data *sd){
 	return sd->state.vending || sd->state.buyingstore || (sd->sc.opt1 && sd->sc.opt1 != OPT1_BURNING)
 		|| sd->state.trading || sd->state.storage_flag || sd->state.prevend || sd->state.refineui_open
 		|| sd->state.stylist_open || sd->state.inventory_expansion_confirmation || sd->npc_shopid
@@ -1146,35 +1191,65 @@ static bool pc_cant_act2( map_session_data* sd ){
 		|| sd->state.item_reform || sd->state.item_enchant_index;
 }
 // equals pc_cant_act2 and additionally checks for chat rooms and npcs
-static bool pc_cant_act( map_session_data* sd ){
+inline bool pc_cant_act( map_session_data* sd ){
 	return sd->npc_id || sd->chatID || pc_cant_act2( sd );
 }
 
-#define pc_setdir(sd,b,h)     ( (sd)->ud.dir = (b) ,(sd)->head_dir = (h) )
-#define pc_setchatid(sd,n)    ( (sd)->chatID = n )
-#define pc_ishiding(sd)       ( (sd)->sc.option&(OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK) )
-#define pc_iscloaking(sd)     ( !((sd)->sc.option&OPTION_CHASEWALK) && ((sd)->sc.option&OPTION_CLOAK) )
-#define pc_ischasewalk(sd)    ( (sd)->sc.option&OPTION_CHASEWALK )
-#ifdef VIP_ENABLE
-	#define pc_isvip(sd)      ( (sd)->vip.enabled ? true : false )
-#else
-	#define pc_isvip(sd)      ( false )
-#endif
-#ifdef NEW_CARTS
-	#define pc_iscarton(sd)       ( (sd)->sc.getSCE(SC_PUSH_CART) )
-#else
-	#define pc_iscarton(sd)       ( (sd)->sc.option&OPTION_CART )
-#endif
+inline void pc_setdir(map_session_data *sd, int b, int h){
+	sd->ud.dir = b;
+	sd->head_dir = h;
+}
+inline void pc_setchatid(map_session_data *sd, int n){
+	sd->chatID = n;
+}
+inline bool pc_ishiding(map_session_data *sd){
+	return (sd->sc.option & (OPTION_HIDE|OPTION_CLOAK|OPTION_CHASEWALK)) != 0;
+}
+inline bool pc_iscloaking(map_session_data *sd){
+	return (sd->sc.option & (OPTION_CHASEWALK|OPTION_CLOAK)) != 0;
+}
+inline bool pc_ischasewalk(map_session_data *sd){
+    return (sd->sc.option&OPTION_CHASEWALK) != 0;
+}
 
-#define pc_isfalcon(sd)       ( (sd)->sc.option&OPTION_FALCON )
-#define pc_isriding(sd)       ( (sd)->sc.option&OPTION_RIDING )
-#define pc_isinvisible(sd)    ( (sd)->sc.option&OPTION_INVISIBLE )
-#define pc_is50overweight(sd) ( (sd)->weight * 100 >= (sd)->max_weight * battle_config.natural_heal_weight_rate )
-#define pc_is70overweight(sd) ( (sd)->weight * 100 >= (sd)->max_weight * battle_config.natural_heal_weight_rate_renewal )
-#define pc_is90overweight(sd) ( (sd)->weight * 10 >= (sd)->max_weight * 9 )
+inline bool pc_isvip(map_session_data *sd){
+#ifdef VIP_ENABLE		
+	return sd->vip.enabled ? true : false;
+#else
+	return false;
+#endif		
+}
 
-static inline bool pc_hasprogress(map_session_data *sd, enum e_wip_block progress) {
-	return sd == NULL || (sd->state.workinprogress&progress) == progress;
+
+inline bool pc_iscarton(map_session_data *sd){
+#ifdef NEW_CARTS	
+	return sd->sc.getSCE(SC_PUSH_CART) != nullptr;
+#else
+	return (sd->sc.option&OPTION_CART) != 0;
+#endif
+}
+
+
+inline bool pc_isfalcon(map_session_data *sd){
+	return (sd->sc.option&OPTION_FALCON) != 0;
+}
+inline bool pc_isriding(map_session_data *sd){
+	return (sd->sc.option&OPTION_RIDING) != 0;
+}
+inline bool pc_isinvisible(map_session_data *sd){
+	return (sd->sc.option&OPTION_INVISIBLE) != 0;
+}
+inline bool pc_is50overweight(map_session_data *sd){
+	return sd->weight * 100 >= sd->max_weight * battle_config.natural_heal_weight_rate;
+}
+inline bool pc_is70overweight(map_session_data *sd){
+	return sd->weight * 100 >= sd->max_weight * battle_config.natural_heal_weight_rate_renewal;
+}
+inline bool pc_is90overweight(map_session_data *sd){
+	return sd->weight * 10 >= sd->max_weight * 9;
+}
+inline bool pc_hasprogress(map_session_data *sd, enum e_wip_block progress) {
+	return sd == nullptr || (sd->state.workinprogress&progress) == progress;
 }
 
 uint16 pc_maxparameter(map_session_data *sd, e_params param);
@@ -1183,8 +1258,12 @@ short pc_maxaspd(map_session_data *sd);
 /**
  * Ranger
  **/
-#define pc_iswug(sd)       ( (sd)->sc.option&OPTION_WUG )
-#define pc_isridingwug(sd) ( (sd)->sc.option&OPTION_WUGRIDER )
+inline bool pc_iswug(map_session_data *sd){
+	return (sd->sc.option&OPTION_WUG) != 0;
+}
+inline bool pc_isridingwug(map_session_data *sd){
+	return (sd->sc.option&OPTION_WUGRIDER) != 0;
+}
 // Mechanic Magic Gear
 enum e_mado_type : uint16 {
 	MADO_ROBOT = 0x00,
@@ -1193,65 +1272,107 @@ enum e_mado_type : uint16 {
 	MADO_MAX
 };
 
-#define pc_ismadogear(sd) ( (sd)->sc.option&OPTION_MADOGEAR )
+inline bool pc_ismadogear(map_session_data *sd){
+	return (sd->sc.option&OPTION_MADOGEAR) != 0;
+}
 // Rune Knight Dragon
-#define pc_isridingdragon(sd) ( (sd)->sc.option&OPTION_DRAGON )
+inline bool pc_isridingdragon(map_session_data *sd){
+	return (sd->sc.option&OPTION_DRAGON) != 0;
+}
 
-#define pc_stop_walking(sd, type) unit_stop_walking(&(sd)->bl, type)
-#define pc_stop_attack(sd) unit_stop_attack(&(sd)->bl)
-
+inline void pc_stop_walking(map_session_data *sd,int type){
+	unit_stop_walking(&sd->bl, type);
+}
+inline void pc_stop_attack(map_session_data *sd){
+	unit_stop_attack(&sd->bl);
+}
+inline void pc_setsit(map_session_data *sd){
+	pc_stop_walking(sd, 1|4);
+	pc_stop_attack(sd);
+	sd->state.dead_sit = sd->vd.dead_sit = 2;
+}
 //Weapon check considering dual wielding.
-#define pc_check_weapontype(sd, type) ((type)&((sd)->status.weapon < MAX_WEAPON_TYPE? \
-	1<<(sd)->status.weapon:(1<<(sd)->weapontype1)|(1<<(sd)->weapontype2)|(1<<(sd)->status.weapon)))
+inline bool pc_check_weapontype(map_session_data *sd, int type){
+	return (type&(sd->status.weapon < MAX_WEAPON_TYPE?1<<sd->status.weapon:(1<<sd->weapontype1)|(1<<sd->weapontype2)|(1<<(sd)->status.weapon))) != 0;
+}
 //Checks if the given class value corresponds to a player class. [Skotlex]
 //JOB_NOVICE isn't checked for class_ is supposed to be unsigned
-#define pcdb_checkid_sub(class_) ( \
-	( (class_) < JOB_MAX_BASIC ) || \
-	( (class_) >= JOB_NOVICE_HIGH			&& (class_) <= JOB_DARK_COLLECTOR ) || \
-	( (class_) >= JOB_RUNE_KNIGHT			&& (class_) <= JOB_MECHANIC_T2    ) || \
-	( (class_) >= JOB_BABY_RUNE_KNIGHT		&& (class_) <= JOB_BABY_MECHANIC2 ) || \
-	( (class_) >= JOB_SUPER_NOVICE_E		&& (class_) <= JOB_SUPER_BABY_E   ) || \
-	( (class_) >= JOB_KAGEROU				&& (class_) <= JOB_OBORO          ) || \
-	  (class_) == JOB_REBELLION				|| (class_) == JOB_SUMMONER         || \
-	  (class_) == JOB_BABY_SUMMONER			|| \
-	( (class_) >= JOB_BABY_NINJA			&& (class_) <= JOB_BABY_REBELLION ) || \
-	( (class_) >= JOB_BABY_STAR_GLADIATOR2	&& (class_) <= JOB_BABY_STAR_EMPEROR2 ) || \
-	( (class_) >= JOB_DRAGON_KNIGHT			&& (class_) <= JOB_TROUVERE       ) || \
-	( (class_) >= JOB_WINDHAWK2				&& (class_) <= JOB_IMPERIAL_GUARD2 ) || \
-	( (class_) >= JOB_SKY_EMPEROR			&& (class_) <= JOB_SPIRIT_HANDLER ) || \
-	  (class_) == JOB_SKY_EMPEROR2 \
-)
-#define pcdb_checkid(class_) pcdb_checkid_sub((unsigned int)class_)
+inline bool pcdb_checkid_sub(unsigned int class_){
+	return ( class_ < JOB_MAX_BASIC 
+			 || ( class_ >= JOB_NOVICE_HIGH				&& class_ <= JOB_DARK_COLLECTOR		)
+			 || ( class_ >= JOB_RUNE_KNIGHT				&& class_ <= JOB_MECHANIC_T2		)
+			 || ( class_ >= JOB_BABY_RUNE_KNIGHT		&& class_ <= JOB_BABY_MECHANIC2		)
+			 || ( class_ >= JOB_SUPER_NOVICE_E			&& class_ <= JOB_SUPER_BABY_E		)
+			 || ( class_ >= JOB_KAGEROU					&& class_ <= JOB_OBORO				)
+			 || class_ == JOB_REBELLION
+			 || class_ == JOB_SUMMONER
+			 || class_ == JOB_BABY_SUMMONER
+			 || ( class_ >= JOB_BABY_NINJA				&& class_ <= JOB_BABY_REBELLION		)
+			 || ( class_ >= JOB_BABY_STAR_GLADIATOR2	&& class_ <= JOB_BABY_STAR_EMPEROR2 )
+			 || ( class_ >= JOB_DRAGON_KNIGHT			&& class_ <= JOB_TROUVERE			)
+			 || ( class_ >= JOB_WINDHAWK2				&& class_ <= JOB_IMPERIAL_GUARD2	)
+			 || ( class_ >= JOB_SKY_EMPEROR				&& class_ <= JOB_SPIRIT_HANDLER		)
+			 || class_ == JOB_SKY_EMPEROR2);
+}
+inline bool pcdb_checkid(unsigned int class_){
+	return pcdb_checkid_sub(class_);
+}
 
 // clientside display macros (values to the left/right of the "+")
 #ifdef RENEWAL
-	#define pc_leftside_atk(sd) ((sd)->battle_status.batk)
-	#define pc_rightside_atk(sd) ((sd)->battle_status.watk + (sd)->battle_status.watk2 + (sd)->battle_status.eatk)
-	#define pc_leftside_def(sd) ((sd)->battle_status.def2)
-	#define pc_rightside_def(sd) ((sd)->battle_status.def)
-	#define pc_leftside_mdef(sd) ((sd)->battle_status.mdef2)
-	#define pc_rightside_mdef(sd) ((sd)->battle_status.mdef)
-	#define pc_leftside_matk(sd) (status_base_matk_min(&(sd)->bl, status_get_status_data(&(sd)->bl), (sd)->status.base_level))
-	#define pc_rightside_matk(sd) ((sd)->battle_status.rhw.matk+(sd)->battle_status.lhw.matk+(sd)->bonus.ematk)
+inline int pc_leftside_atk(map_session_data *sd){
+	return sd->battle_status.batk;
+}
+inline int pc_rightside_atk(map_session_data *sd){
+	return sd->battle_status.watk + sd->battle_status.watk2 + sd->battle_status.eatk;
+}
+inline int pc_leftside_def(map_session_data *sd){
+	return sd->battle_status.def2;
+}
+inline int pc_rightside_def(map_session_data *sd){
+	return sd->battle_status.def;
+}
+inline int pc_leftside_mdef(map_session_data *sd){
+	return sd->battle_status.mdef2;
+}
+inline int pc_rightside_mdef(map_session_data *sd){
+	return sd->battle_status.mdef;
+}
+inline int pc_leftside_matk(map_session_data *sd){
+	return taus_base_matk_min(&sd->bl, status_get_status_data(&sd->bl), sd->status.base_level);
+}
+inline int pc_rightside_matk(map_session_data *sd){
+	return (sd->battle_status.rhw.matk+sd->battle_status.lhw.matk+sd->bonus.ematk);
+}
 #else
-	#define pc_leftside_atk(sd) ((sd)->battle_status.batk + (sd)->battle_status.rhw.atk + (sd)->battle_status.lhw.atk)
-	#define pc_rightside_atk(sd) ((sd)->battle_status.rhw.atk2 + (sd)->battle_status.lhw.atk2)
-	#define pc_leftside_def(sd) ((sd)->battle_status.def)
-	#define pc_rightside_def(sd) ((sd)->battle_status.def2)
-	#define pc_leftside_mdef(sd) ((sd)->battle_status.mdef)
-	#define pc_rightside_mdef(sd) ( (sd)->battle_status.mdef2 - ((sd)->battle_status.vit / 2) )
-#define pc_leftside_matk(sd) \
-    (\
-    ((sd)->sc.getSCE(SC_MAGICPOWER) && (sd)->sc.getSCE(SC_MAGICPOWER)->val4) \
-		?((sd)->battle_status.matk_min * 100 + 50) / ((sd)->sc.getSCE(SC_MAGICPOWER)->val3+100) \
-        :(sd)->battle_status.matk_min \
-    )
-#define pc_rightside_matk(sd) \
-    (\
-    ((sd)->sc.getSCE(SC_MAGICPOWER) && (sd)->sc.getSCE(SC_MAGICPOWER)->val4) \
-		?((sd)->battle_status.matk_max * 100 + 50) / ((sd)->sc.getSCE(SC_MAGICPOWER)->val3+100) \
-        :(sd)->battle_status.matk_max \
-    )
+inline int pc_leftside_atk(map_session_data *sd){
+	return (sd->battle_status.batk + sd->battle_status.rhw.atk + sd->battle_status.lhw.atk);
+}
+inline int pc_rightside_atk(map_session_data *sd){
+	return (sd->battle_status.rhw.atk2 + sd->battle_status.lhw.atk2);
+}
+inline int pc_leftside_def(map_session_data *sd){
+	return (sd->battle_status.def);
+}
+inline int pc_rightside_def(map_session_data *sd){
+	return (sd->battle_status.def2);
+}
+inline int pc_leftside_mdef(map_session_data *sd){
+	return (sd->battle_status.mdef);
+}
+inline int pc_rightside_mdef(map_session_data *sd){
+	return (sd->battle_status.mdef2 - (sd->battle_status.vit / 2));
+}
+inline int pc_leftside_matk(map_session_data *sd){
+    return sd->sc.getSCE(SC_MAGICPOWER) && sd->sc.getSCE(SC_MAGICPOWER)->val4
+		?(sd->battle_status.matk_min * 100 + 50) / (sd->sc.getSCE(SC_MAGICPOWER)->val3+100)
+        :sd->battle_status.matk_min;
+}
+inline int pc_rightside_matk(map_session_data *sd){
+    return (sd->sc.getSCE(SC_MAGICPOWER) && sd->sc.getSCE(SC_MAGICPOWER)->val4)
+		?(sd->battle_status.matk_max * 100 + 50) / (sd->sc.getSCE(SC_MAGICPOWER)->val3+100)
+        :sd->battle_status.matk_max;
+}
 #endif
 
 struct s_attendance_reward {
@@ -1402,8 +1523,12 @@ void pc_calc_skilltree(map_session_data *sd);
 uint64 pc_calc_skilltree_normalize_job(map_session_data *sd);
 void pc_clean_skilltree(map_session_data *sd);
 
-#define pc_checkoverhp(sd) ((sd)->battle_status.hp == (sd)->battle_status.max_hp)
-#define pc_checkoversp(sd) ((sd)->battle_status.sp == (sd)->battle_status.max_sp)
+inline bool pc_checkoverhp(map_session_data *sd){
+	return sd->battle_status.hp == sd->battle_status.max_hp;
+}
+inline bool pc_checkoversp(map_session_data *sd){
+	return sd->battle_status.sp == sd->battle_status.max_sp;
+}
 
 enum e_setpos{
 	SETPOS_OK = 0,
@@ -1554,18 +1679,42 @@ bool pc_setregistry(map_session_data *sd, int64 reg, int64 val);
 char *pc_readregistry_str(map_session_data *sd, int64 reg);
 bool pc_setregistry_str(map_session_data *sd, int64 reg, const char *val);
 
-#define pc_readglobalreg(sd,reg) pc_readregistry(sd,reg)
-#define pc_setglobalreg(sd,reg,val) pc_setregistry(sd,reg,val)
-#define pc_readglobalreg_str(sd,reg) pc_readregistry_str(sd,reg)
-#define pc_setglobalreg_str(sd,reg,val) pc_setregistry_str(sd,reg,val)
-#define pc_readaccountreg(sd,reg) pc_readregistry(sd,reg)
-#define pc_setaccountreg(sd,reg,val) pc_setregistry(sd,reg,val)
-#define pc_readaccountregstr(sd,reg) pc_readregistry_str(sd,reg)
-#define pc_setaccountregstr(sd,reg,val) pc_setregistry_str(sd,reg,val)
-#define pc_readaccountreg2(sd,reg) pc_readregistry(sd,reg)
-#define pc_setaccountreg2(sd,reg,val) pc_setregistry(sd,reg,val)
-#define pc_readaccountreg2str(sd,reg) pc_readregistry_str(sd,reg)
-#define pc_setaccountreg2str(sd,reg,val) pc_setregistry_str(sd,reg,val)
+inline int64 pc_readglobalreg(map_session_data *sd, int64 reg){
+	return pc_readregistry(sd,reg);
+}
+inline bool pc_setglobalreg(map_session_data *sd, int64 reg, int64 val){
+	return pc_setregistry(sd,reg,val);
+}
+inline char *pc_readglobalreg_str(map_session_data *sd, int64 reg){
+	return pc_readregistry_str(sd,reg);
+}
+inline bool pc_setglobalreg_str(map_session_data *sd, int64 reg, const char* val){
+	return pc_setregistry_str(sd,reg,val);
+}
+inline int64 pc_readaccountreg(map_session_data *sd, int64 reg){
+	return pc_readregistry(sd,reg);
+}
+inline bool pc_setaccountreg(map_session_data *sd, int64 reg, int64 val){
+	return pc_setregistry(sd,reg,val);
+}
+inline char *pc_readaccountregstr(map_session_data *sd, int64 reg){
+	return pc_readregistry_str(sd,reg);
+}
+inline bool pc_setaccountregstr(map_session_data *sd, int64 reg, const char* val){
+	return pc_setregistry_str(sd,reg,val);
+}
+inline int64 pc_readaccountreg2(map_session_data *sd, int64 reg){
+	return pc_readregistry(sd,reg);
+}
+inline bool pc_setaccountreg2(map_session_data *sd, int64 reg, int64 val){
+	return pc_setregistry(sd,reg,val);
+}
+inline char *pc_readaccountreg2str(map_session_data *sd, int64 reg){
+	return pc_readregistry_str(sd,reg);
+}
+inline bool pc_setaccountreg2str(map_session_data *sd, int64 reg, const char* val){
+	return pc_setregistry_str(sd,reg,val);
+}
 
 bool pc_setreg2(map_session_data *sd, const char *reg, int64 val);
 int64 pc_readreg2(map_session_data *sd, const char *reg);
@@ -1714,7 +1863,11 @@ short pc_get_itemgroup_bonus_group(map_session_data* sd, uint16 group_id, std::v
 
 bool pc_is_same_equip_index(enum equip_index eqi, short *equip_index, short index);
 /// Check if player is Taekwon Ranker and the level is >= 90 (battle_config.taekwon_ranker_min_lv)
-#define pc_is_taekwon_ranker(sd) (((sd)->class_&MAPID_UPPERMASK) == MAPID_TAEKWON && (sd)->status.base_level >= battle_config.taekwon_ranker_min_lv && pc_famerank((sd)->status.char_id,MAPID_TAEKWON))
+inline bool pc_is_taekwon_ranker(map_session_data *sd){
+	return sd->class_&MAPID_UPPERMASK == MAPID_TAEKWON
+		&& sd->status.base_level >= battle_config.taekwon_ranker_min_lv
+		&& pc_famerank(sd->status.char_id,MAPID_TAEKWON);
+}
 
 TIMER_FUNC(pc_autotrade_timer);
 
