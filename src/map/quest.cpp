@@ -695,7 +695,7 @@ int quest_update_objective_sub(struct block_list *bl, va_list ap)
 {
 	nullpo_ret(bl);
 
-	map_session_data *sd = BL_CAST(BL_PC, bl);
+	map_session_data *sd = BL_CAST<BL_PC>(bl);
 
 	nullpo_ret(sd);
 

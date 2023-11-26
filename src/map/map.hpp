@@ -1252,8 +1252,61 @@ typedef struct homun_data       TBL_HOM;
 typedef struct s_mercenary_data   TBL_MER;
 typedef struct s_elemental_data	TBL_ELEM;
 
-#define BL_CAST(type_, bl) \
-	( ((bl) == (struct block_list*)NULL || (bl)->type != (type_)) ? (T ## type_ *)NULL : (T ## type_ *)(bl) )
+// template declaration
+template <bl_type N>
+struct bltype_tmpl;
+
+// specializations for certain types
+template<> struct bltype_tmpl<BL_PC>   { using type = map_session_data; };
+template<> struct bltype_tmpl<BL_MOB>  { using type = mob_data; };
+template<> struct bltype_tmpl<BL_PET>  { using type = pet_data; };
+template<> struct bltype_tmpl<BL_HOM>  { using type = homun_data; };
+template<> struct bltype_tmpl<BL_MER>  { using type = s_mercenary_data; };
+template<> struct bltype_tmpl<BL_SKILL>{ using type = skill_unit; };
+template<> struct bltype_tmpl<BL_ITEM> { using type = flooritem_data; };
+template<> struct bltype_tmpl<BL_NPC>  { using type = npc_data; };
+template<> struct bltype_tmpl<BL_CHAT> { using type = chat_data; };
+template<> struct bltype_tmpl<BL_ELEM> { using type = s_elemental_data; };
+// generic declaration
+template <bl_type N>
+typename bltype_tmpl<N>::type* BL_CAST(block_list* bl);
+
+// specializations for different depths
+template <typename T>
+static inline T bl_cast_sub(bl_type type, block_list* bl) {
+	return (bl && type == bl->type) ? (T)bl : nullptr;
+}
+template<> inline map_session_data* BL_CAST<BL_PC>(block_list* bl)  {
+	return bl_cast_sub<map_session_data*>(BL_PC,bl);
+}
+template<> inline mob_data* BL_CAST<BL_MOB>(block_list* bl)  {
+	return bl_cast_sub<mob_data*>(BL_MOB,bl);
+}
+template<> inline pet_data* BL_CAST<BL_PET>(block_list* bl)  {
+	return bl_cast_sub<pet_data*>(BL_PET,bl);
+}
+template<> inline homun_data* BL_CAST<BL_HOM>(block_list* bl)  {
+	return bl_cast_sub<homun_data*>(BL_HOM,bl);
+}
+template<> inline s_mercenary_data* BL_CAST<BL_MER>(block_list* bl)  {
+	return bl_cast_sub<s_mercenary_data*>(BL_MER,bl);
+}
+template<> inline skill_unit* BL_CAST<BL_SKILL>(block_list* bl)  {
+	return bl_cast_sub<skill_unit*>(BL_SKILL,bl);
+}
+template<> inline flooritem_data* BL_CAST<BL_ITEM>(block_list* bl)  {
+	return bl_cast_sub<flooritem_data*>(BL_ITEM,bl);
+}
+template<> inline npc_data* BL_CAST<BL_NPC>(block_list* bl)  {
+	return bl_cast_sub<npc_data*>(BL_NPC,bl);
+}
+template<> inline chat_data* BL_CAST<BL_CHAT>(block_list* bl)  {
+	return bl_cast_sub<chat_data*>(BL_CHAT,bl);
+}
+template<> inline s_elemental_data* BL_CAST<BL_ELEM>(block_list* bl)  {
+	return bl_cast_sub<s_elemental_data*>(BL_ELEM,bl);
+}
+
 
 #include <common/sql.hpp>
 

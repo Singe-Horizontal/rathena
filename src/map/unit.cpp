@@ -128,7 +128,7 @@ int unit_walktoxy_sub(struct block_list *bl)
 	ud->state.change_walk_target=0;
 
 	if (bl->type == BL_PC) {
-		map_session_data *sd = BL_CAST(BL_PC, bl);
+		map_session_data *sd = BL_CAST<BL_PC>(bl);
 
 		sd->head_dir = DIR_NORTH;
 		clif_walkok(sd);
@@ -422,16 +422,16 @@ static TIMER_FUNC(unit_walktoxy_timer)
 	unsigned char icewall_walk_block = 0;
 
 	switch(bl->type) { // avoid useless cast, we can only be 1 type
-		case BL_PC: sd = BL_CAST(BL_PC, bl); break;
+		case BL_PC: sd = BL_CAST<BL_PC>(bl); break;
 		case BL_MOB:
-			md = BL_CAST(BL_MOB, bl);
+			md = BL_CAST<BL_MOB>(bl);
 
 			if (status_has_mode(&md->status,MD_STATUSIMMUNE))
 				icewall_walk_block = battle_config.boss_icewall_walk_block;
 			else
 				icewall_walk_block = battle_config.mob_icewall_walk_block;
 			break;
-		case BL_NPC: nd = BL_CAST(BL_NPC, bl); break;
+		case BL_NPC: nd = BL_CAST<BL_NPC>(bl); break;
 	}
 
 	int x = bl->x;
@@ -506,7 +506,7 @@ static TIMER_FUNC(unit_walktoxy_timer)
 
 			// Check if the unit was killed
 			if( status_isdead(bl) ){
-				struct mob_data* md = BL_CAST(BL_MOB, bl);
+				struct mob_data* md = BL_CAST<BL_MOB>(bl);
 
 				if( md && !md->spawn ){
 					unit_free(bl, CLR_OUTSIGHT);
@@ -784,7 +784,7 @@ int unit_walktoxy( struct block_list *bl, short x, short y, unsigned char flag)
 		return 1;
 	}
 
-	TBL_PC *sd = BL_CAST(BL_PC, bl);
+	TBL_PC *sd = BL_CAST<BL_PC>(bl);
 
 	// Start timer to recall summon
 	if( sd != nullptr ){
@@ -809,7 +809,7 @@ int unit_walktoxy( struct block_list *bl, short x, short y, unsigned char flag)
  */
 static inline void set_mobstate(struct block_list* bl, int flag)
 {
-	struct mob_data* md = BL_CAST(BL_MOB,bl);
+	struct mob_data* md = BL_CAST<BL_MOB>(bl);
 
 	if( md && flag )
 		md->state.skillstate = md->state.aggressive ? MSS_FOLLOW : MSS_RUSH;
@@ -1042,7 +1042,7 @@ bool unit_movepos(struct block_list *bl, short dst_x, short dst_y, int easy, boo
 
 	nullpo_retr(false,bl);
 
-	sd = BL_CAST(BL_PC, bl);
+	sd = BL_CAST<BL_PC>(bl);
 	ud = unit_bl2ud(bl);
 
 	if(ud == NULL)
@@ -1121,7 +1121,7 @@ bool unit_setdir(block_list *bl, uint8 dir, bool send_update)
 	ud->dir = dir;
 
 	if (bl->type == BL_PC) {
-		map_session_data *sd = BL_CAST(BL_PC, bl);
+		map_session_data *sd = BL_CAST<BL_PC>(bl);
 
 		sd->head_dir = DIR_NORTH;
 		sd->status.body_direction = ud->dir;
@@ -1169,8 +1169,8 @@ int unit_blown(struct block_list* bl, int dx, int dy, int count, enum e_skill_bl
 		struct skill_unit* su = NULL;
 		int nx, ny, result;
 
-		sd = BL_CAST(BL_PC, bl);
-		su = BL_CAST(BL_SKILL, bl);
+		sd = BL_CAST<BL_PC>(bl);
+		su = BL_CAST<BL_SKILL>(bl);
 
 		result = path_blownpos(bl->m, bl->x, bl->y, dx, dy, count);
 
@@ -1253,7 +1253,7 @@ enum e_unit_blown unit_blown_immune(struct block_list* bl, uint8 flag)
 				return UB_MD_KNOCKBACK_IMMUNE;
 			break;
 		case BL_PC: {
-				map_session_data *sd = BL_CAST(BL_PC, bl);
+				map_session_data *sd = BL_CAST<BL_PC>(bl);
 
 #ifndef RENEWAL
 				// Basilica caster can't be knocked-back by normal monsters.
@@ -1482,7 +1482,7 @@ bool unit_can_move(struct block_list *bl) {
 
 	ud = unit_bl2ud(bl);
 	sc = status_get_sc(bl);
-	sd = BL_CAST(BL_PC, bl);
+	sd = BL_CAST<BL_PC>(bl);
 
 	if (!ud)
 		return false;
@@ -1502,7 +1502,7 @@ bool unit_can_move(struct block_list *bl) {
 
 	// Icewall walk block special trapped monster mode
 	if(bl->type == BL_MOB) {
-		struct mob_data *md = BL_CAST(BL_MOB, bl);
+		struct mob_data *md = BL_CAST<BL_MOB>(bl);
 		if(md && ((status_has_mode(&md->status,MD_STATUSIMMUNE) && battle_config.boss_icewall_walk_block == 1 && map_getcell(bl->m,bl->x,bl->y,CELL_CHKICEWALL))
 			|| (!status_has_mode(&md->status,MD_STATUSIMMUNE) && battle_config.mob_icewall_walk_block == 1 && map_getcell(bl->m,bl->x,bl->y,CELL_CHKICEWALL)))) {
 			md->walktoxy_fail_count = 1; //Make sure rudeattacked skills are invoked
@@ -1563,7 +1563,7 @@ int unit_set_walkdelay(struct block_list *bl, t_tick tick, t_tick delay, int typ
 		// Don't set walk delays when already trapped.
 		if (!unit_can_move(bl)) {
 			if (bl->type == BL_MOB) {
-				mob_data *md = BL_CAST(BL_MOB, bl);
+				mob_data *md = BL_CAST<BL_MOB>(bl);
 
 				if (md && md->state.can_escape == 1) // Mob needs to escape, don't stop it
 					return 0;
@@ -1622,7 +1622,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 	if(status_isdead(src))
 		return 0; // Do not continue source is dead
 
-	sd = BL_CAST(BL_PC, src);
+	sd = BL_CAST<BL_PC>(src);
 	ud = unit_bl2ud(src);
 
 	if(ud == NULL)
@@ -1983,7 +1983,7 @@ int unit_skilluse_id2(struct block_list *src, int target_id, uint16 skill_id, ui
 		case EL_WATER_SCREW:
 		case EL_TIDAL_WEAPON:
 			if( src->type == BL_ELEM ) {
-				sd = BL_CAST(BL_PC, battle_get_master(src));
+				sd = BL_CAST<BL_PC>( battle_get_master(src));
 				if( sd && sd->skill_id_old == SO_EL_ACTION ) {
 					casttime = -1;
 					sd->skill_id_old = 0;
@@ -2139,7 +2139,7 @@ int unit_skilluse_pos2( struct block_list *src, short skill_x, short skill_y, ui
 	if(status_isdead(src))
 		return 0;
 
-	sd = BL_CAST(BL_PC, src);
+	sd = BL_CAST<BL_PC>(src);
 	ud = unit_bl2ud(src);
 
 	if(ud == NULL)
@@ -2694,8 +2694,8 @@ static int unit_attack_timer_sub(struct block_list* src, int tid, t_tick tick)
 		return 0;
 	}
 
-	sd = BL_CAST(BL_PC, src);
-	md = BL_CAST(BL_MOB, src);
+	sd = BL_CAST<BL_PC>(src);
+	md = BL_CAST<BL_MOB>(src);
 	ud->attacktimer = INVALID_TIMER;
 	target = map_id2bl(ud->target);
 
@@ -2903,7 +2903,7 @@ int unit_skillcastcancel(struct block_list *bl, char type)
 	if (!ud || ud->skilltimer == INVALID_TIMER)
 		return 0; // Nothing to cancel.
 
-	sd = BL_CAST(BL_PC, bl);
+	sd = BL_CAST<BL_PC>(bl);
 
 	if (type&2) { // See if it can be cancelled.
 		if (!ud->state.skillcastcancel)
@@ -3019,7 +3019,7 @@ int unit_changetarget(struct block_list *bl, va_list ap) {
 		return 1;
 
 	if (bl->type == BL_MOB)
-		(BL_CAST(BL_MOB,bl))->target_id = target->id;
+		(BL_CAST<BL_MOB>(bl))->target_id = target->id;
 	if (ud->target_to)
 		ud->target_to = target->id;
 	else

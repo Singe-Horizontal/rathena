@@ -166,7 +166,7 @@ int mvptomb_setdelayspawn(struct npc_data *nd) {
  * @param data: Used for add_timer_func_list
  */
 TIMER_FUNC(mvptomb_delayspawn){
-	struct npc_data *nd = BL_CAST(BL_NPC, map_id2bl(id));
+	struct npc_data *nd = BL_CAST<BL_NPC>( map_id2bl(id));
 
 	if (nd) {
 		if (nd->u.tomb.spawn_timer != tid) {
@@ -547,20 +547,20 @@ bool mob_ksprotected (struct block_list *src, struct block_list *target)
 	if( !battle_config.ksprotection )
 		return false; // KS Protection Disabled
 
-	if( !(md = BL_CAST(BL_MOB,target)) )
+	if( !(md = BL_CAST<BL_MOB>(target)) )
 		return false; // Tarjet is not MOB
 
 	if( (s_bl = battle_get_master(src)) == nullptr )
 		s_bl = src;
 
-	if( !(sd = BL_CAST(BL_PC,s_bl)) )
+	if( !(sd = BL_CAST<BL_PC>(s_bl)) )
 		return false; // Master is not PC
 
 	t_bl = map_id2bl(md->target_id);
 	if( !t_bl || (s_bl = battle_get_master(t_bl)) == nullptr )
 		s_bl = t_bl;
 
-	t_sd = BL_CAST(BL_PC,s_bl);
+	t_sd = BL_CAST<BL_PC>(s_bl);
 
 	do {
 		struct status_change_entry *sce;
@@ -1029,7 +1029,7 @@ int mob_linksearch(struct block_list *bl,va_list ap)
  *------------------------------------------*/
 TIMER_FUNC(mob_delayspawn){
 	struct block_list* bl = map_id2bl(id);
-	struct mob_data* md = BL_CAST(BL_MOB, bl);
+	struct mob_data* md = BL_CAST<BL_MOB>(bl);
 
 	if( md )
 	{
@@ -1087,7 +1087,7 @@ int mob_count_sub(struct block_list *bl, va_list ap) {
     int mobid[10], i;
     ARR_FIND(0, 10, i, (mobid[i] = va_arg(ap, int)) == 0); //fetch till 0
     if (mobid[0]) { //if there one let's check it otherwise go backward
-        TBL_MOB *md = BL_CAST(BL_MOB, bl);
+        TBL_MOB *md = BL_CAST<BL_MOB>(bl);
         ARR_FIND(0, 10, i, md->mob_id == mobid[i]);
         return (i < 10) ? 1 : 0;
     }
@@ -2238,7 +2238,7 @@ static void mob_item_drop(struct mob_data *md, struct item_drop_list *dlist, str
 
 TIMER_FUNC(mob_timer_delete){
 	struct block_list* bl = map_id2bl(id);
-	struct mob_data* md = BL_CAST(BL_MOB, bl);
+	struct mob_data* md = BL_CAST<BL_MOB>(bl);
 
 	if( md )
 	{
@@ -3078,7 +3078,7 @@ int mob_dead(struct mob_data *md, struct block_list *src, int type)
 				case BL_MER:
 				case BL_ELEM:
 				case BL_MOB:
-				    sd = BL_CAST(BL_PC,battle_get_master(src));
+				    sd = BL_CAST<BL_PC>(battle_get_master(src));
 			}
 		}
 
