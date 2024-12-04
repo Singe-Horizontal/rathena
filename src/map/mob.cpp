@@ -5,9 +5,9 @@
 #include "mob_inlines.hpp"
 #include <set>
 #include <algorithm>
+#include <cmath>
+#include <cstdlib>
 #include <map>
-#include <math.h>
-#include <stdlib.h>
 #include <unordered_map>
 #include <functional>
 #include <vector>
