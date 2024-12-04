@@ -6735,8 +6735,8 @@ uint64 MobChatDatabase::parseBodyNode(const ryml::NodeRef& node) {
 /*==========================================
  * processes one mob_skill_db entry
  *------------------------------------------*/
-static bool mob_parse_row_mobskilldb(char** str, int columns, int current)
-{
+static bool mob_parse_row_mobskilldb( char** str, size_t columns, size_t current ){
+
 	static int last_mob_id = 0;  // ensures that only one error message per mob id is printed
 	int mob_id;
 	int j, tmp;
