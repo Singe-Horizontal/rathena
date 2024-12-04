@@ -1309,7 +1309,9 @@ enum sc_type : int16 {
 	SC_EXTREMITYFIST2,
 	SC_POWERUP,
 	SC_AGIUP,
-	SC_EXPANDED_DHRES,	
+	SC_EXPANDED_AI_RES,
+	SC_EXPANDED_AI_LONGRES,
+	SC_EXPANDED_AI_REGEN,
 	SC_MAX, //Automatically updated max, used in for's to check we are within bounds.
 };
 

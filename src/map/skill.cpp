@@ -3868,10 +3868,10 @@ int64 skill_attack (int attack_type, struct block_list* src, struct block_list *
 		case NPC_EARTHQUAKE:
 			dmg.dmotion = clif_skill_damage(src, bl, tick, dmg.amotion, dmg.dmotion, damage, dmg.div_, skill_id, -1, DMG_ENDURE);
 			break;
-		case EXPANDED_DUMMY1:
-		case EXPANDED_DUMMY2:
-		case EXPANDED_DUMMY3:
-		case EXPANDED_CHANGE_RANGE:
+		case EXPANDED_AI_DUMMY1:
+		case EXPANDED_AI_DUMMY2:
+		case EXPANDED_AI_DUMMY3:
+		case EXPANDED_AI_CHANGE_RANGE:
 			break;
 		case NPC_DARKPIERCING:
 		case EL_FIRE_BOMB:
@@ -5309,9 +5309,9 @@ int skill_castend_damage_id (struct block_list* src, struct block_list *bl, uint
 	case NW_WILD_FIRE:
 		skill_attack(BF_WEAPON,src,src,bl,skill_id,skill_lv,tick,flag);
 		break;
-	case EXPANDED_DUMMY1:
-	case EXPANDED_DUMMY2:
-	case EXPANDED_DUMMY3:
+	case EXPANDED_AI_DUMMY1:
+	case EXPANDED_AI_DUMMY2:
+	case EXPANDED_AI_DUMMY3:
 		break;
 	case DK_DRAGONIC_AURA:
 	case DK_STORMSLASH:
@@ -7754,7 +7754,9 @@ int skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, ui
 		clif_skill_nodamage(src,bl,skill_id,skill_lv,
 			sc_start(src,bl,type,100,skill_lv,skill_get_time(skill_id,skill_lv)));
 		break;
-	case EXPANDED_DHRES:
+	case EXPANDED_AI_RES:
+	case EXPANDED_AI_LONGRES:
+	case EXPANDED_AI_REGEN:
 		clif_skill_nodamage(src,bl,skill_id,skill_lv,sc_start(src,bl,type,100,skill_lv,INFINITE_TICK));
 	break;
 	case CG_MARIONETTE:
@@ -12974,7 +12976,7 @@ int skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, ui
 		break;
 #endif
 
-	case EXPANDED_CHANGE_RANGE: {
+	case EXPANDED_AI_CHANGE_RANGE: {
 		mob_data* md = BL_CAST(BL_MOB,src);
 		if (md) {
 			md->status.rhw.range = skill_lv;

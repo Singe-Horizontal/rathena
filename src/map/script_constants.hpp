@@ -1915,7 +1915,9 @@
 	export_constant(SC_EXTREMITYFIST2);
 	export_constant(SC_POWERUP);
 	export_constant(SC_AGIUP);
-	export_constant(SC_EXPANDED_DHRES);
+	export_constant(SC_EXPANDED_AI_RES);
+	export_constant(SC_EXPANDED_AI_LONGRES);
+	export_constant(SC_EXPANDED_AI_REGEN);
 
 	/* status icons */
 	export_deprecated_constant2("SI_BLANK",-1);

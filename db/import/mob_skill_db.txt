@@ -60,8 +60,8 @@
 //31002,Junin@NJ_TESLA,anytarget,541,5,10000,200,500,yes,self,expanded,ready_for_lightning,,,,,,,
 //31002,Junin@Nj_WATER,anytarget,535,10,10000,200,10000,yes,self,always,,,,,,,,
 
-31002,Junin@NJ_GLACON,anytarget,539,5,10000,200,200,yes,self,afterskill,3046,,,,,,,
-31002,Junin@DUMMY,anytarget,3046,10,10000,0,300,yes,randomtarget,expanded,ready_for_glacon,,,2,,,,
+31002,Junin@NJ_GLACON,anytarget,539,5,10000,200,200,yes,self,afterskill,3200,,,,,,,
+31002,Junin@DUMMY,anytarget,3200,10,10000,0,300,yes,randomtarget,expanded,ready_for_glacon,,,2,,,,
 31002,Junin@NJ_ICE,anytarget,537,10,10000,20,400,yes,target,always,,,,,,,,
 
 
@@ -189,7 +189,7 @@
 30010,Hermes@DISSONANCE,anytarget,317,5,10000,0,1000,yes,self,expanded,ready_to_dissonance,,,,,,,
 30010,Hermes@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30010,Hermes@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
-30010,Hermes@DUMMY,any,3047,3,10000,0,1000,yes,friend,expanded,friend_needs_dance,settarget,14,,,,,
+30010,Hermes@DUMMY,any,3201,3,10000,0,1000,yes,friend,expanded,friend_needs_dance,settarget,14,,,,,
 30010,Hermes@ADAPTATION,any,304,1,10000,0,0,no,self,mystatuson,dancing,,,,,,,
 30010,Hermes@BRAGI,any,321,15,10000,0,0,no,self,expanded,friend_needs_bragi,,,,,,,
 30010,Hermes@SUNSET,any,320,16,10000,0,0,no,self,expanded,friend_needs_sunset,,,,,,,
@@ -340,7 +340,7 @@
 //30020,Gaius@biocani,any,232,4,10000,0,5000,no,self,always,,,,,,,,
 30020,Gaius@cart,idle,154,10,10000,10,200,no,self,onspawn,,,,,,,,
 30020,Gaius@SLIMPITCH,any,478,10,10000,10,200,no,self,myhpltmaxrate,90,,,,,,,
-30020,Gaius@DUMMY,any,3047,3,10000,0,1000,yes,friend,expanded,friend_needs_slim_far,settarget,15,,,,,
+30020,Gaius@DUMMY,any,3201,3,10000,0,1000,yes,friend,expanded,friend_needs_slim_far,settarget,15,,,,,
 30020,Gaius@SLIMPITCH,any,478,10,10000,10,200,no,friend,expanded,friend_needs_slim,,,,,,,
 30020,Gaius@FULLCHEMICAL,any,479,5,10000,10,200,no,friend,expanded,friend_needs_chemical,,,,,,,
 //30020,Gaius@PITCH,any,231,5,10000,0,200,no,friend,expanded,friend_needs_heal_far,,,,,,,
@@ -355,21 +355,21 @@
 30006,Shadow@GOSPEl,any,369,10,10000,0,0,no,self,mystatuson,gospel,,,,,,,
 30006,Shadow@DEVO,any,255,5,10000,100,0,no,friend,expanded,ready_for_devotion,settarget,20,,,,,
 
-30006,Shadow@CR_AUTOGUARD,any,249,10,10000,0,200,yes,self,afterskill,3047,,,,,,,
-30006,Shadow@DUMMY,any,3047,10,10000,0,500,yes,friend,expanded,friend_needs_autoguard,,,,,,,
+30006,Shadow@CR_AUTOGUARD,any,249,10,10000,0,200,yes,self,afterskill,3201,,,,,,,
+30006,Shadow@DUMMY,any,3201,10,10000,0,500,yes,friend,expanded,friend_needs_autoguard,,,,,,,
 30006,Shadow@CR_AUTOGUARD,any,249,10,10000,0,200,yes,self,mystatusoff,autoguard,,,,,,,
 
 30006,Shadow@CR_DEFENDER,idle,257,5,10000,0,1500,yes,self,mystatuson,defender,,,,,,,
 
-30006,Shadow@CR_DEFENDER,anytarget,257,5,10000,0,200,yes,self,afterskill,3046,,,,,,,
-30006,Shadow@DUMMY,anytarget,3046,10,10000,0,500,yes,friend,expanded,friend_needs_defender,,,,,,,
+30006,Shadow@CR_DEFENDER,anytarget,257,5,10000,0,200,yes,self,afterskill,3200,,,,,,,
+30006,Shadow@DUMMY,anytarget,3200,10,10000,0,500,yes,friend,expanded,friend_needs_defender,,,,,,,
 30006,Shadow@CR_DEFENDER,anytarget,257,5,10000,0,200,yes,self,expanded,self_needs_defender,,,,,,,
 
 30006,Shadow@CR_PROVIDENCE,any,256,5,10000,100,200,yes,friend,expanded,ready_for_providence,,,,,,,
 30006,Shadow@SM_ENDURE,any,8,10,10000,0,0,yes,self,mystatusoff,endure,,,,,,,
 
-30006,Shadow@CR_REFLECTSHIELD,any,252,10,10000,0,200,yes,self,afterskill,3048,,,,,,,
-30006,Shadow@DUMMY,any,3048,10,10000,0,500,yes,friend,expanded,friend_needs_reflect,,,,,,,
+30006,Shadow@CR_REFLECTSHIELD,any,252,10,10000,0,200,yes,self,afterskill,3202,,,,,,,
+30006,Shadow@DUMMY,any,3202,10,10000,0,500,yes,friend,expanded,friend_needs_reflect,,,,,,,
 30006,Shadow@CR_REFLECTSHIELD,any,252,10,10000,0,200,yes,self,mystatusoff,reflectshield,,,,,,,
 
 30006,Shadow@AL_HEAL,idle,28,10,10000,0,0,yes,self,myhpltmaxrate,99,,,,,,,
@@ -400,8 +400,8 @@
 1163,Raydric@NPC_DARKNESSATTACK,anytarget,190,3,10000,500,5000,no,randomtarget,expanded,target_ranged,locktarget,,,,,,
 1163,Raydric@NPC_DARKNESSATTACK,anytarget,190,3,10000,500,5000,no,target,always,,,,,,,,
 1163,Raydric@NPC_DARKNESSBREATH,anytarget,658,3,10000,500,5000,no,target,always,,,,,,,,
-//1163,Raydric@NPC_EMOTION,any,197,1,10000,0,1000,yes,self,afterskill,3046,1,1,1,,,,
-//1163,Raydric@DUMMY1,anytarget,3046,10,10000,0,500,yes,randomtarget,expanded,target_ranged,locktarget,,,,,,
+//1163,Raydric@NPC_EMOTION,any,197,1,10000,0,1000,yes,self,afterskill,3200,1,1,1,,,,
+//1163,Raydric@DUMMY1,anytarget,3200,10,10000,0,500,yes,randomtarget,expanded,target_ranged,locktarget,,,,,,
 
 1163,Raydric@SM_MAGNUM,attack,7,9,500,500,5000,no,self,always,0,,,,,,6,
 1163,Raydric@CR_AUTOGUARD,chase,249,2,2000,0,300000,yes,self,longrangeattacked,,,,,,,,
@@ -443,7 +443,7 @@
 30008,CREPUSCULE@MO_FINGEROFFENSIVE,anytarget,267,5,10000,800,200,no,target,expanded,finger_fallback,,,,,,,
 
 //CREP FIN
-31000,Sentinelle@DUMMY1,idle,3046,1,1,0,30000,yes,self,always,,,,,,,,
+31000,Sentinelle@DUMMY1,idle,3200,1,1,0,30000,yes,self,always,,,,,,,,
 
 
 
@@ -458,7 +458,7 @@
 30017,Tayla@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30017,Tayla@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
 30017,Tayla@SLOWGRACE,anytarget,328,20,10000,0,0,no,self,expanded,target_ready_for_slowgrace,,,,,,,
-30017,Tayla@DUMMY,anytarget,3047,3,10000,0,1000,yes,randomtarget,expanded,target_awaits_slowgrace,lockskillonce,14,,,,,
+30017,Tayla@DUMMY,anytarget,3201,3,10000,0,1000,yes,randomtarget,expanded,target_awaits_slowgrace,lockskillonce,14,,,,,
 30017,Tayla@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30017,Tayla@ADAPTATION,any,304,1,10000,0,0,no,self,mystatuson,dancing,,,,,,,
 30017,Tayla@TAROT,anytarget,489,5,10000,0,300,yes,randomtarget,always,,,,,,,,
@@ -469,7 +469,7 @@
 30019,Seigneur Incube@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30019,Seigneur Incube@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30019,Seigneur Incube@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
-30019,Seigneur Incube@DUMMY,any,3047,3,10000,0,1000,yes,friend,expanded,friend_needs_dance,settarget,14,,,,,
+30019,Seigneur Incube@DUMMY,any,3201,3,10000,0,1000,yes,friend,expanded,friend_needs_dance,settarget,14,,,,,
 30019,Seigneur Incube@ADAPTATION,any,304,1,10000,0,0,no,self,mystatuson,dancing,,,,,,,
 30019,Seigneur Incube@BRAGI,any,321,15,10000,0,0,no,self,expanded,friend_needs_bragi,,,,,,,
 30019,Seigneur Incube@SUNSET,any,320,16,10000,0,0,no,self,expanded,friend_needs_sunset,,,,,,,

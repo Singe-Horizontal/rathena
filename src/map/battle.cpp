@@ -1844,7 +1844,10 @@ int64 battle_calc_damage(struct block_list *src,struct block_list *bl,struct Dam
 		if( tsc->getSCE(SC__DEADLYINFECT) && (flag&(BF_SHORT|BF_MAGIC)) == BF_SHORT && damage > 0 && rnd()%100 < 30 + 10 * tsc->getSCE(SC__DEADLYINFECT)->val1 )
 			status_change_spread(bl, src);
 
-		if(sce = tsc->getSCE(SC_EXPANDED_DHRES))
+		if( sce = tsc->getSCE(SC_EXPANDED_AI_RES))
+			damage -= damage * sce->val2 / 100;
+
+		if( (sce = tsc->getSCE(SC_EXPANDED_AI_LONGRES)) && flag&(BF_LONG|BF_MAGIC) )
 			damage -= damage * sce->val2 / 100;
 
 	} //End of target SC_ check

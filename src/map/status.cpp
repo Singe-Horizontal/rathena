@@ -10980,8 +10980,16 @@ int status_change_start(struct block_list* src, struct block_list* bl,enum sc_ty
 		case SC_PROVIDENCE:
 			val2 = val1*5; // Race/Ele resist
 			break;
-		case SC_EXPANDED_DHRES:
+		case SC_EXPANDED_AI_RES:
 			val2 = val1; // Race/Ele resist
+			break;
+		case SC_EXPANDED_AI_LONGRES:
+			val2 = val1;
+			break;
+		case SC_EXPANDED_AI_REGEN:
+			tick_time = battle_config.item_use_interval;
+			val2 = max(tick_time,val2);		
+			tick_time = val2;
 			break;
 		case SC_REFLECTSHIELD:
 			val2 = 10+val1*3; // %Dmg reflected
@@ -14299,7 +14307,33 @@ TIMER_FUNC(status_change_timer){
 				status_zap(bl, damage, 0);
 		}
 		break;
+case SC_EXPANDED_AI_REGEN:
+		if (!status_isdead(bl) && status->hp < status->max_hp && !sc->getSCE(SC_BERSERK) && !(sc->opt1 > 0 && sc->opt1 != OPT1_STONEWAIT && sc->opt1 != OPT1_BURNING)) {
+			int effect = EF_POTION1;
+			int val3 = 50;			
+			if(sce->val3 == 0){
+				effect = EF_POTION4;
+				val3 = rand() % (405 - 325 + 1) + 325;
+			}
+			unsigned int heal = max(val3,45);
+			unsigned int bonus = 100 + (status->vit << 1);
+			if (sce->val1 == 2)
+				bonus += 100;
+			else if (sce->val1 == 3)
+				bonus += 50;
+			heal += heal * bonus / 100;
+			if(sc->getSCE(SC_CRITICALWOUND))
+				heal -= heal * (sc->getSCE(SC_CRITICALWOUND)->val2/100);
+			if (heal > 0) {
+				status_heal(bl, heal, 0, 0);
+				if(!(bl->type == BL_MOB && ((mob_data*)bl)->bg_id))
+					clif_specialeffect(bl, effect, AREA);
+			}
+		}
 
+		sc_timer_next(sce->val2 + tick);
+
+		break;
 	case SC_BLEEDING:
 		if (sce->val4 >= 0) {
 			int64 damage = rnd() % 600 + 200;
