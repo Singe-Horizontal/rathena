@@ -69,7 +69,7 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////KRAKEN//////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-30000,KRAKEn@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30000,KRAKEn@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30000,KRAKEN@PR_RESURRECT,any,54,1,10000,0,1000,no,friend,expanded,ready_for_resu,,,,,,,
 30000,KRAKEN@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30000,KRAKEN@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,1,3,,,,,
@@ -101,7 +101,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 //30002,Levantine Aldehyde@WZ_FIREPILLAR,anytarget,80,10,10000,20,0,no,around8,always,,,,,,,,
 
-30002,Levantine@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30002,Levantine@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 //30002,Levantine@PR_RESURRECT,any,54,1,10000,0,1000,no,friend,expanded,ready_for_resu,,,,,,,
 //30002,Levantine Aldehyde@MG_SAFETYWALL,anytarget,12,10,10000,50,0,yes,friend,expanded,friendcloserangecellempty,,,,,,,
 //30002,Levantine Aldehyde@MG_SAFETYWALL,anytarget,12,10,10000,50,0,yes,self,expanded,selfcloserangecellempty,,,,,,,
@@ -121,7 +121,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 //30021,Levantine Aldehyde@WZ_FIREPILLAR,anytarget,80,10,10000,20,0,no,around8,always,,,,,,,,
 
-30021,Lezard@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30021,Lezard@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 //30021,Lezard@PR_RESURRECT,any,54,1,10000,0,1000,no,friend,expanded,ready_for_resu,,,,,,,
 30021,Lezard Aldehyde@MG_SAFETYWALL,anytarget,12,10,10000,50,0,yes,friend,expanded,friendcloserangecellempty,,,,,,,
 30021,Lezard Aldehyde@MG_SAFETYWALL,anytarget,12,10,10000,50,0,yes,self,expanded,selfcloserangecellempty,,,,,,,
@@ -141,7 +141,7 @@
 ///////////////////////////////////FULLMETAL////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-30001,Fullmetal@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30001,Fullmetal@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 //30001,Fullmetal@NPC_SUMMONSLAVE,idle,196,1,10000,500,0,no,self,slavele,0,,,,,,,
 //30001,Fullmetal@NPC_CALLSLAVE,idle,352,1,10000,0,60000,yes,self,always,0,,,,,,,
 // 30001,Fullmetal@NPC_SUMMONSLAVE,chase,196,1,10000,500,0,no,self,slavele,0,30000,,,,,,
@@ -185,7 +185,7 @@
 //30001,Fullmetal@HP_ASSUMPTIO,any,361,5,10000,400,0,no,friend,expanded,hassafety,,,,,,,
 
 
-30010,Hermes@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30010,Hermes@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30010,Hermes@DISSONANCE,anytarget,317,5,10000,0,1000,yes,self,expanded,ready_to_dissonance,,,,,,,
 30010,Hermes@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30010,Hermes@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
@@ -204,7 +204,7 @@
 //Dirkus
 //30011,Dirkus@Bash,anytarget,5,10,10000,0,300,yes,target,expanded,target_can_stun,,,,,,,
 
-30011,Dirkus@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30011,Dirkus@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30011,Dirkus@LK_BERSERK,anytarget,359,1,10000,0,0,no,self,myhpltmaxrate,20,,,,,,,
 30011,Dirkus@LK_PARRYING,any,356,10,10000,0,0,no,self,mystatusoff,parry,,,,,,,
 30011,Dirkus@LK_CONCENTRATION,any,357,5,10000,0,0,no,self,mystatusoff,concentration,,,,,,,
@@ -218,14 +218,14 @@
 
 
 //Canelus
-30012,Canelus@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30012,Canelus@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30012,Canelus@spiral,anytarget,397,5,10000,100,300,yes,target,always,,,,,,,,
 
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-30013,ULYSSE@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30013,ULYSSE@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30013,Ulysse@SA_DISPEL,anytarget,289,5,10000,30,200,no,randomtarget,expanded,target_dispell,,,,,,,
 30013,Ulysse@SA_DISPEL,idle,289,5,10000,100,200,no,friend,expanded,friend_needs_dispell_idle,,,,,,,
 30013,Ulysse@SA_DISPEL,anytarget,289,5,10000,100,200,no,friend,expanded,friend_needs_dispell,,,,,,,
@@ -258,7 +258,7 @@
 
 
 //30013,Ulysse@SA_ABRA,anytarget,290,10,5000,0,200,no,randomtarget,expanded,targetholy,,,,,,,
-30014,Rudeuss@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30014,Rudeuss@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30014,Rudeus@PR_RESURRECT,any,54,1,10000,0,1000,no,friend,expanded,ready_for_resu,,,,,,,
 30014,Rudeuss@Kaupe,any,464,3,10000,0,400,no,friend,friendstatusoff,kaupe,,,,,,,
 30014,Rudeuss@Kaizel,any,462,3,10000,1500,200,no,friend,expanded,friend_ready_for_kaizel,,,,,,,
@@ -266,7 +266,7 @@
 30014,Rudeuss@Kaupe,any,464,3,10000,0,400,no,self,mystatusoff,kaupe,,,,,,,
 30014,Rudeuss@Kaizel,any,462,3,10000,1500,200,no,self,expanded,self_ready_for_kaizel,,,,,,,
 
-30015,Singe@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30015,Singe@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30015,Singe@Union,any,444,1,10000,0,0,no,self,expanded,union,,,,,,,
 30015,Singe@warmth,anytarget,430,1,10000,0,10000,no,self,expanded,noknockback,,,,,,,
 30015,Singe@FSK,anytarget,421,7,10000,0,200,no,target,enemystatuson,safetywall,,,,,,,
@@ -285,7 +285,7 @@
 
 //30007,atawn@NPC_SUMMONSLAVE,idle,196,2,10000,500,0,no,self,slavele,0,30007,,,,,,
 //30007,Atawn@NPC_CALLSLAVE,idle,352,2,10000,0,60000,yes,self,always,0,,,,,,,
-30007,Atawn@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30007,Atawn@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30007,Atawn@NPC_fullheal,anytarget,687,1,10000,0,5000,no,self,myhpltmaxrate,1,,,,,,,
 30007,Atawn@NPC_fullheal,idle,687,1,10000,0,5000,no,self,always,,,,,,,,
 
@@ -328,14 +328,14 @@
 30005,KOUdeKOUTO@AS_CLOAKING,chase,135,10,10000,0,0,yes,self,expanded,ready_to_cloak,,,,,,,
 30005,KOUDEKOUTO@ASC_EDP,idle,378,5,10000,0,30000,yes,self,always,,,,,,,,
 30005,KOUDEKOUTO@ASC_EDP,anytarget,378,5,10000,0,30000,yes,self,always,,,,,,,,
-30016,dominus@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30016,dominus@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30016,dominus@NPC_SUMMONSLAVE,any,196,1,10000,500,0,no,self,slavele,0,31001,,,,,,
 30016,dominus@NPC_CALLSLAVE,any,352,1,10000,0,60000,yes,self,always,0,,,,,,,
 30016,Dominus@dominus,anytarget,490,10,10000,10,200,no,target,expanded,can_damage_neutral_ranged,,,,,,,
 
 31001,DominusHom@caprice,anytarget,8013,5,10000,0,1000,no,target,always,,,,,,,,
 
-30020,Gaius@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30020,Gaius@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 //30020,Gaius@gaius,any,231,4,10000,0,200,no,self,myhpltmaxrate,99,,,,,,,
 //30020,Gaius@biocani,any,232,4,10000,0,5000,no,self,always,,,,,,,,
 30020,Gaius@cart,idle,154,10,10000,10,200,no,self,onspawn,,,,,,,,
@@ -349,7 +349,7 @@
 
 
 
-30006,Shadow@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30006,Shadow@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30006,Shadow@PR_RESURRECT,any,54,1,10000,0,1000,no,friend,expanded,ready_for_resu,,,,,,,
 30006,Shadow@GOSPEl,any,369,10,10000,0,0,no,self,mystatuson,hellpower,,,,,,,
 30006,Shadow@GOSPEl,any,369,10,10000,0,0,no,self,mystatuson,gospel,,,,,,,
@@ -418,7 +418,7 @@
 // 30000,Taoist Hermit@MO_trois,attack,273,5,10000,0,100,no,target,afterskill,272,,,,,,,
 // 30000,Taoist Hermit@MO_deux,attack,272,5,10000,0,100,no,target,afterskill,263,,,,,,,
 //30008,CREPUSCULE@MG_Sight,chase,10,1,10000,0,1000,yes,self,mystatusoff,sight,,,,,,,
-30008,CREPUSCULE@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30008,CREPUSCULE@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30008,CREPUSCULE@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30008,CREPUSCULE@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
 30008,CREPUSCULE@AL_PNEUMA,idle,25,1,10000,0,100,yes,self,longrangeattacked,,,,,,,,
@@ -454,19 +454,19 @@
 30004,BRANDON@GS_RAPID,anytarget,515,10,10000,0,0,no,target,enemystatusoff,pneuma,,,,,,,
 //30004,BRANDON@GS_DESPERADO,anytarget,516,10,10000,0,0,no,self,always,,,,,,,,
 
-//30017,Tayla@EXPANDED_CHANGE_RANGE,anytarget,3054,1,10000,0,1000,yes,self,always,,,,,,,,
+//30017,Tayla@EXPANDED_AI_CHANGE_RANGE,anytarget,3206,1,10000,0,1000,yes,self,always,,,,,,,,
 30017,Tayla@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30017,Tayla@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
 30017,Tayla@SLOWGRACE,anytarget,328,20,10000,0,0,no,self,expanded,target_ready_for_slowgrace,,,,,,,
 30017,Tayla@DUMMY,anytarget,3201,3,10000,0,1000,yes,randomtarget,expanded,target_awaits_slowgrace,lockskillonce,14,,,,,
-30017,Tayla@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30017,Tayla@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30017,Tayla@ADAPTATION,any,304,1,10000,0,0,no,self,mystatuson,dancing,,,,,,,
 30017,Tayla@TAROT,anytarget,489,5,10000,0,300,yes,randomtarget,always,,,,,,,,
 
 30018,Mammouth@CT,anytarget,485,10,10000,0,200,no,target,always,,,,,,,,
 //30018,Mammouth@CT,any,387,1,10000,0,300,yes,self,mystatusoff,cartboost,,,,,,,
 
-30019,Seigneur Incube@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30019,Seigneur Incube@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30019,Seigneur Incube@AL_Hiding,anytarget,51,11,10000,0,0,yes,self,expanded,ready_to_hide,,,,,,,
 30019,Seigneur Incube@AL_Hiding,any,51,11,10000,0,0,yes,self,expanded,ready_to_dehide,,,,,,,
 30019,Seigneur Incube@DUMMY,any,3201,3,10000,0,1000,yes,friend,expanded,friend_needs_dance,settarget,14,,,,,
@@ -507,6 +507,6 @@
 30200,Soul Taker@NPC_METAMORPHOSIS,anytarget,193,2,100,3000,10000,no,self,always,0,30200,,,,,,
 30200,Soul Taker@ASC_EDP,any,378,5,10000,0,30000,yes,self,always,,,,,,,,
 
-30022,Darwinia@EXPANDED_DHRES,idle,3049,60,10000,0,1000,no,self,onspawn,,,,,,,,
+30022,Darwinia@EXPANDED_AI_RES,idle,3203,60,10000,0,1000,no,self,onspawn,,,,,,,,
 30022,Darwinia@SA_LANDPROTECT,any,288,5,10000,0,200,no,friend,expanded,friend_needs_land,,,,,,,
 30022,Darwinia@MG_ENERGYCOAT,any,157,1,10000,10,10000,no,self,mystatusoff,energycoat,,,,,,,

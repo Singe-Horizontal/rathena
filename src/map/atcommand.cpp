@@ -2262,8 +2262,19 @@ ACMD_FUNC(monster)
 		number = battle_config.atc_spawn_quantity_limit;
 
 	parent_cmd = atcommand_alias_db.checkAlias(command+1);
-
-	if (strcmp(parent_cmd, "monstersmall") == 0)
+	enum mob_ai ai = AI_NONE;
+	if(strcmp(parent_cmd,"friendsmall") == 0){
+		size = SZ_MEDIUM;
+		ai = AI_GUILD;
+	}
+	else if(strcmp(parent_cmd,"friendbig") == 0){
+		size = SZ_BIG;
+		ai = AI_GUILD;
+	}else if(strcmp(parent_cmd,"friend") == 0){
+		size = SZ_SMALL;
+		ai = AI_GUILD;
+	}
+	else if (strcmp(parent_cmd, "monstersmall") == 0)
 		size = SZ_MEDIUM; // This is just gorgeous [mkbu95]
 	else if (strcmp(parent_cmd, "monsterbig") == 0)
 		size = SZ_BIG;
@@ -2278,7 +2289,7 @@ ACMD_FUNC(monster)
 	for (i = 0; i < number; i++) {
 		int k;
 		map_search_freecell(&sd->bl, 0, &mx,  &my, range, range, 0);
-		k = mob_once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, AI_NONE);
+		k = mob_once_spawn(sd, sd->bl.m, mx, my, name, mob_id, 1, eventname, size, ai);
 		if(k) {
 			//mapreg_setreg(reference_uid(add_str("$@mobid"), i),k); //retain created mobid in array uncomment if needed
 			count ++;
@@ -11020,6 +11031,9 @@ void atcommand_basecommands(void) {
 		ACMD_DEF(monster),
 		ACMD_DEF2("monstersmall", monster),
 		ACMD_DEF2("monsterbig", monster),
+		ACMD_DEF2("friend", monster),
+		ACMD_DEF2("friendbig", monster),
+		ACMD_DEF2("friendsmall", monster),
 		ACMD_DEF(killmonster),
 		ACMD_DEF2("killmonster2", killmonster),
 		ACMD_DEF(refine),
