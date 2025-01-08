@@ -24,7 +24,7 @@ struct guardian_data {
 	int32 emblem_id;
 	int32 guardup_lv; //Level of GD_GUARDUP skill.
 	char guild_name[NAME_LENGTH];
-	std::shared_ptr<guild_castle> castle;
+	guild_castle* castle;
 };
 
 class MapGuild {
@@ -44,9 +44,10 @@ bool guild_isallied(int32 guild_id, int32 guild_id2); //Checks alliance based on
 bool guild_has_permission( map_session_data& sd, enum e_guild_permission permission );
 
 void do_init_guild(void);
-std::shared_ptr<MapGuild> guild_search(int32 guild_id);
-std::shared_ptr<MapGuild> guild_searchname(const char *str);
-std::shared_ptr<MapGuild> guild_searchnameid(const char *str);
+MapGuild* guild_search(int32 guild_id);
+std::shared_ptr<MapGuild> guild_search_shared(int32 guild_id);
+MapGuild* guild_searchname(const char *str);
+MapGuild* guild_searchnameid(const char *str);
 
 map_session_data* guild_getavailablesd(const struct mmo_guild &g);
 int32 guild_getindex(const struct mmo_guild &g, uint32 account_id, uint32 char_id);
@@ -135,9 +136,9 @@ public:
 	void loadingFinished() override;
 
 	// Additional
-	std::shared_ptr<guild_castle> mapname2gc(const char* mapname);
-	std::shared_ptr<guild_castle> mapindex2gc(int16 mapindex);
-	std::shared_ptr<guild_castle> find_by_clientid( uint16 client_id );
+	guild_castle* mapname2gc(const char* mapname);
+	guild_castle* mapindex2gc(int16 mapindex);
+	guild_castle* find_by_clientid( uint16 client_id );
 };
 
 extern CastleDatabase castle_db;

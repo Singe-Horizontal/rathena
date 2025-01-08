@@ -63,7 +63,7 @@ void chlogif_pincode_start(int32 fd, struct char_session_data* sd){
 		}else{
 			if( !(charserv_config.pincode_config.pincode_changetime)
 			|| ( sd->pincode_change + charserv_config.pincode_config.pincode_changetime ) > time(nullptr) ){
-				std::shared_ptr<struct online_char_data> node = util::umap_find( char_get_onlinedb(), sd->account_id );
+				struct online_char_data* node = util::umap_find( char_get_onlinedb(), sd->account_id );
 
 				if( node != nullptr && node->pincode_success ){
 					// User has already passed the check
@@ -102,7 +102,7 @@ TIMER_FUNC(chlogif_send_acc_tologin){
 		WFIFOHEAD(login_fd,8+users*4);
 		WFIFOW(login_fd,0) = 0x272d;
 		for( const auto& pair : char_get_onlinedb() ){
-			std::shared_ptr<struct online_char_data> character = pair.second;
+			struct online_char_data* character = pair.second.get();
 
 			if( character->server > -1 ){
 				WFIFOL( login_fd, 8 + i * 4 ) = character->account_id;
@@ -478,7 +478,7 @@ int32 chlogif_parse_ackchangesex(int32 fd)
 		if (acc > 0) { // TODO: Is this even possible?
 			unsigned char i;
 			int32 char_id = 0, class_ = 0, guild_id = 0;
-			std::shared_ptr<struct auth_node> node = util::umap_find( char_get_authdb(), acc );
+			struct auth_node* node = util::umap_find( char_get_authdb(), acc );
 			SqlStmt stmt{ *sql_handle };
 
 			if (node != nullptr)
@@ -586,7 +586,7 @@ int32 chlogif_parse_askkick(int32 fd){
 		uint32 aid = RFIFOL(fd,2);
 		RFIFOSKIP(fd,6);
 
-		std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), aid );
+		struct online_char_data* character = util::umap_find( char_get_onlinedb(), aid );
 
 		// account is already marked as online!
 		if( character != nullptr ){

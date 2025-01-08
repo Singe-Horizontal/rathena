@@ -2745,7 +2745,7 @@ struct script_data *get_val_(struct script_state* st, struct script_data* data, 
 					if (data->ref)
 						n = data->ref->vars;
 					else {
-						std::shared_ptr<s_instance_data> idata = util::umap_find(instances, script_instancegetid(st));
+						s_instance_data* idata = util::umap_find(instances, script_instancegetid(st));
 
 						if (idata)
 							n = idata->regs.vars;
@@ -2811,7 +2811,7 @@ struct script_data *get_val_(struct script_state* st, struct script_data* data, 
 						if (data->ref)
 							n = data->ref->vars;
 						else {
-							std::shared_ptr<s_instance_data> idata = util::umap_find(instances, script_instancegetid(st));
+							s_instance_data* idata = util::umap_find(instances, script_instancegetid(st));
 
 							if (idata)
 								n = idata->regs.vars;
@@ -3059,7 +3059,7 @@ struct reg_db *script_array_src(struct script_state *st, map_session_data *sd, c
 				if (ref)
 					src = ref;
 				else {
-					std::shared_ptr<s_instance_data> idata = util::umap_find(instances, script_instancegetid(st));
+					s_instance_data* idata = util::umap_find(instances, script_instancegetid(st));
 
 					if (idata)
 						src = &idata->regs;
@@ -3186,7 +3186,7 @@ bool set_reg_str( struct script_state* st, map_session_data* sd, int64 num, cons
 				if( ref ){
 					src = ref;
 				}else{
-					std::shared_ptr<s_instance_data> idata = util::umap_find(instances, script_instancegetid(st));
+					s_instance_data* idata = util::umap_find(instances, script_instancegetid(st));
 
 					if (idata)
 						src = &idata->regs;
@@ -3280,7 +3280,7 @@ bool set_reg_num( struct script_state* st, map_session_data* sd, int64 num, cons
 				if( ref ){
 					src = ref;
 				}else{
-					std::shared_ptr<s_instance_data> idata = util::umap_find(instances, script_instancegetid(st));
+					s_instance_data* idata = util::umap_find(instances, script_instancegetid(st));
 
 					if (idata)
 						src = &idata->regs;
@@ -4618,7 +4618,7 @@ void script_add_autobonus(const char *autobonus)
 }
 
 void script_run_petautobonus(const std::string &autobonus, map_session_data &sd) {
-	std::shared_ptr<s_pet_autobonus_wrapper> script = util::umap_find(pet_autobonuses, autobonus);
+	s_pet_autobonus_wrapper* script = util::umap_find(pet_autobonuses, autobonus);
 
 	if (script != nullptr) {
 		run_script(script->script, 0, sd.bl.id, 0);
@@ -4630,7 +4630,7 @@ void script_add_petautobonus(const std::string &autobonus) {
 		script_code *script = parse_script(autobonus.c_str(), "petautobonus", 0, 0);
 
 		if (script != nullptr) {
-			std::shared_ptr<s_pet_autobonus_wrapper> bonus = std::make_shared<s_pet_autobonus_wrapper>();
+			auto bonus = std::make_shared<s_pet_autobonus_wrapper>();
 
 			bonus->script = script;
 
@@ -7089,7 +7089,7 @@ static bool script_getitem_randomoption(struct script_state *st, map_session_dat
  * @param rental: Whether or not to count rental items
  * @return Total count of item being searched
  */
-static int32 script_countitem_sub(struct item *items, std::shared_ptr<item_data> id, int32 size, int32 expanded, struct script_state *st, map_session_data *sd = nullptr, bool rental = false) {
+static int32 script_countitem_sub(struct item *items, item_data* id, int32 size, int32 expanded, struct script_state *st, map_session_data *sd = nullptr, bool rental = false) {
 
 	nullpo_retr(-1, items);
 	nullpo_retr(-1, st);
@@ -7199,7 +7199,7 @@ BUILDIN_FUNC(countitem)
 	if (!script_accid2sd(aid, sd))
 		return SCRIPT_CMD_FAILURE;
 
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if (script_isstring(st, 2)) // item name
 		id = item_db.searchname( script_getstr( st, 2 ) );
@@ -7247,7 +7247,7 @@ BUILDIN_FUNC(cartcountitem)
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if (script_isstring(st, 2)) // item name
 		id = item_db.searchname( script_getstr( st, 2 ) );
@@ -7289,7 +7289,7 @@ BUILDIN_FUNC(storagecountitem)
 	if (!script_accid2sd(aid, sd))
 		return SCRIPT_CMD_FAILURE;
 
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if (script_isstring(st, 2)) // item name
 		id = item_db.searchname( script_getstr( st, 2 ) );
@@ -7336,7 +7336,7 @@ BUILDIN_FUNC(guildstoragecountitem)
 	if (!script_accid2sd(aid, sd))
 		return SCRIPT_CMD_FAILURE;
 
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if (script_isstring(st, 2)) // item name
 		id = item_db.searchname( script_getstr( st, 2 ) );
@@ -7403,7 +7403,7 @@ BUILDIN_FUNC(rentalcountitem)
 	if (!script_accid2sd(aid, sd))
 		return SCRIPT_CMD_FAILURE;
 
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if (script_isstring(st, 2)) // item name
 		id = item_db.searchname( script_getstr( st, 2 ) );
@@ -7437,7 +7437,7 @@ BUILDIN_FUNC(checkweight)
 	int32 slots = 0;
 	unsigned short amount2 = 0;
 	uint32 weight = 0, i, nbargs;
-	std::shared_ptr<item_data> id;
+	item_data* id;
 	map_session_data* sd;
 
 	if( !script_rid2sd(sd) )
@@ -7629,7 +7629,7 @@ BUILDIN_FUNC(getitem)
 	unsigned short amount;
 	map_session_data* sd;
 	const char* command = script_getfuncname(st);
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if( script_isstring(st, 2) ) {// "<item name>"
 		const char *name = script_getstr(st, 2);
@@ -7678,7 +7678,7 @@ BUILDIN_FUNC(getitem)
 		return SCRIPT_CMD_SUCCESS;
 
 	//Check if it's stackable.
-	if( !itemdb_isstackable2( id.get() ) ){
+	if( !itemdb_isstackable2( id ) ){
 		get_count = 1;
 	}else{
 		get_count = amount;
@@ -7770,7 +7770,7 @@ BUILDIN_FUNC(getitem2)
 		return SCRIPT_CMD_SUCCESS;
 
 	t_itemid nameid;
-	std::shared_ptr<item_data> item_data;
+	item_data* item_data;
 
 	if( script_isstring(st, 2) ) {
 		const char *name = script_getstr(st, 2);
@@ -7846,7 +7846,7 @@ BUILDIN_FUNC(getitem2)
 		int32 get_count = 0;
 	
 		//Check if it's stackable.
-		if( !itemdb_isstackable2( item_data.get() ) ){
+		if( !itemdb_isstackable2( item_data ) ){
 			get_count = 1;
 		}else{
 			get_count = amount;
@@ -7885,7 +7885,7 @@ BUILDIN_FUNC(rentitem) {
 	if( script_isstring(st, 2) )
 	{
 		const char *name = script_getstr(st, 2);
-		std::shared_ptr<item_data> itd = item_db.searchname( name );
+		item_data* itd = item_db.searchname( name );
 
 		if( itd == nullptr ){
 			ShowError("buildin_rentitem: Nonexistant item %s requested.\n", name);
@@ -7943,7 +7943,7 @@ BUILDIN_FUNC(rentitem2) {
 	} else if (!script_accid2sd(11,sd))
 		return SCRIPT_CMD_FAILURE;
 
-	std::shared_ptr<item_data> id;
+	item_data* id;
 	t_itemid nameid = 0;
 
 	if( script_isstring(st, 2) ) {
@@ -8051,7 +8051,7 @@ BUILDIN_FUNC(getnameditem)
 
 	if( script_isstring(st, 2) ){
 		const char *name = script_getstr(st, 2);
-		std::shared_ptr<item_data> item_data = item_db.searchname( name );
+		item_data* item_data = item_db.searchname( name );
 
 		// Failed
 		if( item_data == nullptr){
@@ -8103,7 +8103,7 @@ BUILDIN_FUNC(grouprandomitem) {
 	int32 sub_group = 1;
 
 	FETCH(3, sub_group);
-	std::shared_ptr<s_item_group_entry> entry = itemdb_group.get_random_entry(script_getnum(st,2),sub_group);
+	s_item_group_entry* entry = itemdb_group.get_random_entry(script_getnum(st,2),sub_group);
 	if (!entry) {
 		ShowError("buildin_grouprandomitem: Invalid item group with group_id '%d', sub_group '%d'.\n", script_getnum(st,2), sub_group);
 		script_pushint(st,UNKNOWN_ITEM_ID);
@@ -8127,7 +8127,7 @@ BUILDIN_FUNC(makeitem) {
 
 	if( script_isstring(st, 2) ){
 		const char *name = script_getstr(st, 2);
-		std::shared_ptr<item_data> item_data = item_db.searchname( name );
+		item_data* item_data = item_db.searchname( name );
 
 		if( item_data )
 			nameid = item_data->nameid;
@@ -8195,7 +8195,7 @@ BUILDIN_FUNC(makeitem2) {
 
 	if( script_isstring( st, 2 ) ){
 		const char *name = script_getstr( st, 2 );
-		std::shared_ptr<item_data> item_data = item_db.searchname( name );
+		item_data* item_data = item_db.searchname( name );
 
 		if( item_data ){
 			nameid = item_data->nameid;
@@ -8569,7 +8569,7 @@ BUILDIN_FUNC(delitem)
 	if( script_isstring(st, 2) )
 	{
 		const char* item_name = script_getstr(st, 2);
-		std::shared_ptr<item_data> id = item_db.searchname(item_name);
+		item_data* id = item_db.searchname(item_name);
 
 		if( id == nullptr ){
 			ShowError("buildin_%s: unknown item \"%s\".\n", command, item_name);
@@ -8665,7 +8665,7 @@ BUILDIN_FUNC(delitem2)
 	if( script_isstring(st, 2) )
 	{
 		const char* item_name = script_getstr(st, 2);
-		std::shared_ptr<item_data> id = item_db.searchname( item_name );
+		item_data* id = item_db.searchname( item_name );
 
 		if( id == nullptr ){
 			ShowError("buildin_%s: unknown item \"%s\".\n", command, item_name);
@@ -9586,14 +9586,14 @@ BUILDIN_FUNC(getequippercentrefinery)
 	if (equip_index_check(num))
 		i = pc_checkequip(sd,equip_bitmask[num]);
 	if (i >= 0 && sd->inventory.u.items_inventory[i].nameid) {
-		std::shared_ptr<s_refine_level_info> info = refine_db.findLevelInfo( *sd->inventory_data[i], sd->inventory.u.items_inventory[i] );
+		s_refine_level_info* info = refine_db.findLevelInfo( *sd->inventory_data[i], sd->inventory.u.items_inventory[i] );
 
 		if( info == nullptr ){
 			script_pushint( st, 0 );
 			return SCRIPT_CMD_SUCCESS;
 		}
 
-		std::shared_ptr<s_refine_cost> cost = util::umap_find( info->costs, (uint16)( enriched ? REFINE_COST_ENRICHED : REFINE_COST_NORMAL ) );
+		s_refine_cost* cost = util::umap_find( info->costs, (uint16)( enriched ? REFINE_COST_ENRICHED : REFINE_COST_NORMAL ) );
 
 		if( cost == nullptr ){
 			script_pushint( st, 0 );
@@ -11008,14 +11008,14 @@ BUILDIN_FUNC(makepet)
 		return SCRIPT_CMD_FAILURE;
 
 	mob_id = script_getnum(st,2);
-	std::shared_ptr<s_pet_db> pet = pet_db.find(mob_id);
+	s_pet_db* pet = pet_db.find(mob_id);
 
 	if( !pet ){
 		ShowError( "buildin_makepet: failed to create a pet with mob id %hu\n", mob_id);
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<s_mob_db> mdb = mob_db.find(pet->class_);
+	s_mob_db* mdb = mob_db.find(pet->class_);
 
 	intif_create_pet( sd->status.account_id, sd->status.char_id, pet->class_, mdb->lv, pet->EggID, 0, pet->intimate, 100, 0, 1, mdb->jname.c_str() );
 
@@ -11141,7 +11141,7 @@ BUILDIN_FUNC(monster)
 	if( script_isstring( st, 6 ) ){
 		const char* name = script_getstr( st, 6 );
 
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( name );
+		s_mob_db* mob = mobdb_search_aegisname( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_monster: Attempted to spawn non-existing monster \"%s\"\n", name );
@@ -11217,7 +11217,7 @@ BUILDIN_FUNC(getmobdrops)
 		return SCRIPT_CMD_SUCCESS;
 	}
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(class_);
+	s_mob_db* mob = mob_db.find(class_);
 
 	for( i = 0; i < MAX_MOB_DROP_TOTAL; i++ )
 	{
@@ -11265,7 +11265,7 @@ BUILDIN_FUNC(areamonster)
 	if( script_isstring( st, 8 ) ){
 		const char* name = script_getstr( st, 8 );
 
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( name );
+		s_mob_db* mob = mobdb_search_aegisname( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_areamonster: Attempted to spawn non-existing monster \"%s\"\n", name );
@@ -12197,7 +12197,7 @@ BUILDIN_FUNC(getareadropitem)
 
 	if( script_isstring(st, 7) ){
 		const char *name = script_getstr(st, 7);
-		std::shared_ptr<item_data> item_data = item_db.searchname( name );
+		item_data* item_data = item_db.searchname( name );
 
 		if( item_data )
 			nameid=item_data->nameid;
@@ -12386,7 +12386,7 @@ BUILDIN_FUNC(sc_end)
 		if (sce == nullptr)
 			return SCRIPT_CMD_SUCCESS;
 
-		std::shared_ptr<s_status_change_db> sc_db = status_db.find( type );
+		s_status_change_db* sc_db = status_db.find( type );
 
 		if( sc_db == nullptr ){
 			ShowError( "buildin_sc_end: Unknown status change %d.\n", type );
@@ -12553,7 +12553,7 @@ BUILDIN_FUNC(catchpet)
 	if( script_hasdata( st, 2 ) ){
 		lure_id = script_getnum( st, 2 );
 
-		std::shared_ptr<item_data> id = item_db.find( lure_id );
+		item_data* id = item_db.find( lure_id );
 
 		if (id == nullptr) {
 			ShowError( "buildin_%s: Invalid lure item ID %d.\n", command, lure_id );
@@ -13910,7 +13910,7 @@ BUILDIN_FUNC(flagemblem)
 BUILDIN_FUNC(getcastlename)
 {
 	const char* mapname = mapindex_getmapname(script_getstr(st,2),nullptr);
-	std::shared_ptr<guild_castle> gc = castle_db.mapname2gc(mapname);
+	guild_castle* gc = castle_db.mapname2gc(mapname);
 	const char* name = (gc) ? gc->castle_name : "";
 	script_pushstrcopy(st,name);
 	return SCRIPT_CMD_SUCCESS;
@@ -13920,7 +13920,7 @@ BUILDIN_FUNC(getcastledata)
 {
 	const char *mapname = mapindex_getmapname(script_getstr(st,2),nullptr);
 	int32 index = script_getnum(st,3);
-	std::shared_ptr<guild_castle> gc = castle_db.mapname2gc(mapname);
+	guild_castle* gc = castle_db.mapname2gc(mapname);
 
 	if (gc == nullptr) {
 		script_pushint(st,0);
@@ -13964,7 +13964,7 @@ BUILDIN_FUNC(setcastledata)
 	const char *mapname = mapindex_getmapname(script_getstr(st,2),nullptr);
 	int32 index = script_getnum(st,3);
 	int32 value = script_getnum(st,4);
-	std::shared_ptr<guild_castle> gc = castle_db.mapname2gc(mapname);
+	guild_castle* gc = castle_db.mapname2gc(mapname);
 
 	if (gc == nullptr) {
 		ShowWarning("buildin_setcastledata: guild castle for map '%s' not found\n", mapname);
@@ -14207,7 +14207,7 @@ BUILDIN_FUNC(failedremovecards) {
 BUILDIN_FUNC(mapwarp)	// Added by RoVeRT
 {
 	int32 x,y,m,check_val=0,check_ID=0,i=0;
-	std::shared_ptr<MapGuild> g;
+	MapGuild* g;
 	struct party_data *p = nullptr;
 	const char *str;
 	const char *mapname;
@@ -14463,7 +14463,7 @@ BUILDIN_FUNC(strmobinfo)
 		return SCRIPT_CMD_SUCCESS;
 	}
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(class_);
+	s_mob_db* mob = mob_db.find(class_);
 
 	switch (num) {
 	case 1: script_pushstrcopy(st,mob->name.c_str()); break;
@@ -14574,7 +14574,7 @@ BUILDIN_FUNC(guardianinfo)
 	int32 id = script_getnum(st,3);
 	int32 type = script_getnum(st,4);
 
-	std::shared_ptr<guild_castle> gc = castle_db.mapname2gc(mapname);
+	guild_castle* gc = castle_db.mapname2gc(mapname);
 	struct mob_data* gd;
 
 	if( gc == nullptr || id < 0 || id >= MAX_GUARDIANS )
@@ -14606,7 +14606,7 @@ BUILDIN_FUNC(guardianinfo)
  *------------------------------------------*/
 BUILDIN_FUNC(getitemname)
 {
-	std::shared_ptr<item_data> i_data;
+	item_data* i_data;
 
 	if( script_isstring(st, 2) ){
 		i_data = item_db.searchname( script_getstr( st, 2 ) );
@@ -14633,7 +14633,7 @@ BUILDIN_FUNC(getitemname)
 BUILDIN_FUNC(getitemslots)
 {
 	t_itemid item_id=script_getnum(st,2);
-	std::shared_ptr<item_data> i_data = item_db.find(item_id);
+	item_data* i_data = item_db.find(item_id);
 
 	if (i_data != nullptr)
 		script_pushint(st,i_data->slots);
@@ -14650,7 +14650,7 @@ BUILDIN_FUNC(getitemslots)
  *------------------------------------------*/
 BUILDIN_FUNC(getiteminfo)
 {
-	std::shared_ptr<item_data> i_data;
+	item_data* i_data;
 	int32 type = script_getnum(st, 3);
 
 	if (script_isstring(st, 2))
@@ -14725,7 +14725,7 @@ BUILDIN_FUNC(getiteminfo)
  *------------------------------------------*/
 BUILDIN_FUNC(setiteminfo)
 {
-	std::shared_ptr<item_data> i_data;
+	item_data* i_data;
 
 	if (script_isstring(st, 2))
 		i_data = item_db.search_aegisname( script_getstr( st, 2 ) );
@@ -16838,7 +16838,7 @@ BUILDIN_FUNC(equip) {
 		return SCRIPT_CMD_FAILURE;
 
 	t_itemid nameid = script_getnum(st,2);
-	std::shared_ptr<item_data> id = item_db.find(nameid);
+	item_data* id = item_db.find(nameid);
 
 	if (id != nullptr) {
 		int32 i;
@@ -16860,7 +16860,7 @@ BUILDIN_FUNC(autoequip)
 {
 	t_itemid nameid=script_getnum(st,2);
 	int32 flag=script_getnum(st,3);
-	std::shared_ptr<item_data> id = item_db.find(nameid);
+	item_data* id = item_db.find(nameid);
 
 	if( id == nullptr )
 	{
@@ -16868,7 +16868,7 @@ BUILDIN_FUNC(autoequip)
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	if( !itemdb_isequip2(id.get()) )
+	if( !itemdb_isequip2(id) )
 	{
 		ShowError("buildin_autoequip: Item '%u' cannot be equipped.\n", nameid);
 		return SCRIPT_CMD_FAILURE;
@@ -18125,7 +18125,7 @@ BUILDIN_FUNC(npcshopitem)
 	nd->u.shop.count = 0;
 	for (n = 0, i = 3; n < amount; n++, i+=offs) {
 		t_itemid nameid = script_getnum( st, i );
-		std::shared_ptr<item_data> id = item_db.find(nameid);
+		item_data* id = item_db.find(nameid);
 
 		if( !id ){
 			ShowError( "builtin_npcshopitem: Item ID %u does not exist.\n", nameid );
@@ -18180,7 +18180,7 @@ BUILDIN_FUNC(npcshopadditem)
 		for (int32 n = 0, i = 3; n < amount; n++, i += offs) {
 			t_itemid nameid = script_getnum(st,i);
 			uint16 j;
-			std::shared_ptr<item_data> id = item_db.find(nameid);
+			item_data* id = item_db.find(nameid);
 
 			if( !id ){
 				ShowError( "builtin_npcshopadditem: Item ID %u does not exist.\n", nameid );
@@ -18225,7 +18225,7 @@ BUILDIN_FUNC(npcshopadditem)
 	for (int32 n = nd->u.shop.count, i = 3, j = 0; j < amount; n++, i+=offs, j++)
 	{
 		t_itemid nameid = script_getnum( st, i );
-		std::shared_ptr<item_data> id = item_db.find(nameid);
+		item_data* id = item_db.find(nameid);
 
 		if( !id ){
 			ShowError( "builtin_npcshopadditem: Item ID %u does not exist.\n", nameid );
@@ -18335,7 +18335,7 @@ BUILDIN_FUNC(setitemscript)
 	if( script_hasdata(st,4) )
 		n=script_getnum(st,4);
 
-	std::shared_ptr<item_data> i_data = item_db.find(item_id);
+	item_data* i_data = item_db.find(item_id);
 
 	if (!i_data || script==nullptr || ( script[0] && script[0]!='{' )) {
 		script_pushint(st,0);
@@ -18372,7 +18372,7 @@ BUILDIN_FUNC(setitemscript)
  *-------------------------------------------------------*/
 BUILDIN_FUNC(addmonsterdrop)
 {
-	std::shared_ptr<s_mob_db> mob;
+	s_mob_db* mob;
 
 	if (script_isstring(st, 2))
 		mob = mob_db.find(mobdb_searchname(script_getstr(st, 2)));
@@ -18389,7 +18389,7 @@ BUILDIN_FUNC(addmonsterdrop)
 	}
 
 	t_itemid item_id = script_getnum(st, 3);
-	std::shared_ptr<item_data> itm = item_db.find(item_id);
+	item_data* itm = item_db.find(item_id);
 
 	if (itm == nullptr) {
 		ShowError("addmonsterdrop: Nonexistant item %u requested.\n", item_id);
@@ -18465,7 +18465,7 @@ BUILDIN_FUNC(addmonsterdrop)
  *-------------------------------------------------------*/
 BUILDIN_FUNC(delmonsterdrop)
 {
-	std::shared_ptr<s_mob_db> mob;
+	s_mob_db* mob;
 
 	if(script_isstring(st, 2))
 		mob = mob_db.find(mobdb_searchname(script_getstr(st,2)));
@@ -18556,7 +18556,7 @@ BUILDIN_FUNC(getrandmobid)
  *------------------------------------------*/
 BUILDIN_FUNC(getmonsterinfo)
 {
-	std::shared_ptr<s_mob_db> mob = nullptr;
+	s_mob_db* mob = nullptr;
 
 	if (script_isstring(st, 2))
 		mob = mobdb_search_aegisname(script_getstr(st, 2));
@@ -20860,7 +20860,7 @@ BUILDIN_FUNC(questinfo)
 		}
 	}
 
-	std::shared_ptr<s_questinfo> qi = std::make_shared<s_questinfo>();
+	auto qi = std::make_shared<s_questinfo>();
 
 	qi->icon = static_cast<e_questinfo_types>(icon);
 	qi->color = static_cast<e_questinfo_markcolor>(color);
@@ -21113,7 +21113,7 @@ BUILDIN_FUNC(waitingroom2bg_single)
 	struct chat_data *cd;
 	map_session_data *sd;
 	int32 x, y, mapindex, bg_id = script_getnum(st,2);
-	std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, bg_id);
+	s_battleground_data* bg = util::umap_find(bg_team_db, bg_id);
 
 	if (!bg) {
 		script_pushint(st, false);
@@ -21199,7 +21199,7 @@ BUILDIN_FUNC(bg_join) {
 	const char* map_name;
 	map_session_data *sd;
 	int32 x, y, mapindex, bg_id = script_getnum(st, 2);
-	std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, bg_id);
+	s_battleground_data* bg = util::umap_find(bg_team_db, bg_id);
 
 	if (!bg) {
 		script_pushint(st, false);
@@ -21242,7 +21242,7 @@ BUILDIN_FUNC(bg_join) {
 BUILDIN_FUNC(bg_team_setxy)
 {
 	int32 bg_id = script_getnum(st,2);
-	std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, bg_id);
+	s_battleground_data* bg = util::umap_find(bg_team_db, bg_id);
 
 	if (bg) {
 		bg->cemetery.x = script_getnum(st, 3);
@@ -21331,7 +21331,7 @@ BUILDIN_FUNC(bg_getareausers)
 	const char *str = script_getstr(st, 3);
 	int16 m, x0, y0, x1, y1;
 	int32 bg_id = script_getnum(st, 2), c = 0;
-	std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, bg_id);
+	s_battleground_data* bg = util::umap_find(bg_team_db, bg_id);
 
 	if (!bg || (m = map_mapname2mapid(str)) < 0) {
 		script_pushint(st,0);
@@ -21374,7 +21374,7 @@ BUILDIN_FUNC(bg_updatescore)
 BUILDIN_FUNC(bg_get_data)
 {
 	int32 bg_id = script_getnum(st,2), type = script_getnum(st,3), i = 0;
-	std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, bg_id);
+	s_battleground_data* bg = util::umap_find(bg_team_db, bg_id);
 
 	if (bg) {
 		switch (type) {
@@ -21430,7 +21430,7 @@ BUILDIN_FUNC(bg_unbook)
  */
 BUILDIN_FUNC(bg_info)
 {
-	std::shared_ptr<s_battleground_type> bg = bg_search_name(script_getstr(st, 2));
+	s_battleground_type* bg = bg_search_name(script_getstr(st, 2));
 
 	if (!bg) {
 		ShowError("bg_info: Invalid Battleground name %s.\n", script_getstr(st, 2));
@@ -21742,7 +21742,7 @@ static int32 buildin_instance_warpall_sub(struct block_list *bl, va_list ap)
 	if ((flag & IWA_NOTDEAD) != 0 && pc_isdead(sd))
 		return 0;
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (!idata)
 		return 0;
@@ -21792,7 +21792,7 @@ BUILDIN_FUNC(instance_warpall)
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (!idata) {
 		ShowError("buildin_instance_warpall: Instance is not found.\n");
@@ -21831,7 +21831,7 @@ BUILDIN_FUNC(instance_announce) {
 	if (instance_id <= 0)
 		instance_id = script_instancegetid(st);
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (instance_id <= 0 || !idata) {
 		ShowError("buildin_instance_announce: Instance not found.\n");
@@ -22066,7 +22066,7 @@ BUILDIN_FUNC(instance_info)
 	const char* name = script_getstr(st, 2);
 	int32 type = script_getnum(st, 3);
 	int32 index = 0;
-	std::shared_ptr<s_instance_db> db = instance_search_db_name(name);
+	s_instance_db* db = instance_search_db_name(name);
 
 	if (!db) {
 		ShowError( "buildin_instance_info: Unknown instance name \"%s\".\n", name );
@@ -22151,8 +22151,8 @@ BUILDIN_FUNC(instance_live_info)
 	else
 		id = script_getnum(st, 3);
 
-	std::shared_ptr<s_instance_db> db = nullptr;
-	std::shared_ptr<s_instance_data> im = nullptr;
+	s_instance_db* db = nullptr;
+	s_instance_data* im = nullptr;
 
 	if (id > 0 && id < INT_MAX) {
 		im = util::umap_find(instances, id);
@@ -22208,7 +22208,7 @@ BUILDIN_FUNC(instance_list)
 	for (int32 i = instance_start; i < map_num; i++) {
 		struct map_data* mapdata = &map[i];
 		if (mapdata->instance_src_map == src_id) {
-			std::shared_ptr<s_instance_data> idata = util::umap_find(instances, mapdata->instance_id);
+			s_instance_data* idata = util::umap_find(instances, mapdata->instance_id);
 			if (idata && (mode == IM_MAX || idata->mode == mode)) {
 				setd_sub_num(st, nullptr, ".@instance_list", j, mapdata->instance_id, nullptr);
 				j++;
@@ -22302,7 +22302,7 @@ BUILDIN_FUNC(areamobuseskill)
 	if( script_isstring( st, 6 ) ){
 		const char* name = script_getstr( st, 6 );
 
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( name );
+		s_mob_db* mob = mobdb_search_aegisname( name );
 
 		if( mob == nullptr ){
 			ShowWarning( "buildin_areamobuseskill: Attempted to use skill of non-existing monster \"%s\"\n", name );
@@ -22995,7 +22995,7 @@ BUILDIN_FUNC(getrandgroupitem) {
 	FETCH(4, sub_group);
 	FETCH(5, identify);
 
-	std::shared_ptr<s_item_group_entry> entry = itemdb_group.get_random_entry(group,sub_group);
+	s_item_group_entry* entry = itemdb_group.get_random_entry(group,sub_group);
 
 	if( entry == nullptr ){
 		ShowError( "buildin_getrandgroupitem: Unable to find a random entry in group %hu for sub group %hu.\n", group, sub_group );
@@ -23173,7 +23173,7 @@ BUILDIN_FUNC(npcskill)
 BUILDIN_FUNC(consumeitem)
 {
 	map_session_data *sd;
-	std::shared_ptr<item_data> item_data;
+	item_data* item_data;
 
 	if (!script_charid2sd(3, sd))
 		return SCRIPT_CMD_FAILURE;
@@ -23959,7 +23959,7 @@ BUILDIN_FUNC(mergeitem2) {
 	if (script_hasdata(st, 2)) {
 		if (script_isstring(st, 2)) {// "<item name>"
 			const char *name = script_getstr(st, 2);
-			std::shared_ptr<item_data> id = item_db.searchname( name );
+			item_data* id = item_db.searchname( name );
 
 			if( id == nullptr ){
 				ShowError("buildin_mergeitem2: Nonexistant item %s requested.\n", name);
@@ -24065,7 +24065,7 @@ BUILDIN_FUNC(npcshopupdate) {
 						script_pushint(st, 0);
 						return SCRIPT_CMD_FAILURE;
 					}
-					std::shared_ptr<item_data> id = item_db.find(nameid);
+					item_data* id = item_db.find(nameid);
 					if (!id) {
 						ShowError("buildin_npcshopupdate: Item ID %u does not exist.\n", nameid);
 						script_pushint(st, 0);
@@ -24711,7 +24711,7 @@ BUILDIN_FUNC(setrandomoption) {
 	value = script_getnum(st, 5);
 	param = script_getnum(st, 6);
 
-	std::shared_ptr<s_random_opt_data> opt = random_option_db.find(static_cast<uint16>(id));
+	s_random_opt_data* opt = random_option_db.find(static_cast<uint16>(id));
 
 	if (opt == nullptr) {
 		ShowError("buildin_setrandomoption: Random option ID %d does not exists.\n", id);
@@ -25851,14 +25851,14 @@ BUILDIN_FUNC(getequiprefinecost) {
 		return SCRIPT_CMD_SUCCESS;
 	}
 
-	std::shared_ptr<s_refine_level_info> level_info = refine_db.findLevelInfo( *sd->inventory_data[i], sd->inventory.u.items_inventory[i] );
+	s_refine_level_info* level_info = refine_db.findLevelInfo( *sd->inventory_data[i], sd->inventory.u.items_inventory[i] );
 
 	if( level_info == nullptr ){
 		script_pushint( st, -1 );
 		return SCRIPT_CMD_SUCCESS;
 	}
 
-	std::shared_ptr<s_refine_cost> cost = util::umap_find( level_info->costs, (uint16)type );
+	s_refine_cost* cost = util::umap_find( level_info->costs, (uint16)type );
 
 	if( cost == nullptr ){
 		script_pushint( st, -1 );
@@ -26076,14 +26076,14 @@ BUILDIN_FUNC(mail){
 		}
 
 		for( i = 0; i < num_items && start < end; i++, start++ ){
-			std::shared_ptr<item_data> itm = item_db.find(msg.item[i].nameid);
+			item_data* itm = item_db.find(msg.item[i].nameid);
 
 			msg.item[i].amount = (short)get_val2_num( st, reference_uid( id, start ), reference_getref( data ) );
 
 			if( msg.item[i].amount <= 0 ){
 				ShowError( "buildin_mail: amount %d for item %u is invalid.\n", msg.item[i].amount, msg.item[i].nameid );
 				return SCRIPT_CMD_FAILURE;
-			}else if( itemdb_isstackable2(itm.get()) ){
+			}else if( itemdb_isstackable2(itm) ){
 				uint16 max = itm->stack.amount > 0 ? itm->stack.amount : MAX_AMOUNT;
 
 				if( msg.item[i].amount > max ){
@@ -26110,7 +26110,7 @@ BUILDIN_FUNC(mail){
 		}
 
 		for (i = 0; i < num_items && start < end; i++, start++) {
-			std::shared_ptr<item_data> itm = item_db.find(msg.item[i].nameid);
+			item_data* itm = item_db.find(msg.item[i].nameid);
 
 			msg.item[i].refine = (char)get_val2_num( st, reference_uid( id, start ), reference_getref( data ) );
 
@@ -26396,7 +26396,7 @@ BUILDIN_FUNC(getinstancevar)
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<s_instance_data> im = util::umap_find(instances, instance_id);
+	s_instance_data* im = util::umap_find(instances, instance_id);
 
 	if (im->state != INSTANCE_BUSY) {
 		ShowError("buildin_getinstancevar: Unknown instance ID %d.\n", instance_id);
@@ -26447,7 +26447,7 @@ BUILDIN_FUNC(setinstancevar)
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<s_instance_data> im = util::umap_find(instances, instance_id);
+	s_instance_data* im = util::umap_find(instances, instance_id);
 
 	if (im->state != INSTANCE_BUSY) {
 		ShowError("buildin_%s: Unknown instance ID %d.\n", command, instance_id);
@@ -26733,7 +26733,7 @@ BUILDIN_FUNC( laphine_synthesis ){
 		if( script_isstring( st, 2 ) ){
 			const char* item_name = script_getstr( st, 2 );
 
-			std::shared_ptr<item_data> item = item_db.searchname( item_name );
+			item_data* item = item_db.searchname( item_name );
 
 			if( item == nullptr ){
 				ShowError("buildin_laphine_synthesis: Item \"%s\" does not exist.\n", item_name );
@@ -26768,7 +26768,7 @@ BUILDIN_FUNC( laphine_synthesis ){
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<s_laphine_synthesis> synthesis = laphine_synthesis_db.find( item_id );
+	s_laphine_synthesis* synthesis = laphine_synthesis_db.find( item_id );
 
 	if( synthesis == nullptr ){
 		ShowError( "buildin_laphine_synthesis: %u is not a valid Laphine Synthesis item.\n", item_id );
@@ -26802,7 +26802,7 @@ BUILDIN_FUNC( laphine_upgrade ){
 		return SCRIPT_CMD_FAILURE;
 	}
 
-	std::shared_ptr<s_laphine_upgrade> upgrade = laphine_upgrade_db.find( sd->itemid );
+	s_laphine_upgrade* upgrade = laphine_upgrade_db.find( sd->itemid );
 
 	if( upgrade == nullptr ){
 		ShowError( "buildin_laphine_upgrade: %u is not a valid Laphine Upgrade item.\n", sd->itemid );
@@ -27003,7 +27003,7 @@ BUILDIN_FUNC(set_reputation_points){
 	}
 
 	int64 type = script_getnum64( st, 2 );
-	std::shared_ptr<s_reputation> reputation = reputation_db.find( type );
+	s_reputation* reputation = reputation_db.find( type );
 
 	if( reputation == nullptr ){
 		ShowError( "buildin_set_reputation_points: Unknown reputation type %" PRIi64 ".\n", type );
@@ -27031,7 +27031,7 @@ BUILDIN_FUNC(get_reputation_points){
 	}
 
 	int64 type = script_getnum64( st, 2 );
-	std::shared_ptr<s_reputation> reputation = reputation_db.find( type );
+	s_reputation* reputation = reputation_db.find( type );
 
 	if( reputation == nullptr ){
 		ShowError( "buildin_set_reputation_points: Unknown reputation type %" PRIi64 ".\n", type );
@@ -27056,7 +27056,7 @@ BUILDIN_FUNC(add_reputation_points)
 	}
 
 	int64 type = script_getnum64( st, 2 );
-	std::shared_ptr<s_reputation> reputation = reputation_db.find( type );
+	s_reputation* reputation = reputation_db.find( type );
 
 	if( reputation == nullptr ){
 		ShowError( "buildin_set_reputation_points: Unknown reputation type %" PRIi64 ".\n", type );
@@ -27092,7 +27092,7 @@ BUILDIN_FUNC(item_reform){
 	if( script_hasdata( st, 2 ) ){
 		if( script_isstring( st, 2 ) ){
 			const char* item_name = script_getstr( st, 2 );
-			std::shared_ptr<item_data> item = item_db.searchname( item_name );
+			item_data* item = item_db.searchname( item_name );
 
 			if( item == nullptr ){
 				ShowError("buildin_item_reform: Item \"%s\" does not exist.\n", item_name );
@@ -27195,7 +27195,7 @@ BUILDIN_FUNC(itemlink)
 
 BUILDIN_FUNC(mesitemlink){
 	t_itemid nameid = script_getnum( st, 2 );
-	std::shared_ptr<item_data> data = item_db.find( nameid );
+	item_data* data = item_db.find( nameid );
 	
 	if( data == nullptr ){
 		ShowError( "buildin_mesitemlink: Item ID %u does not exists.\n", nameid );

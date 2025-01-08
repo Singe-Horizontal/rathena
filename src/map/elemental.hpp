@@ -80,7 +80,7 @@ struct s_elemental_data {
 	status_change sc;
 	regen_data regen;
 
-	std::shared_ptr<s_elemental_db> db;
+	s_elemental_db* db;
 	s_elemental elemental;
 
 	int32 masterteleport_timer;

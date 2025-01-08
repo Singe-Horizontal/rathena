@@ -2986,7 +2986,7 @@ const char* map_mapid2mapname(int32 m)
 		return "";
 
 	if (mapdata->instance_id > 0) { // Instance map check
-		std::shared_ptr<s_instance_data> idata = util::umap_find(instances, map[m].instance_id);
+		s_instance_data* idata = util::umap_find(instances, map[m].instance_id);
 
 		if (!idata) // This shouldn't happen but if it does give them the map we intended to give
 			return mapdata->name;
@@ -3698,7 +3698,7 @@ void map_data_copyall (void) {
 		return;
 	for (int32 i = instance_start; i < map_num; i++) {
 		struct map_data *mapdata = &map[i];
-		std::shared_ptr<s_instance_data> idata = util::umap_find(instances, mapdata->instance_id);
+		s_instance_data* idata = util::umap_find(instances, mapdata->instance_id);
 		if (!mapdata || mapdata->name[0] == '\0' || !mapdata->instance_src_map || (idata && idata->nomapflag))
 			continue;
 		map_data_copy(mapdata, &map[mapdata->instance_src_map]);

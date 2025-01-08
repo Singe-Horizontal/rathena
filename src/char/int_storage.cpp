@@ -24,7 +24,7 @@
  * @return Max amount
  */
 int32 inter_premiumStorage_getMax(uint8 id) {
-	std::shared_ptr<s_storage_table> storage = interServerDb.find( id );
+	s_storage_table* storage = interServerDb.find( id );
 
 	if( storage != nullptr ){
 		return storage->max_num;
@@ -39,7 +39,7 @@ int32 inter_premiumStorage_getMax(uint8 id) {
  * @return Table name
  */
 const char *inter_premiumStorage_getTableName(uint8 id) {
-	std::shared_ptr<s_storage_table> storage = interServerDb.find( id );
+	s_storage_table* storage = interServerDb.find( id );
 
 	if( storage != nullptr ){
 		return storage->table;
@@ -54,7 +54,7 @@ const char *inter_premiumStorage_getTableName(uint8 id) {
  * @return printable name
  */
 const char *inter_premiumStorage_getPrintableName(uint8 id) {
-	std::shared_ptr<s_storage_table> storage = interServerDb.find( id );
+	s_storage_table* storage = interServerDb.find( id );
 
 	if( storage != nullptr ){
 		return storage->name;

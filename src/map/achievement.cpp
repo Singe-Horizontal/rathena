@@ -53,7 +53,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 		return 0;
 	}
 
-	std::shared_ptr<s_achievement_db> achievement = this->find( achievement_id );
+	std::shared_ptr<s_achievement_db> achievement = this->find_shared( achievement_id );
 	bool exists = achievement != nullptr;
 
 	if( !exists ){
@@ -111,7 +111,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 				continue;
 			}
 
-			std::shared_ptr<achievement_target> target = rathena::util::map_find( achievement->targets, targetId );
+			auto target = rathena::util::map_find_shared( achievement->targets, targetId );
 			bool targetExists = target != nullptr;
 
 			if( !targetExists ){
@@ -159,7 +159,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 					return 0;
 				}
 
-				std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( mob_name.c_str() );
+				s_mob_db* mob = mobdb_search_aegisname( mob_name.c_str() );
 
 				if (mob == nullptr) {
 					this->invalidWarning(targetNode["Mob"], "Target Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -268,7 +268,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 				return 0;
 			}
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname(item_name.c_str());
+			item_data* item = item_db.search_aegisname(item_name.c_str());
 
 			if (item == nullptr) {
 				this->invalidWarning(rewardNode["Item"], "Reward Item %s does not exist, skipping.\n", item_name.c_str());
@@ -350,7 +350,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 
 void AchievementDatabase::loadingFinished(){
 	for (const auto &achit : *this) {
-		const std::shared_ptr<s_achievement_db> ach = achit.second;
+		s_achievement_db* ach = achit.second.get();
 
 		for (auto dep = ach->dependent_ids.begin(); dep != ach->dependent_ids.end(); dep++) {
 			if (!this->exists(*dep)) {
@@ -408,7 +408,7 @@ uint64 AchievementLevelDatabase::parseBodyNode( const ryml::NodeRef& node ){
 	// Make it zero based
 	level -= 1;
 
-	std::shared_ptr<s_achievement_level> ptr = this->find( level );
+	auto ptr = this->find_shared( level );
 	bool exists = ptr != nullptr;
 
 	if( !exists ){
@@ -445,7 +445,7 @@ struct achievement *achievement_add(map_session_data *sd, int32 achievement_id)
 
 	nullpo_retr(nullptr, sd);
 
-	std::shared_ptr<s_achievement_db> adb = achievement_db.find( achievement_id );
+	s_achievement_db* adb = achievement_db.find( achievement_id );
 
 	if( adb == nullptr ){
 		ShowError( "achievement_add: Achievement %d not found in DB.\n", achievement_id );
@@ -551,7 +551,7 @@ bool achievement_check_dependent(map_session_data *sd, int32 achievement_id)
 {
 	nullpo_retr(false, sd);
 
-	std::shared_ptr<s_achievement_db> adb = achievement_db.find( achievement_id );
+	s_achievement_db* adb = achievement_db.find( achievement_id );
 
 	if( adb == nullptr ){
 		return false;
@@ -610,7 +610,7 @@ bool achievement_update_achievement(map_session_data *sd, int32 achievement_id, 
 
 	nullpo_retr(false, sd);
 
-	std::shared_ptr<s_achievement_db> adb = achievement_db.find( achievement_id );
+	s_achievement_db* adb = achievement_db.find( achievement_id );
 
 	if( adb == nullptr ){
 		return false;
@@ -664,7 +664,7 @@ void achievement_get_reward(map_session_data *sd, int32 achievement_id, time_t r
 
 	nullpo_retv(sd);
 
-	std::shared_ptr<s_achievement_db> adb = achievement_db.find( achievement_id );
+	s_achievement_db* adb = achievement_db.find( achievement_id );
 
 	if( adb == nullptr ){
 		ShowError( "achievement_reward: Inter server sent a reward claim for achievement %d not found in DB.\n", achievement_id );
@@ -705,7 +705,7 @@ void achievement_check_reward(map_session_data *sd, int32 achievement_id)
 
 	nullpo_retv(sd);
 
-	std::shared_ptr<s_achievement_db> adb = achievement_db.find( achievement_id );
+	s_achievement_db* adb = achievement_db.find( achievement_id );
 
 	if( adb == nullptr ){
 		ShowError( "achievement_reward: Trying to reward achievement %d not found in DB.\n", achievement_id );
@@ -724,7 +724,7 @@ void achievement_check_reward(map_session_data *sd, int32 achievement_id)
 		return;
 	}
 
-	if (!intif_achievement_reward(sd, adb.get())) {
+	if (!intif_achievement_reward(sd, adb)) {
 		clif_achievement_reward_ack(sd->fd, 0, achievement_id);
 	}
 }
@@ -742,7 +742,7 @@ void achievement_get_titles(uint32 char_id)
 
 		if (sd->achievement_data.count) {
 			for (int32 i = 0; i < sd->achievement_data.count; i++) {
-				std::shared_ptr<s_achievement_db> adb = achievement_db.find( sd->achievement_data.achievements[i].achievement_id );
+				s_achievement_db* adb = achievement_db.find( sd->achievement_data.achievements[i].achievement_id );
 
 				// If the achievement has a title and is complete, give it to the player
 				if( adb != nullptr && adb->rewards.title_id && sd->achievement_data.achievements[i].completed > 0 ){
@@ -822,14 +822,14 @@ int32 *achievement_level(map_session_data *sd, bool flag)
 	int32 left_score, right_score, old_level = sd->achievement_data.level;
 
 	for( sd->achievement_data.level = 0; /* Break condition's inside the loop */; sd->achievement_data.level++ ){
-		std::shared_ptr<s_achievement_level> level = achievement_level_db.find( sd->achievement_data.level );
+		s_achievement_level* level = achievement_level_db.find( sd->achievement_data.level );
 
 		if( level != nullptr && sd->achievement_data.total_score > level->points ){
-			std::shared_ptr<s_achievement_level> next_level = achievement_level_db.find( sd->achievement_data.level + 1 );
+			s_achievement_level* next_level = achievement_level_db.find( sd->achievement_data.level + 1 );
 
 			// Check if there is another level
 			if( next_level == nullptr ){
-				std::shared_ptr<s_achievement_level> level = achievement_level_db.find( sd->achievement_data.level );
+				s_achievement_level* level = achievement_level_db.find( sd->achievement_data.level );
 
 				left_score = sd->achievement_data.total_score - level->points;
 				right_score = 0;
@@ -852,7 +852,7 @@ int32 *achievement_level(map_session_data *sd, bool flag)
 			}
 			break;
 		}else{
-			std::shared_ptr<s_achievement_level> previous_level = achievement_level_db.find( sd->achievement_data.level - 1 );
+			s_achievement_level* previous_level = achievement_level_db.find( sd->achievement_data.level - 1 );
 
 			left_score = sd->achievement_data.total_score - previous_level->points;
 			right_score = level->points - previous_level->points;
@@ -912,9 +912,9 @@ bool achievement_check_condition( struct script_code* condition, map_session_dat
  * @param current_count: Current target data
  * @return True if all target values meet the requirements or false otherwise
  */
-static bool achievement_target_complete(std::shared_ptr<s_achievement_db> ad, std::array<int32, MAX_ACHIEVEMENT_OBJECTIVES> current_count) {
+static bool achievement_target_complete(s_achievement_db* ad, std::array<int32, MAX_ACHIEVEMENT_OBJECTIVES> current_count) {
 	return std::find_if(ad->targets.begin(), ad->targets.end(),
-		[current_count](const std::pair<uint16, std::shared_ptr<achievement_target>> &target) -> bool {
+		[current_count](const std::pair<uint16, std::shared_ptr<achievement_target>>& target) -> bool {
 		return current_count[target.first] < target.second->count;
 	}) == ad->targets.end();
 }
@@ -927,7 +927,7 @@ static bool achievement_target_complete(std::shared_ptr<s_achievement_db> ad, st
  * @param update_count: Objective values from event
  * @return 1 on success and false on failure
  */
-static bool achievement_update_objectives(map_session_data *sd, std::shared_ptr<struct s_achievement_db> ad, enum e_achievement_group group, const std::array<int32, MAX_ACHIEVEMENT_OBJECTIVES> &update_count)
+static bool achievement_update_objectives(map_session_data *sd, struct s_achievement_db* ad, enum e_achievement_group group, const std::array<int32, MAX_ACHIEVEMENT_OBJECTIVES> &update_count)
 {
 	if (!ad || !sd)
 		return false;
@@ -1107,7 +1107,7 @@ void achievement_update_objective(map_session_data *sd, enum e_achievement_group
 		va_end(ap);
 
 		for (auto &ach : achievement_db)
-			achievement_update_objectives(sd, ach.second, group, count);
+			achievement_update_objectives(sd, ach.second.get(), group, count);
 
 		// Remove variables that might have been set
 		for (int32 i = 0; i < arg_count; i++){

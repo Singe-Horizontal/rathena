@@ -130,7 +130,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 	uint16 group_id = static_cast<uint16>( constant );
 
-	std::shared_ptr<s_refine_info> info = this->find( group_id );
+	std::shared_ptr<s_refine_info> info = this->find_shared( group_id );
 	bool exists = info != nullptr;
 
 	if( !exists ){
@@ -146,7 +146,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_refine_levels_info> levels_info = util::umap_find( info->levels, level );
+			auto levels_info = util::umap_find_shared( info->levels, level );
 			bool levels_exists = levels_info != nullptr;
 
 			if( !levels_exists ){
@@ -171,7 +171,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					// Database is 1 based, code is 0 based
 					refine_level -= 1;
 
-					std::shared_ptr<s_refine_level_info> level_info = util::umap_find( levels_info->levels, refine_level );
+					auto level_info = util::umap_find_shared( levels_info->levels, refine_level );
 					bool level_exists = level_info != nullptr;
 
 					if( !level_exists ){
@@ -275,7 +275,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 							uint16 index = (uint16)constant;
 
-							std::shared_ptr<s_refine_cost> cost = util::umap_find( level_info->costs, index );
+							std::shared_ptr<s_refine_cost> cost = util::umap_find_shared( level_info->costs, index );
 							bool cost_exists = cost != nullptr;
 
 							if( !cost_exists ){
@@ -323,7 +323,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 									return 0;
 								}
 
-								std::shared_ptr<item_data> id = item_db.search_aegisname( item_name.c_str() );
+								item_data* id = item_db.search_aegisname( item_name.c_str() );
 
 								if( id == nullptr ){
 									this->invalidWarning( chanceNode["Material"], "Unknown refine material %s, skipping.\n", item_name.c_str() );
@@ -395,7 +395,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 	return 1;
 }
 
-std::shared_ptr<s_refine_level_info> RefineDatabase::findLevelInfoSub( const struct item_data& data, struct item& item, uint16 refine ){
+s_refine_level_info* RefineDatabase::findLevelInfoSub( const struct item_data& data, struct item& item, uint16 refine ){
 	// Check if the item can be refined
 	if( data.flag.no_refine ){
 		return nullptr;
@@ -413,13 +413,13 @@ std::shared_ptr<s_refine_level_info> RefineDatabase::findLevelInfoSub( const str
 		return nullptr;
 	}
 
-	std::shared_ptr<s_refine_info> info = this->find( type );
+	auto info = this->find_shared( type );
 
 	if( info == nullptr ){
 		return nullptr;
 	}
 
-	std::shared_ptr<s_refine_levels_info> levels_info = util::umap_find( info->levels, level );
+	s_refine_levels_info* levels_info = util::umap_find( info->levels, level );
 
 	if( levels_info == nullptr ){
 		return nullptr;
@@ -428,7 +428,7 @@ std::shared_ptr<s_refine_level_info> RefineDatabase::findLevelInfoSub( const str
 	return util::umap_find( levels_info->levels, refine );
 }
 
-std::shared_ptr<s_refine_level_info> RefineDatabase::findLevelInfo( const struct item_data& data, struct item& item ){
+s_refine_level_info* RefineDatabase::findLevelInfo( const struct item_data& data, struct item& item ){
 	// Check the current refine level
 	if( item.refine >= MAX_REFINE ){
 		return nullptr;
@@ -437,7 +437,7 @@ std::shared_ptr<s_refine_level_info> RefineDatabase::findLevelInfo( const struct
 	return this->findLevelInfoSub( data, item, item.refine );
 }
 
-std::shared_ptr<s_refine_level_info> RefineDatabase::findCurrentLevelInfo( const struct item_data& data, struct item& item ){
+s_refine_level_info* RefineDatabase::findCurrentLevelInfo( const struct item_data& data, struct item& item ){
 	if( item.refine > 0 ){
 		return this->findLevelInfoSub( data, item, item.refine - 1 );
 	}else{
@@ -501,7 +501,7 @@ uint64 SizeFixDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	}
 
 	int32 weapon_id = static_cast<int>(constant);
-	std::shared_ptr<s_sizefix_db> size = this->find(weapon_id);
+	std::shared_ptr<s_sizefix_db> size = this->find_shared(weapon_id);
 	bool exists = size != nullptr;
 
 	if (!exists)
@@ -600,7 +600,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_enchantgrade> enchantgrade = this->find( itemtype );
+	auto enchantgrade = this->find_shared( itemtype );
 	bool exists = enchantgrade != nullptr;
 
 	if( !exists ){
@@ -645,7 +645,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 			e_enchantgrade gradeLevel = (e_enchantgrade)constant_value;
 
-			std::shared_ptr<s_enchantgradelevel> grade = util::map_find( grades, gradeLevel );
+			auto grade = util::map_find_shared( grades, gradeLevel );
 			bool gradeExists = grade != nullptr;
 
 			if( !gradeExists ){
@@ -746,7 +746,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> id = item_db.search_aegisname( itemName.c_str() );
+					item_data* id = item_db.search_aegisname( itemName.c_str() );
 
 					if( id == nullptr ){
 						this->invalidWarning( catalystNode["Item"], "Unknown item \"%s\".\n", itemName.c_str() );
@@ -818,7 +818,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<s_enchantgradeoption> option = util::map_find( grade->options, optionIndex );
+					auto option = util::map_find_shared( grade->options, optionIndex );
 					bool optionExists = option != nullptr;
 
 					if( !optionExists ){
@@ -861,7 +861,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 							return 0;
 						}
 
-						std::shared_ptr<item_data> id = item_db.search_aegisname( itemName.c_str() );
+						item_data* id = item_db.search_aegisname( itemName.c_str() );
 
 						if( id == nullptr ){
 							this->invalidWarning( optionNode["Item"], "Unknown item \"%s\".\n", itemName.c_str() );
@@ -941,8 +941,8 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 	return 1;
 }
 
-std::shared_ptr<s_enchantgradelevel> EnchantgradeDatabase::findCurrentLevelInfo( const struct item_data& data, struct item& item ){
-	std::shared_ptr<s_enchantgrade> enchantgrade = enchantgrade_db.find( data.type );
+s_enchantgradelevel* EnchantgradeDatabase::findCurrentLevelInfo( const struct item_data& data, struct item& item ){
+	s_enchantgrade* enchantgrade = enchantgrade_db.find( data.type );
 
 	// Unsupported item type - no answer
 	if( enchantgrade == nullptr ){
@@ -971,7 +971,7 @@ void EnchantgradeDatabase::loadingFinished(){
 	for( const auto& it_itemTypes : *this ){
 		for( const auto& it_itemLevels : it_itemTypes.second->levels ){
 			for( const auto& it_enchantgrades : it_itemLevels.second ){
-				std::shared_ptr<s_enchantgradelevel> enchantgradelevel = it_enchantgrades.second;
+				s_enchantgradelevel* enchantgradelevel = it_enchantgrades.second.get();
 
 				if( enchantgradelevel->catalyst.amountPerStep == 0 ){
 					enchantgradelevel->catalyst.item = 0;
@@ -993,7 +993,7 @@ EnchantgradeDatabase enchantgrade_db;
  * @return EFST ID
  **/
 efst_type StatusDatabase::getIcon(sc_type type) {
-	std::shared_ptr<s_status_change_db> status = status_db.find(type);
+	s_status_change_db* status = status_db.find(type);
 
 	return status ? status->icon : EFST_BLANK;
 }
@@ -1004,7 +1004,7 @@ efst_type StatusDatabase::getIcon(sc_type type) {
  * @return cal_flag: Calc value 
  **/
 std::bitset<SCB_MAX> StatusDatabase::getCalcFlag(sc_type type) {
-	std::shared_ptr<s_status_change_db> status = status_db.find(type);
+	s_status_change_db* status = status_db.find(type);
 
 	return status ? status->calc_flag : std::bitset<SCB_MAX> {};
 }
@@ -1015,7 +1015,7 @@ std::bitset<SCB_MAX> StatusDatabase::getCalcFlag(sc_type type) {
  * @return End list
  **/
 std::vector<sc_type> StatusDatabase::getEndOnStart(sc_type type) {
-	std::shared_ptr<s_status_change_db> status = status_db.find(type);
+	s_status_change_db* status = status_db.find(type);
 
 	return status ? status->endonstart : std::vector<sc_type> {};
 }
@@ -1038,7 +1038,7 @@ uint16 status_efst_get_bl_type(enum efst_type efst) {
  * @return A skill associated with the status
  **/
 uint16 StatusDatabase::getSkill(sc_type type) {
-	std::shared_ptr<s_status_change_db> status = status_db.find(type);
+	s_status_change_db* status = status_db.find(type);
 
 	return status ? status->skill_id : 0;
 }
@@ -1054,7 +1054,7 @@ bool StatusDatabase::hasSCF(status_change *sc, e_status_change_flag flag) {
 		return false;
 
 	for (const auto &status_it : *this) {
-		std::shared_ptr<s_status_change_db> status = status_it.second;
+		s_status_change_db* status = status_it.second.get();
 
 		if (sc->getSCE(status->type) && status->flag[flag])
 			return true;
@@ -1087,7 +1087,7 @@ void StatusDatabase::changeSkillTree(map_session_data *sd, int32 class_) {
 	if (sd == nullptr)
 		return;
 
-	std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(class_ > 0 ? class_ : sd->status.class_);
+	s_skill_tree* tree = skill_tree_db.find(class_ > 0 ? class_ : sd->status.class_);
 
 	if (tree == nullptr)
 		return;
@@ -1128,7 +1128,7 @@ void StatusDatabase::removeByStatusFlag(block_list *bl, std::vector<e_status_cha
 		return;
 
 	for (const auto &status_it : *this) {
-		std::shared_ptr<s_status_change_db> status = status_it.second;
+		s_status_change_db* status = status_it.second.get();
 		sc_type type = status->type;
 
 		if (sc->getSCE(type)) {
@@ -1527,7 +1527,7 @@ int32 status_damage(struct block_list *src,struct block_list *target,int64 dhp, 
 			}
 #ifndef RENEWAL
 			if ((sce=sc->getSCE(SC_GRAVITATION)) && sce->val3 == BCT_SELF) {
-				std::shared_ptr<s_skill_unit_group> sg = skill_id2group(sce->val4);
+				s_skill_unit_group* sg = skill_id2group(sce->val4);
 
 				if (sg) {
 					skill_delunitgroup(sg);
@@ -1712,7 +1712,7 @@ int32 status_damage(struct block_list *src,struct block_list *target,int64 dhp, 
 	if(target->type == BL_PC) {
 		TBL_PC *sd = BL_CAST(BL_PC,target);
 		if( sd->bg_id ) {
-			std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, sd->bg_id);
+			s_battleground_data* bg = util::umap_find(bg_team_db, sd->bg_id);
 
 			if( bg && !(bg->die_event.empty()) )
 				npc_event(sd, bg->die_event.c_str(), 0);
@@ -2099,7 +2099,7 @@ bool status_check_skilluse(struct block_list *src, struct block_list *target, ui
 		}
 
 		if (sc->getSCE(SC_DANCING) && flag!=2) {
-			std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+			s_skill_db* skill = skill_db.find(skill_id);
 
 			if (!skill)
 				return false;
@@ -2301,7 +2301,7 @@ int32 status_check_visibility(struct block_list *src, struct block_list *target)
  */
 int32 status_base_amotion_pc(map_session_data* sd, struct status_data* status)
 {
-	std::shared_ptr<s_job_info> job = job_db.find(sd->status.class_);
+	s_job_info* job = job_db.find(sd->status.class_);
 
 	if (job == nullptr)
 		return 2000;
@@ -2842,7 +2842,7 @@ int32 status_calc_mob_(struct mob_data* md, uint8 opt)
 
 	if(flag&4) { // Strengthen Guardians - custom value +10% / lv
 		struct map_data *mapdata = map_getmapdata(md->bl.m);
-		std::shared_ptr<guild_castle> gc = castle_db.mapname2gc(mapdata->name);
+		guild_castle* gc = castle_db.mapname2gc(mapdata->name);
 
 		if (gc == nullptr)
 			ShowError("status_calc_mob: No castle set at map %s\n", mapdata->name);
@@ -3466,7 +3466,7 @@ static uint32 status_calc_maxhpsp_pc(map_session_data* sd, uint32 stat, bool isH
 
 	double dmax = 0;
 	uint32 level = umax(sd->status.base_level,1);
-	std::shared_ptr<s_job_info> job = job_db.find(pc_mapid2jobid(sd->class_, sd->status.sex));
+	s_job_info* job = job_db.find(pc_mapid2jobid(sd->class_, sd->status.sex));
 
 	if (job == nullptr)
 		return 1;
@@ -3806,9 +3806,9 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 		if (sd->inventory.u.items_inventory[index].refine > MAX_REFINE)
 			sd->inventory.u.items_inventory[index].refine = MAX_REFINE;
 
-		std::shared_ptr<s_refine_level_info> info = refine_db.findCurrentLevelInfo( *sd->inventory_data[index], sd->inventory.u.items_inventory[index] );
+		s_refine_level_info* info = refine_db.findCurrentLevelInfo( *sd->inventory_data[index], sd->inventory.u.items_inventory[index] );
 #ifdef RENEWAL
-		std::shared_ptr<s_enchantgradelevel> enchantgrade_info = nullptr;
+		s_enchantgradelevel* enchantgrade_info = nullptr;
 
 		if( sd->inventory.u.items_inventory[index].enchantgrade > 0 ){
 			enchantgrade_info = enchantgrade_db.findCurrentLevelInfo( *sd->inventory_data[index], sd->inventory.u.items_inventory[index] );
@@ -3933,7 +3933,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 	// Process and check item combos
 	if (!sd->combos.empty()) {
 		for (const auto &combo : sd->combos) {
-			std::shared_ptr<s_item_combo> item_combo;
+			s_item_combo* item_combo;
 
 			current_equip_item_index = -1;
 			current_equip_combo_pos = combo->pos;
@@ -3946,10 +3946,10 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 
 			// Check combo items
 			while (j < item_combo->nameid.size()) {
-				std::shared_ptr<item_data> id = item_db.find(item_combo->nameid[j]);
+				item_data* id = item_db.find(item_combo->nameid[j]);
 
 				// Don't run the script if at least one of combo's pair has restriction
-				if (id && !pc_has_permission(sd, PC_PERM_USE_ALL_EQUIPMENT) && itemdb_isNoEquip(id.get(), sd->bl.m)) {
+				if (id && !pc_has_permission(sd, PC_PERM_USE_ALL_EQUIPMENT) && itemdb_isNoEquip(id, sd->bl.m)) {
 					no_run = true;
 					break;
 				}
@@ -3996,18 +3996,18 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 				if(!c)
 					continue;
 
-				std::shared_ptr<item_data> data = item_db.find(c);
+				item_data* data = item_db.find(c);
 
 				if(!data)
 					continue;
-				if (opt&SCO_FIRST && data->equip_script && (pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) || !itemdb_isNoEquip(data.get(), sd->bl.m))) {// Execute equip-script on login
+				if (opt&SCO_FIRST && data->equip_script && (pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) || !itemdb_isNoEquip(data, sd->bl.m))) {// Execute equip-script on login
 					run_script(data->equip_script,0,sd->bl.id,0);
 					if (!calculating)
 						return 1;
 				}
 				if(!data->script)
 					continue;
-				if(!pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) && itemdb_isNoEquip(data.get(), sd->bl.m)) // Card restriction checks.
+				if(!pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) && itemdb_isNoEquip(data, sd->bl.m)) // Card restriction checks.
 					continue;
 				if(i == EQI_HAND_L && sd->inventory.u.items_inventory[index].equip == EQP_HAND_L) { // Left hand status.
 					sd->state.lr_flag = LR_FLAG_WEAPON;
@@ -4043,7 +4043,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 					continue;
 				current_equip_opt_index = j;
 
-				std::shared_ptr<s_random_opt_data> data = random_option_db.find(opt_id);
+				s_random_opt_data* data = random_option_db.find(opt_id);
 
 				if (!data || !data->script)
 					continue;
@@ -4065,7 +4065,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 
 	if (!sc->empty()){
 		if( status_change_entry* sce = sc->getSCE(SC_ITEMSCRIPT); sce != nullptr ){
-			std::shared_ptr<item_data> data = item_db.find(sc->getSCE(SC_ITEMSCRIPT)->val1);
+			item_data* data = item_db.find(sc->getSCE(SC_ITEMSCRIPT)->val1);
 
 			if (data && data->script)
 				run_script(data->script, 0, sd->bl.id, 0);
@@ -4073,7 +4073,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 
 		for( sc_type type = SC_NONE; type < SC_MAX; type = static_cast<sc_type>( type + 1 ) ){
 			if( status_change_entry* sce = sc->getSCE( type ); sce != nullptr ){
-				if( std::shared_ptr<s_status_change_db> scdb = status_db.find( type ); scdb != nullptr && scdb->script != nullptr ){
+				if( s_status_change_db* scdb = status_db.find( type ); scdb != nullptr && scdb->script != nullptr ){
 					run_script( scdb->script, 0, sd->bl.id, 0 );
 				}
 			}
@@ -4084,7 +4084,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 
 	if( sd->pd ) { // Pet Bonus
 		struct pet_data *pd = sd->pd;
-		std::shared_ptr<s_pet_db> pet_db_ptr = pd->get_pet_db();
+		s_pet_db* pet_db_ptr = pd->get_pet_db();
 
 		if (pet_db_ptr != nullptr && pet_db_ptr->pet_bonus_script)
 			run_script(pet_db_ptr->pet_bonus_script,0,sd->bl.id,0);
@@ -4103,13 +4103,13 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 	sd->bonus.splash_range += sd->bonus.splash_add_range;
 
 	// Damage modifiers from weapon type
-	if( std::shared_ptr<s_sizefix_db> right_weapon = size_fix_db.find(sd->weapontype1); right_weapon != nullptr ){
+	if( s_sizefix_db* right_weapon = size_fix_db.find(sd->weapontype1); right_weapon != nullptr ){
 		sd->right_weapon.atkmods[SZ_SMALL] = right_weapon->small;
 		sd->right_weapon.atkmods[SZ_MEDIUM] = right_weapon->medium;
 		sd->right_weapon.atkmods[SZ_BIG] = right_weapon->large;
 	}
 
-	if( std::shared_ptr<s_sizefix_db> left_weapon = size_fix_db.find(sd->weapontype2); left_weapon != nullptr ){
+	if( s_sizefix_db* left_weapon = size_fix_db.find(sd->weapontype2); left_weapon != nullptr ){
 		sd->left_weapon.atkmods[SZ_SMALL] = left_weapon->small;
 		sd->left_weapon.atkmods[SZ_MEDIUM] = left_weapon->medium;
 		sd->left_weapon.atkmods[SZ_BIG] = left_weapon->large;
@@ -4126,7 +4126,7 @@ int32 status_calc_pc_sub(map_session_data* sd, uint8 opt)
 // ----- STATS CALCULATION -----
 
 	// Job bonuses
-	std::shared_ptr<s_job_info> job_info = job_db.find( pc_mapid2jobid( sd->class_, sd->status.sex ) );
+	s_job_info* job_info = job_db.find( pc_mapid2jobid( sd->class_, sd->status.sex ) );
 
 	if( job_info != nullptr ){
 		const auto& bonus = job_info->job_bonus[sd->status.job_level-1];
@@ -4933,7 +4933,7 @@ int32 status_calc_homunculus_(struct homun_data *hd, uint8 opt)
 	APPLY_HOMUN_LEVEL_STATWEIGHT();
 
 	if (opt&SCO_FIRST) {
-		const std::shared_ptr<s_homunculus_db> db = hd->homunculusDB;
+		const s_homunculus_db* db = hd->homunculusDB;
 
 		status->def_ele = db->element;
 		status->ele_lv = 1;
@@ -9277,7 +9277,7 @@ t_tick status_get_sc_def(struct block_list *src, struct block_list *bl, enum sc_
 
 	// Skills (magic type) that are blocked by Golden Thief Bug card or Wand of Hermod
 	if (status_isimmune(bl)) {
-		std::shared_ptr<s_skill_db> skill = skill_db.find(battle_getcurrentskill(src));
+		s_skill_db* skill = skill_db.find(battle_getcurrentskill(src));
 
 		if (skill == nullptr) // Check for ground-type skills using the status when a player moves through units
 			skill = skill_db.find(status_db.getSkill(type));
@@ -9584,7 +9584,7 @@ t_tick status_get_sc_def(struct block_list *src, struct block_list *bl, enum sc_
 		if(rate > 0 && rate%10 != 0) rate += (10 - rate%10);
 	}
 
-	std::shared_ptr<s_status_change_db> scdb = status_db.find(type);
+	s_status_change_db* scdb = status_db.find(type);
 
 	// Cap minimum rate
 	rate = max(rate, scdb->min_rate);
@@ -9766,7 +9766,7 @@ int32 status_change_start(struct block_list* src, struct block_list* bl,enum sc_
 	struct view_data *vd;
 	int32 undead_flag, tick_time = 0;
 	bool sc_isnew = true;
-	std::shared_ptr<s_status_change_db> scdb = status_db.find(type);
+	s_status_change_db* scdb = status_db.find(type);
 
 	nullpo_ret(bl);
 	sc = status_get_sc(bl);
@@ -12968,7 +12968,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 	status_change *sc;
 	struct status_change_entry *sce;
 	struct view_data *vd;
-	std::shared_ptr<s_status_change_db> scdb = status_db.find(type);
+	s_status_change_db* scdb = status_db.find(type);
 
 	nullpo_ret(bl);
 
@@ -12988,7 +12988,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 			return 0;
 		if (type == SC_SPIDERWEB) {
 			//Delete the unit group first to expire found in the status change
-			std::shared_ptr<s_skill_unit_group> group, group2;
+			s_skill_unit_group *group, *group2;
 			t_tick tick = gettick();
 			int32 pos = 1;
 			if (sce->val2)
@@ -13165,7 +13165,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 				}
 
 				if(sce->val2) { // Erase associated land skill
-					std::shared_ptr<s_skill_unit_group> group = skill_id2group(sce->val2);
+					s_skill_unit_group* group = skill_id2group(sce->val2);
 
 					sce->val2 = 0;
 					if (group)
@@ -13250,7 +13250,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 			break;
 		case SC_GOSPEL:
 			if (sce->val3) { // Clear the group.
-				std::shared_ptr<s_skill_unit_group> group = skill_id2group(sce->val3);
+				s_skill_unit_group* group = skill_id2group(sce->val3);
 
 				sce->val3 = 0;
 				if (group)
@@ -13264,7 +13264,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 			break;
 		case SC_BASILICA: // Clear the skill area. [Skotlex]
 				if (sce->val3 && sce->val4 == bl->id) {
-					std::shared_ptr<s_skill_unit_group> group = skill_id2group(sce->val3);
+					s_skill_unit_group* group = skill_id2group(sce->val3);
 
 					sce->val3 = 0;
 					if (group)
@@ -13283,7 +13283,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 		case SC_SOULCOLD:
 		case SC_HAWKEYES:
 			if (sce->val4) { // Clear the group.
-				std::shared_ptr<s_skill_unit_group> group = skill_id2group(sce->val4);
+				s_skill_unit_group* group = skill_id2group(sce->val4);
 
 				sce->val4 = 0;
 				if( group ) // Might have been cleared before status ended, e.g. land protector
@@ -13367,7 +13367,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 		case SC_NEUTRALBARRIER_MASTER:
 		case SC_STEALTHFIELD_MASTER:
 			if( sce->val2 ) {
-				std::shared_ptr<s_skill_unit_group> group = skill_id2group(sce->val2);
+				s_skill_unit_group* group = skill_id2group(sce->val2);
 
 				sce->val2 = 0;
 				if( group ) // Might have been cleared before status ended, e.g. land protector
@@ -13470,7 +13470,7 @@ int32 status_change_end(struct block_list* bl, enum sc_type type, int32 tid)
 				if (status_isdead(*bl) || !(caster = map_id2sd(sce->val2)))
 					break;
 
-				std::shared_ptr<s_skill_db> skill = skill_db.find(RL_H_MINE);
+				s_skill_db* skill = skill_db.find(RL_H_MINE);
 
 				if (!item_db.exists(skill->require.itemid[0]))
 					break;
@@ -15366,7 +15366,7 @@ uint64 StatusDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	}
 
 	int32 status_id = static_cast<int32>(constant);
-	std::shared_ptr<s_status_change_db> status = this->find(status_id);
+	std::shared_ptr<s_status_change_db> status = this->find_shared(status_id);
 	bool exists = status != nullptr;
 
 	if (!exists) {

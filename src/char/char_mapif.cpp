@@ -369,14 +369,14 @@ int32 chmapif_parse_regmapuser(int32 fd, int32 id){
 
 		// Set all chars from this server as 'unknown'
 		for( const auto& pair : char_get_onlinedb() ){
-			char_db_setoffline( pair.second, id );
+			char_db_setoffline( pair.second.get(), id );
 		}
 
 		for( int32 i = 0; i < map_server[id].users; i++ ){
 			uint32 aid = RFIFOL(fd,6+i*8);
 			uint32 cid = RFIFOL(fd,6+i*8+4);
 
-			std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), aid );
+			auto character = util::umap_find_shared( char_get_onlinedb(), aid );
 
 			if( character != nullptr ){
 				if( character->server > -1 && character->server != id ){
@@ -419,7 +419,7 @@ int32 chmapif_parse_reqsavechar(int32 fd, int32 id){
 			return 1;
 		}
 
-		std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), aid );
+		struct online_char_data* character = util::umap_find( char_get_onlinedb(), aid );
 
 		//Check account only if this ain't final save. Final-save goes through because of the char-map reconnect
 		if( RFIFOB( fd, 12 ) || RFIFOB( fd, 13 ) || ( character != nullptr && character->char_id == cid ) ){
@@ -478,7 +478,7 @@ int32 chmapif_parse_authok(int32 fd){
 			chmapif_charselres(fd,account_id,0);
 		}else{
 			// create temporary auth entry
-			std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
+			auto node = std::make_shared<struct auth_node>();
 
 			node->account_id = account_id;
 			node->char_id = 0;
@@ -494,7 +494,7 @@ int32 chmapif_parse_authok(int32 fd){
 			//Set char to "@ char select" in online db [Kevin]
 			char_set_charselect(account_id);
 			
-			std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), account_id );
+			struct online_char_data* character = util::umap_find( char_get_onlinedb(), account_id );
 
 			if( character != nullptr ){
 				character->pincode_success = true;
@@ -623,7 +623,7 @@ int32 chmapif_parse_reqchangemapserv(int32 fd){
 		uint32 char_id = RFIFOL( fd, 14 );
 
 		// Char should just had been saved before this packet, so this should be safe. [Skotlex]
-		std::shared_ptr<struct mmo_charstatus> char_data = util::umap_find( char_get_chardb(), char_id );
+		struct mmo_charstatus* char_data = util::umap_find( char_get_chardb(), char_id );
 
 		// Really shouldn't happen.
 		if( char_data == nullptr ){
@@ -644,7 +644,7 @@ int32 chmapif_parse_reqchangemapserv(int32 fd){
 			char_data->sex = RFIFOB( fd, offset + 10 );
 
 			// create temporary auth entry
-			std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
+			auto node = std::make_shared<struct auth_node>();
 
 			node->account_id = aid;
 			node->char_id = char_id;
@@ -658,7 +658,7 @@ int32 chmapif_parse_reqchangemapserv(int32 fd){
 
 			char_get_authdb()[node->account_id] = node;
 
-			std::shared_ptr<struct online_char_data> data = util::umap_find( char_get_onlinedb(), aid );
+			auto data = util::umap_find_shared( char_get_onlinedb(), aid );
 
 			if( data == nullptr ){
 				data = std::make_shared<struct online_char_data>( aid );
@@ -1023,8 +1023,8 @@ int32 chmapif_parse_reqauth(int32 fd, int32 id){
 		autotrade  = RFIFOB(fd,19) != 0;
 		RFIFOSKIP(fd,20);
 
-		std::shared_ptr<struct auth_node> node = util::umap_find( char_get_authdb(), account_id );
-		std::shared_ptr<struct mmo_charstatus> cd = util::umap_find( char_get_chardb(), char_id );
+		struct auth_node* node = util::umap_find( char_get_authdb(), account_id );
+		struct mmo_charstatus* cd = util::umap_find( char_get_chardb(), char_id );
 
 		if( cd == nullptr ){
 			// Really shouldn't happen. (or autotrade)
@@ -1044,7 +1044,7 @@ int32 chmapif_parse_reqauth(int32 fd, int32 id){
 			WFIFOL(fd,16) = 0;
 			WFIFOL(fd,20) = 0;
 			WFIFOB(fd,24) = 0;
-			memcpy( WFIFOP( fd, 25 ), cd.get(), sizeof(struct mmo_charstatus));
+			memcpy( WFIFOP( fd, 25 ), cd, sizeof(struct mmo_charstatus));
 			WFIFOSET(fd, WFIFOW(fd,2));
 
 			char_set_char_online(id, char_id, account_id);
@@ -1071,7 +1071,7 @@ int32 chmapif_parse_reqauth(int32 fd, int32 id){
 			WFIFOL(fd,16) = (uint32)node->expiration_time; // FIXME: will wrap to negative after "19-Jan-2038, 03:14:07 AM GMT"
 			WFIFOL(fd,20) = node->group_id;
 			WFIFOB(fd,24) = node->changing_mapservers;
-			memcpy( WFIFOP( fd, 25 ), cd.get(), sizeof( struct mmo_charstatus ) );
+			memcpy( WFIFOP( fd, 25 ), cd, sizeof( struct mmo_charstatus ) );
 			WFIFOSET(fd, WFIFOW(fd,2));
 
 			// only use the auth once and mark user online
@@ -1525,7 +1525,7 @@ void chmapif_server_reset(int32 id){
 
 	// Tag relevant chars as 'in disconnected' server.
 	for( const auto& pair : char_get_onlinedb() ){
-		char_db_setoffline( pair.second, id );
+		char_db_setoffline( pair.second.get(), id );
 	}
 
 	chmapif_server_destroy(id);

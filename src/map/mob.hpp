@@ -325,7 +325,7 @@ struct mob_data {
 	bool vd_changed;
 	struct status_data status, *base_status; //Second one is in case of leveling up mobs, or tiny/large mobs.
 	status_change sc;
-	std::shared_ptr<s_mob_db> db;	//For quick data access (saves doing mob_db(md->mob_id) all the time) [Skotlex]
+	s_mob_db* db;	//For quick data access (saves doing mob_db(md->mob_id) all the time) [Skotlex]
 	char name[NAME_LENGTH];
 	struct s_specialState {
 		uint32 size : 2; //Small/Big monsters.
@@ -486,7 +486,7 @@ struct s_item_drop_list{
 };
 
 uint16 mobdb_searchname(const char * const str);
-std::shared_ptr<s_mob_db> mobdb_search_aegisname( const char* str );
+s_mob_db* mobdb_search_aegisname( const char* str );
 uint16 mobdb_searchname_array(const char *str, uint16 * out, uint16 size);
 int32 mobdb_checkid(const int32 id);
 struct view_data* mob_get_viewdata(int32 mob_id);
@@ -557,7 +557,7 @@ void mob_add_spawn(uint16 mob_id, const struct spawn_info& new_spawn);
 const std::vector<spawn_info> mob_get_spawns(uint16 mob_id);
 bool mob_has_spawn(uint16 mob_id);
 
-int32 mob_getdroprate(struct block_list *src, std::shared_ptr<s_mob_db> mob, int32 base_rate, int32 drop_modifier, mob_data* md = nullptr);
+int32 mob_getdroprate(struct block_list *src, s_mob_db* mob, int32 base_rate, int32 drop_modifier, mob_data* md = nullptr);
 
 // MvP Tomb System
 int32 mvptomb_setdelayspawn(struct npc_data *nd);

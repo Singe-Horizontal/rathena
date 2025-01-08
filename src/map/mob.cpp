@@ -262,7 +262,7 @@ void mvptomb_destroy(struct mob_data *md) {
 */
 static bool mobdb_searchname_sub(uint16 mob_id, const char * const str, bool full_cmp)
 {
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	s_mob_db* mob = mob_db.find(mob_id);
 
 	if (mob == nullptr)
 		return false;
@@ -306,10 +306,10 @@ uint16 mobdb_searchname(const char * const str)
 	return mobdb_searchname_(str, true);
 }
 
-std::shared_ptr<s_mob_db> mobdb_search_aegisname( const char* str ){
+s_mob_db* mobdb_search_aegisname( const char* str ){
 	for( auto &mobdb_pair : mob_db ){
 		if( strcmpi( str, mobdb_pair.second->sprite.c_str() ) == 0 ){
-			return mobdb_pair.second;
+			return mobdb_pair.second.get();
 		}
 	}
 
@@ -367,7 +367,7 @@ int32 mobdb_checkid(const int32 id)
  *------------------------------------------*/
 struct view_data * mob_get_viewdata(int32 mob_id)
 {
-	std::shared_ptr<s_mob_db> db = mob_db.find(mob_id);
+	s_mob_db* db = mob_db.find(mob_id);
 
 	if (db == nullptr)
 		return nullptr;
@@ -507,7 +507,7 @@ struct mob_data* mob_spawn_dataset(struct spawn_data *data)
  *------------------------------------------*/
 int32 mob_get_random_id(int32 type, enum e_random_monster_flags flag, int32 lv)
 {
-	std::shared_ptr<s_randomsummon_group> summon = mob_summon_db.find(type);
+	s_randomsummon_group* summon = mob_summon_db.find(type);
 
 	if (type == MOBG_BLOODY_DEAD_BRANCH && flag&RMF_MOB_NOT_BOSS)
 		flag = static_cast<e_random_monster_flags>(flag&~RMF_MOB_NOT_BOSS);
@@ -522,8 +522,8 @@ int32 mob_get_random_id(int32 type, enum e_random_monster_flags flag, int32 lv)
 	}
 
 	for( size_t i = 0, max = summon->list.size() * 3; i < max; i++ ){
-		std::shared_ptr<s_randomsummon_entry> entry = util::umap_random( summon->list );
-		std::shared_ptr<s_mob_db> mob = mob_db.find( entry->mob_id );
+		s_randomsummon_entry* entry = util::umap_random( summon->list );
+		s_mob_db* mob = mob_db.find( entry->mob_id );
 
 		if(mob == nullptr ||
 			mob_is_clone( entry->mob_id ) ||
@@ -698,7 +698,7 @@ int32 mob_once_spawn(map_session_data* sd, int16 m, int16 x, int16 y, const char
 
 		if (mob_id == MOBID_EMPERIUM)
 		{
-			std::shared_ptr<guild_castle> gc = castle_db.mapindex2gc(map_getmapdata(m)->index);
+			guild_castle* gc = castle_db.mapindex2gc(map_getmapdata(m)->index);
 			auto g = (gc) ? guild_search(gc->guild_id) : nullptr;
 			if (gc)
 			{
@@ -838,7 +838,7 @@ int32 mob_spawn_guardian(const char* mapname, int16 x, int16 y, const char* mobn
 {
 	struct mob_data *md=nullptr;
 	struct spawn_data data;
-	std::shared_ptr<MapGuild> g = nullptr;
+	MapGuild* g = nullptr;
 	int16 m;
 	memset(&data, 0, sizeof(struct spawn_data)); //fixme
 	data.num = 1;
@@ -882,7 +882,7 @@ int32 mob_spawn_guardian(const char* mapname, int16 x, int16 y, const char* mobn
 	if (!mob_parse_dataset(&data))
 		return 0;
 
-	std::shared_ptr<guild_castle> gc = castle_db.mapname2gc(mapname);
+	guild_castle* gc = castle_db.mapname2gc(mapname);
 	if (gc == nullptr)
 	{
 		ShowError("mob_spawn_guardian: No castle set at map %s\n", mapname);
@@ -1074,7 +1074,7 @@ int32 mob_setdelayspawn(struct mob_data *md)
 		spawntime+= rnd()%md->spawn->delay2;
 
 	//Apply the spawn delay fix [Skotlex]
-	std::shared_ptr<s_mob_db> db = mob_db.find(md->spawn->id);
+	s_mob_db* db = mob_db.find(md->spawn->id);
 
 	if (status_has_mode(&db->status,MD_STATUSIMMUNE)) { // Status Immune
 		if (battle_config.boss_spawn_delay != 100) {
@@ -2213,7 +2213,7 @@ static TIMER_FUNC(mob_ai_hard){
  * @author [Cydh]
  **/
 void mob_setdropitem_option( item& item, s_mob_drop& mobdrop ){
-	std::shared_ptr<s_random_opt_group> group = random_option_group.find( mobdrop.randomopt_group );
+	s_random_opt_group* group = random_option_group.find( mobdrop.randomopt_group );
 
 	if (group != nullptr) {
 		group->apply( item );
@@ -2223,8 +2223,8 @@ void mob_setdropitem_option( item& item, s_mob_drop& mobdrop ){
 /*==========================================
  * Initializes the delay drop structure for mob-dropped items.
  *------------------------------------------*/
-static std::shared_ptr<s_item_drop> mob_setdropitem( s_mob_drop& mobdrop, int32 qty, unsigned short mob_id ){
-	std::shared_ptr<s_item_drop> drop = std::make_shared<s_item_drop>();
+static std::shared_ptr<s_item_drop> mob_setdropitem(s_mob_drop& mobdrop, int32 qty, unsigned short mob_id ){
+	auto drop = std::make_shared<s_item_drop>();
 
 	drop->item_data = { 0 };
 	drop->item_data.nameid = mobdrop.nameid;
@@ -2240,7 +2240,7 @@ static std::shared_ptr<s_item_drop> mob_setdropitem( s_mob_drop& mobdrop, int32 
  * Initializes the delay drop structure for mob-looted items.
  *------------------------------------------*/
 static std::shared_ptr<s_item_drop> mob_setlootitem( s_mob_lootitem& item, unsigned short mob_id ){
-	std::shared_ptr<s_item_drop> drop = std::make_shared<s_item_drop>();
+	auto drop = std::make_shared<s_item_drop>();
 
 	memcpy( &drop->item_data, &item, sizeof( struct item ) );
 
@@ -2259,7 +2259,7 @@ static std::shared_ptr<s_item_drop> mob_setlootitem( s_mob_lootitem& item, unsig
  * @param list: list with all items that should drop
  * @param loot: whether the items in the list are new drops or previously looted items
  */
-void mob_process_drop_list(std::shared_ptr<s_item_drop_list>& list, bool loot)
+void mob_process_drop_list(s_item_drop_list* list, bool loot)
 {
 	// First regular drop always drops at center
 	enum directions dir = DIR_CENTER;
@@ -2267,7 +2267,7 @@ void mob_process_drop_list(std::shared_ptr<s_item_drop_list>& list, bool loot)
 	if (loot)
 		dir = DIR_NORTH;
 
-	for (std::shared_ptr<s_item_drop>& ditem : list->items) {
+	for (auto& ditem : list->items) {
 		map_addflooritem(&ditem->item_data, ditem->item_data.amount,
 			list->m, list->x, list->y,
 			list->first_charid, list->second_charid, list->third_charid, 4, ditem->mob_id, !loot, dir, BL_CHAR|BL_PET);
@@ -2288,7 +2288,7 @@ static TIMER_FUNC(mob_delay_item_drop) {
 	uint32 bl_id = static_cast<uint32>(id);
 
 	// Regular drops
-	std::shared_ptr<s_item_drop_list> list = util::umap_find(mob_delayed_drops, bl_id);
+	s_item_drop_list* list = util::umap_find(mob_delayed_drops, bl_id);
 	if (list != nullptr) {
 		mob_process_drop_list(list, false);
 		mob_delayed_drops.erase(bl_id);
@@ -2310,7 +2310,7 @@ static TIMER_FUNC(mob_delay_item_drop) {
  * rate is the drop-rate of the item, required for autoloot.
  * flag : Killed only by homunculus/mercenary?
  *------------------------------------------*/
-static void mob_item_drop(struct mob_data *md, std::shared_ptr<s_item_drop_list>& dlist, std::shared_ptr<s_item_drop>& ditem, int32 loot, int32 drop_rate, bool flag)
+static void mob_item_drop(struct mob_data *md, s_item_drop_list* dlist, std::shared_ptr<s_item_drop> ditem, int32 loot, int32 drop_rate, bool flag)
 {
 	TBL_PC* sd;
 	bool test_autoloot;
@@ -2580,7 +2580,7 @@ void mob_damage(struct mob_data *md, struct block_list *src, int32 damage)
  * @param drop_modifier: RENEWAL_DROP level modifier
  * @return Modified drop rate
  */
-int32 mob_getdroprate(struct block_list *src, std::shared_ptr<s_mob_db> mob, int32 base_rate, int32 drop_modifier, mob_data* md)
+int32 mob_getdroprate(struct block_list *src, s_mob_db* mob, int32 base_rate, int32 drop_modifier, mob_data* md)
 {
 	int32 drop_rate = base_rate;
 
@@ -2906,7 +2906,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 
 	// Looted items have an independent drop position and also don't show special effects when dropped
 	// So we need put them into a separate list
-	std::shared_ptr<s_item_drop_list> lootlist = std::make_shared<s_item_drop_list>();
+	auto lootlist = std::make_shared<s_item_drop_list>();
 	lootlist->m = md->bl.m;
 	lootlist->x = md->bl.x;
 	lootlist->y = md->bl.y;
@@ -2917,8 +2917,8 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 	// Process items looted by the mob
 	if (md->lootitems) {
 		for (i = 0; i < md->lootitem_count; i++) {
-			std::shared_ptr<s_item_drop> ditem = mob_setlootitem(md->lootitems[i], md->mob_id);
-			mob_item_drop(md, lootlist, ditem, 1, 10000, homkillonly || merckillonly);
+			auto ditem = mob_setlootitem(md->lootitems[i], md->mob_id);
+			mob_item_drop(md, lootlist.get(), ditem, 1, 10000, homkillonly || merckillonly);
 		}
 	}
 
@@ -2934,7 +2934,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 		drop_modifier = pc_level_penalty_mod( mvp_sd != nullptr ? mvp_sd : second_sd != nullptr ? second_sd : third_sd, PENALTY_DROP, nullptr, md );
 #endif
 
-		std::shared_ptr<s_item_drop_list> dlist = std::make_shared<s_item_drop_list>();
+		auto dlist = std::make_shared<s_item_drop_list>();
 		dlist->m = md->bl.m;
 		dlist->x = md->bl.x;
 		dlist->y = md->bl.y;
@@ -2972,15 +2972,15 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 						mobdrop.rate = drop_rate;
 					}
 					else {
-						std::shared_ptr<s_item_group_entry> entry = itemdb_group.get_random_entry(it.group, 1, GROUP_ALGORITHM_DROP);
+						s_item_group_entry* entry = itemdb_group.get_random_entry(it.group, 1, GROUP_ALGORITHM_DROP);
 						if (entry == nullptr) continue;
 						mobdrop.nameid = entry->nameid;
 						mobdrop.rate = entry->adj_rate * drop_rate / 10000;
 					}
 
-					std::shared_ptr<s_item_drop> ditem = mob_setdropitem(mobdrop, 1, md->mob_id);
+					auto ditem = mob_setdropitem(mobdrop, 1, md->mob_id);
 
-					mob_item_drop(md, dlist, ditem, 0, mobdrop.rate, homkillonly || merckillonly);
+					mob_item_drop(md, dlist.get(), ditem, 0, mobdrop.rate, homkillonly || merckillonly);
 				}
 			}
 
@@ -2997,7 +2997,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 			if (md->db->dropitem[i].nameid == 0)
 				continue;
 
-			std::shared_ptr<item_data> it = item_db.find(md->db->dropitem[i].nameid);
+			item_data* it = item_db.find(md->db->dropitem[i].nameid);
 
 			if (it == nullptr)
 				continue;
@@ -3024,12 +3024,12 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 			}
 			// Announce first, or else ditem will be freed. [Lance]
 			// By popular demand, use base drop rate for autoloot code. [Skotlex]
-			mob_item_drop(md, dlist, ditem, 0, battle_config.autoloot_adjust ? drop_rate : md->db->dropitem[i].rate, homkillonly || merckillonly);
+			mob_item_drop(md, dlist.get(), ditem, 0, battle_config.autoloot_adjust ? drop_rate : md->db->dropitem[i].rate, homkillonly || merckillonly);
 		}
 
 		// Ore Discovery (triggers if owner has loot priority, does not require to be the killer)
 		if (mvp_sd && pc_checkskill(mvp_sd, BS_FINDINGORE) > 0) {
-			std::shared_ptr<s_item_group_entry> entry = itemdb_group.get_random_entry(IG_ORE, 1, GROUP_ALGORITHM_DROP);
+			s_item_group_entry* entry = itemdb_group.get_random_entry(IG_ORE, 1, GROUP_ALGORITHM_DROP);
 			if (entry != nullptr) {
 				s_mob_drop mobdrop = {};
 				mobdrop.nameid = entry->nameid;
@@ -3037,12 +3037,12 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 
 				std::shared_ptr<s_item_drop> ditem = mob_setdropitem(mobdrop, 1, md->mob_id);
 
-				mob_item_drop(md, dlist, ditem, 0, mobdrop.rate, homkillonly || merckillonly);
+				mob_item_drop(md, dlist.get(), ditem, 0, mobdrop.rate, homkillonly || merckillonly);
 			}
 		}
 
 		// Process map specific drops
-		std::shared_ptr<s_map_drops> mapdrops;
+		s_map_drops* mapdrops;
 
 		// If it is an instance map, we check for map specific drops of the original map
 		if( map[md->bl.m].instance_id > 0 ){
@@ -3058,7 +3058,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 					// 'Cheat' for autoloot command: rate is changed from n/100000 to n/10000
 					int32 map_drops_rate = max(1, (it.second->rate / 10));
 					std::shared_ptr<s_item_drop> ditem = mob_setdropitem(*it.second, 1, md->mob_id);
-					mob_item_drop( md, dlist, ditem, 0, map_drops_rate, homkillonly || merckillonly );
+					mob_item_drop( md, dlist.get(), ditem, 0, map_drops_rate, homkillonly || merckillonly );
 				}
 			}
 
@@ -3071,7 +3071,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 						// 'Cheat' for autoloot command: rate is changed from n/100000 to n/10000
 						int32 map_drops_rate = max(1, (it.second->rate / 10));
 						std::shared_ptr<s_item_drop> ditem = mob_setdropitem(*it.second, 1, md->mob_id);
-						mob_item_drop( md, dlist, ditem, 0, map_drops_rate, homkillonly || merckillonly );
+						mob_item_drop( md, dlist.get(), ditem, 0, map_drops_rate, homkillonly || merckillonly );
 					}
 				}
 			}
@@ -3154,7 +3154,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 				if(mdrop[i].nameid == 0)
 					continue;
 
-				std::shared_ptr<item_data> i_data = item_db.find(mdrop[i].nameid);
+				item_data* i_data = item_db.find(mdrop[i].nameid);
 
 				if (i_data == nullptr)
 					continue;
@@ -3226,7 +3226,8 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 		}
 
 		if (sd) {
-			std::shared_ptr<s_mob_db> mission_mdb = mob_db.find(sd->mission_mobid), mob = mob_db.find(md->mob_id);
+			s_mob_db* mission_mdb = mob_db.find(sd->mission_mobid);
+			s_mob_db* mob = mob_db.find(md->mob_id);
 
 			if ((sd->mission_mobid == md->mob_id) || (mission_mdb != nullptr &&
 				((battle_config.taekwon_mission_mobname == 1 && util::vector_exists(status_get_race2(&md->bl), RC2_GOBLIN) && util::vector_exists(mission_mdb->race2, RC2_GOBLIN)) ||
@@ -3736,12 +3737,12 @@ int32 mob_summonslave(struct mob_data *md2,int32 *value,int32 amount,uint16 skil
  *------------------------------------------*/
 int32 mob_skill_id2skill_idx(int32 mob_id,uint16 skill_id)
 {
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	s_mob_db* mob = mob_db.find(mob_id);
 
 	if (mob == nullptr)
 		return -1;
 
-	std::vector<std::shared_ptr<s_mob_skill>> &skills = mob->skill;
+	std::vector<std::shared_ptr<s_mob_skill>>& skills = mob->skill;
 
 	if (skills.empty())
 		return -1;
@@ -3876,7 +3877,7 @@ struct mob_data *mob_getfriendstatus(struct mob_data *md,int64 cond1,int64 cond2
 
 // Display message from mob_chat_db.yml
 bool mob_chat_display_message(mob_data &md, uint16 msg_id) {
-	std::shared_ptr<s_mob_chat> mc = mob_chat_db.find(msg_id);
+	s_mob_chat* mc = mob_chat_db.find(msg_id);
 
 	if (mc != nullptr) {
 		std::string name = md.name, output;
@@ -4211,7 +4212,7 @@ int32 mob_clone_spawn(map_session_data *sd, int16 m, int16 x, int16 y, const cha
 	if(mob_id >= MOB_CLONE_END)
 		return 0;
 
-	std::shared_ptr<s_mob_db> db = std::make_shared<s_mob_db>();
+	auto db = std::make_shared<s_mob_db>();
 
 	mob_db.put( mob_id, db );
 
@@ -4247,7 +4248,7 @@ int32 mob_clone_spawn(map_session_data *sd, int16 m, int16 x, int16 y, const cha
 	sd->fd = 0;
 
 	//Go Backwards to give better priority to advanced skills.
-	std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(sd->status.class_);
+	s_skill_tree* tree = skill_tree_db.find(sd->status.class_);
 
 	if( tree != nullptr && !tree->skills.empty() ){
 		std::vector<uint16> skill_list;
@@ -4280,7 +4281,7 @@ int32 mob_clone_spawn(map_session_data *sd, int16 m, int16 x, int16 y, const cha
 			if( !skill_check_condition_castbegin(*sd,skill_id,sd->status.skill[sk_idx].lv) )
 				continue;
 
-			std::shared_ptr<s_mob_skill> ms = std::make_shared<s_mob_skill>();
+			auto ms = std::make_shared<s_mob_skill>();
 
 			ms->skill_id = skill_id;
 			ms->skill_lv = sd->status.skill[sk_idx].lv;
@@ -4442,7 +4443,7 @@ static uint32 mob_drop_adjust(int32 baserate, int32 rate_adjust, unsigned short 
  */
 static void item_dropratio_adjust(t_itemid nameid, int32 mob_id, int32 *rate_adjust)
 {
-	std::shared_ptr<s_mob_item_drop_ratio> item_ratio = mob_item_drop_ratio.find(nameid);
+	s_mob_item_drop_ratio* item_ratio = mob_item_drop_ratio.find(nameid);
 	if( item_ratio) {
 		// If it is empty it is applied to all monsters, if not it is only applied if the monster is in the vector
 		if( item_ratio->mob_ids.empty() || util::vector_exists( item_ratio->mob_ids, static_cast<uint16>( mob_id ) ) )
@@ -4490,7 +4491,7 @@ bool MobDatabase::parseDropNode(std::string nodeName, const ryml::NodeRef& node,
 		if (!this->asString(dropit, "Item", item_name))
 			return false;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(dropit["Item"], "Monster %s item %s does not exist, skipping.\n", nodeName.c_str(), item_name.c_str());
@@ -4569,7 +4570,7 @@ uint64 MobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return false;
 	}
 
-	std::shared_ptr<s_mob_db> mob = this->find(mob_id);
+	std::shared_ptr<s_mob_db> mob = this->find_shared(mob_id);
 	bool exists = mob != nullptr;
 
 	if (!exists) {
@@ -5096,8 +5097,8 @@ uint64 MobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 }
 
 void MobDatabase::loadingFinished() {
-	for (auto &mobdata : *this) {
-		std::shared_ptr<s_mob_db> mob = mobdata.second;
+	for (auto& mobdata : *this) {
+		s_mob_db* mob = mobdata.second.get();
 
 		switch (mob->status.class_) {
 			case CLASS_BOSS:
@@ -5447,7 +5448,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asString(node, "Mob", mob_name))
 		return 0;
 
-	std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+	s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 	if (mob == nullptr) {
 		this->invalidWarning(node["Mob"], "Unknown mob %s.\n", mob_name.c_str());
@@ -5468,7 +5469,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				return 0;
 			}
 		} else {
-			std::shared_ptr<s_mob_db> sprite_mob = mobdb_search_aegisname(sprite.c_str());
+			s_mob_db* sprite_mob = mobdb_search_aegisname(sprite.c_str());
 
 			if (sprite_mob == nullptr) {
 				this->invalidWarning(node["Sprite"], "Unknown mob sprite constant %s.\n", sprite.c_str());
@@ -5580,7 +5581,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "Weapon", weapon))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( weapon.c_str() );
+		item_data* item = item_db.search_aegisname( weapon.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["Weapon"], "Weapon %s is not a valid item.\n", weapon.c_str());
@@ -5601,7 +5602,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "Shield", shield))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( shield.c_str() );
+		item_data* item = item_db.search_aegisname( shield.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["Shield"], "Shield %s is not a valid item.\n", shield.c_str());
@@ -5622,7 +5623,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "HeadTop", head))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( head.c_str() );
+		item_data* item = item_db.search_aegisname( head.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["HeadTop"], "HeadTop %s is not a valid item.\n", head.c_str());
@@ -5643,7 +5644,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "HeadMid", head))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( head.c_str() );
+		item_data* item = item_db.search_aegisname( head.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["HeadMid"], "HeadMid %s is not a valid item.\n", head.c_str());
@@ -5664,7 +5665,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "HeadLow", head))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( head.c_str() );
+		item_data* item = item_db.search_aegisname( head.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["HeadLow"], "HeadLow %s is not a valid item.\n", head.c_str());
@@ -5685,7 +5686,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "Robe", robe))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname(robe.c_str());
+		item_data* item = item_db.search_aegisname(robe.c_str());
 
 		if (item == nullptr) {
 			this->invalidWarning(node["Robe"], "Robe %s is not a valid item.\n", robe.c_str());
@@ -5696,7 +5697,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	}
 
 	if (this->nodeExists(node, "PetEquip")) {
-		std::shared_ptr<s_pet_db> pet_db_ptr = pet_db.find(mob->id);
+		s_pet_db* pet_db_ptr = pet_db.find(mob->id);
 
 		if (pet_db_ptr == nullptr) {
 			this->invalidWarning(node["PetEquip"], "PetEquip is only applicable to defined pets.\n");
@@ -5708,7 +5709,7 @@ uint64 MobAvailDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "PetEquip", equipment))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( equipment.c_str() );
+		item_data* item = item_db.search_aegisname( equipment.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["PetEquip"], "PetEquip %s is not a valid item.\n", equipment.c_str());
@@ -5784,7 +5785,7 @@ uint64 MobSummonDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 	uint16 id = static_cast<uint16>(constant);
 
-	std::shared_ptr<s_randomsummon_group> summon = this->find(id);
+	std::shared_ptr<s_randomsummon_group> summon = this->find_shared(id);
 	bool exists = summon != nullptr;
 
 	if (!exists) {
@@ -5801,7 +5802,7 @@ uint64 MobSummonDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "Default", mob_name))
 			return 0;
 
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+		s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 		if (mob == nullptr) {
 			this->invalidWarning(node["Default"], "Unknown mob %s.\n", mob_name.c_str());
@@ -5824,7 +5825,7 @@ uint64 MobSummonDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			if (!this->asString(mobit, "Mob", mob_name))
 				continue;
 
-			std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+			s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 			if (mob == nullptr) {
 				this->invalidWarning(mobit["Mob"], "Unknown mob %s.\n", mob_name.c_str());
@@ -5844,7 +5845,7 @@ uint64 MobSummonDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				continue;
 			}
 
-			std::shared_ptr<s_randomsummon_entry> entry = util::umap_find(summon->list, mob_id);
+			auto entry = util::umap_find_shared(summon->list, mob_id);
 
 			if (entry == nullptr) {
 				entry = std::make_shared<s_randomsummon_entry>();
@@ -5876,7 +5877,7 @@ uint64 MobChatDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt16(node, "Id", id))
 		return 0;
 
-	std::shared_ptr<s_mob_chat> chat = this->find(id);
+	std::shared_ptr<s_mob_chat> chat = this->find_shared(id);
 	bool exists = chat != nullptr;
 
 	if (!exists) {
@@ -6005,7 +6006,7 @@ static bool mob_parse_row_mobskilldb( char** str, size_t columns, size_t current
 
 	mob_id = atoi(str[0]);
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	s_mob_db* mob = mob_db.find(mob_id);
 
 	if (mob_id > 0 && mob == nullptr)
 	{
@@ -6019,7 +6020,7 @@ static bool mob_parse_row_mobskilldb( char** str, size_t columns, size_t current
 		return false;
 
 	// Looking for existing entry
-	std::shared_ptr<s_mob_skill_db> skill = util::umap_find(mob_skill_db, mob_id);
+	auto skill = util::umap_find_shared(mob_skill_db, mob_id);
 
 	if (skill == nullptr)
 		skill = std::make_shared<s_mob_skill_db>();
@@ -6038,7 +6039,7 @@ static bool mob_parse_row_mobskilldb( char** str, size_t columns, size_t current
 		return false;
 	}
 
-	std::shared_ptr<s_mob_skill> ms = std::make_shared<s_mob_skill>();
+	auto ms = std::make_shared<s_mob_skill>();
 
 	//State
 	ARR_FIND( 0, ARRAYLENGTH(state), j, strcmp(str[2],state[j].str) == 0 );
@@ -6255,7 +6256,7 @@ uint64 MobItemRatioDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asString(node, "Item", item_name))
 		return 0;
 
-	std::shared_ptr<item_data> item = item_db.search_aegisname(item_name.c_str());
+	item_data* item = item_db.search_aegisname(item_name.c_str());
 
 	if (item == nullptr) {
 		this->invalidWarning(node["Item"], "Item %s does not exist, skipping.\n", item_name.c_str());
@@ -6264,7 +6265,7 @@ uint64 MobItemRatioDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 	t_itemid nameid = item->nameid;
 
-	std::shared_ptr<s_mob_item_drop_ratio> data = this->find(nameid);
+	std::shared_ptr<s_mob_item_drop_ratio> data = this->find_shared(nameid);
 	bool exists = data != nullptr;
 
 	if (!exists) {
@@ -6292,7 +6293,7 @@ uint64 MobItemRatioDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			std::string mob_name;
 			c4::from_chars(mobit.key(), &mob_name);
 
-			std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+			s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 			if (mob == nullptr) {
 				this->invalidWarning(node["List"], "Unknown mob %s, skipping.\n", mob_name.c_str());
@@ -6325,7 +6326,7 @@ uint64 MobItemRatioDatabase::parseBodyNode(const ryml::NodeRef& node) {
  **/
 static void mob_drop_ratio_adjust(void){
 	for( auto &pair : mob_db ){
-		std::shared_ptr<s_mob_db> mob = pair.second;
+		s_mob_db* mob = pair.second.get();
 		struct item_data *id;
 		t_itemid nameid;
 		int32 j, rate, rate_adjust = 0, mob_id = pair.first;
@@ -6518,7 +6519,7 @@ uint64 MapDropDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_map_drops> mapdrops = this->find( mapid );
+	std::shared_ptr<s_map_drops> mapdrops = this->find_shared( mapid );
 	bool exists = mapdrops != nullptr;
 
 	if( !exists ){
@@ -6550,7 +6551,7 @@ uint64 MapDropDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( mobname.c_str() );
+			s_mob_db* mob = mobdb_search_aegisname( mobname.c_str() );
 
 			if( mob == nullptr ){
 				this->invalidWarning( monsterNode["Monster"], "Unknown monster \"%s\".\n", mobname.c_str() );
@@ -6581,7 +6582,7 @@ bool MapDropDatabase::parseDrop( const ryml::NodeRef& node, std::unordered_map<u
 		return false;
 	}
 
-	std::shared_ptr<s_mob_drop> drop = util::umap_find( drops, index );
+	auto drop = util::umap_find_shared( drops, index );
 	bool exists = drop != nullptr;
 
 	if( !exists ){
@@ -6600,7 +6601,7 @@ bool MapDropDatabase::parseDrop( const ryml::NodeRef& node, std::unordered_map<u
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( itemname.c_str() );
+		item_data* item = item_db.search_aegisname( itemname.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( node["Item"], "Item %s does not exist.\n", itemname.c_str() );
@@ -6662,7 +6663,7 @@ bool MapDropDatabase::parseDrop( const ryml::NodeRef& node, std::unordered_map<u
  * @param mob Monster DB entry
  * @param skill Monster skill entries
  **/
-static void mob_skill_db_set_single_sub(std::shared_ptr<s_mob_db> mob, struct s_mob_skill_db *skill) {
+static void mob_skill_db_set_single_sub(s_mob_db* mob, struct s_mob_skill_db *skill) {
 	nullpo_retv(skill);
 
 	if (mob == nullptr)
@@ -6687,7 +6688,7 @@ static void mob_skill_db_set_single(struct s_mob_skill_db *skill) {
 
 	// Specific monster
 	if (skill->mob_id >= 0) {
-		std::shared_ptr<s_mob_db> mob = mob_db.find(skill->mob_id);
+		s_mob_db* mob = mob_db.find(skill->mob_id);
 
 		if (mob != nullptr)
 			mob_skill_db_set_single_sub(mob, skill);
@@ -6704,7 +6705,7 @@ static void mob_skill_db_set_single(struct s_mob_skill_db *skill) {
 				|| (!(id&2) && !status_has_mode(&pair.second->status,MD_STATUSIMMUNE)) // Normal monsters
 				)
 				continue;
-			mob_skill_db_set_single_sub(pair.second, skill);
+			mob_skill_db_set_single_sub(pair.second.get(), skill);
 		}
 	}
 	

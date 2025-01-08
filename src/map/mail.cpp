@@ -346,7 +346,7 @@ void mail_getattachment(map_session_data* sd, struct mail_message* msg, int32 ze
 			sd->mail.pending_weight -= ( id->weight * item[i].amount );
 
 			// Check if it is a pet egg
-			std::shared_ptr<s_pet_db> pet = pet_db_search( item[i].nameid, PET_EGG );
+			s_pet_db* pet = pet_db_search( item[i].nameid, PET_EGG );
 
 			// If it is a pet egg and the card data does not contain a pet id or other special ids are set
 			if( pet != nullptr && item[i].card[0] == 0 ){

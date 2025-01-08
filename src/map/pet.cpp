@@ -51,7 +51,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( mob_name.c_str() );
+	s_mob_db* mob = mobdb_search_aegisname( mob_name.c_str() );
 
 	if( mob == nullptr ){
 		this->invalidWarning( node["Mob"], "Mob %s does not exist and cannot be used as a pet.\n", mob_name.c_str() );
@@ -60,7 +60,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 	uint16 mob_id = mob->id;
 
-	std::shared_ptr<s_pet_db> pet = this->find( mob_id );
+	std::shared_ptr<s_pet_db> pet = this->find_shared( mob_id );
 	bool exists = pet != nullptr;
 
 	if( !exists ){
@@ -80,7 +80,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( node["TameItem"], "Taming item %s does not exist.\n", item_name.c_str() );
@@ -101,7 +101,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( node["EggItem"], "Egg item %s does not exist.\n", item_name.c_str() );
@@ -118,7 +118,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( node["EquipItem"], "Equip item %s does not exist.\n", item_name.c_str() );
@@ -139,7 +139,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( node["FoodItem"], "Food item %s does not exist.\n", item_name.c_str() );
@@ -418,7 +418,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname( target_name.c_str() );
+			s_mob_db* mob = mobdb_search_aegisname( target_name.c_str() );
 
 			if( mob == nullptr ){
 				this->invalidWarning( evolutionNode["Target"], "Evolution target %s does not exist.\n", target_name.c_str() );
@@ -432,7 +432,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_pet_evo_data> evolution = util::umap_find( pet->evolution_data, targetId );
+			auto evolution = util::umap_find_shared( pet->evolution_data, targetId );
 			bool evolution_exists = evolution != nullptr;
 
 			if( !evolution_exists ){
@@ -448,7 +448,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+				item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 				if( item == nullptr ){
 					this->invalidWarning( requirementNode["Item"], "Evolution requirement item %s does not exist.\n", item_name.c_str() );
@@ -550,7 +550,7 @@ static int32 pet_reload_sub( map_session_data *sd, va_list args ){
 	}
 
 	struct pet_data *pd = sd->pd;
-	std::shared_ptr<s_pet_db> pet_db_ptr = pd->get_pet_db();
+	s_pet_db* pet_db_ptr = pd->get_pet_db();
 
 	if( pet_db_ptr == nullptr ){
 		return 0;
@@ -667,12 +667,12 @@ void pet_set_intimate(struct pet_data *pd, int32 value)
  */
 bool pet_create_egg(map_session_data *sd, t_itemid item_id)
 {
-	std::shared_ptr<s_pet_db> pet = pet_db_search(item_id, PET_EGG);
+	s_pet_db* pet = pet_db_search(item_id, PET_EGG);
 
 	if (!pet)
 		return false; //No pet egg here.
 
-	std::shared_ptr<s_mob_db> mdb = mob_db.find(pet->class_);
+	s_mob_db* mdb = mob_db.find(pet->class_);
 
 	if( mdb == nullptr ){
 		return false;
@@ -769,7 +769,7 @@ int32 pet_target_check(struct pet_data *pd,struct block_list *bl,int32 type)
 	if (!status_check_skilluse(&pd->bl, bl, 0, 0))
 		return 0;
 
-	std::shared_ptr<s_pet_db> pet_db_ptr = pd->get_pet_db();
+	s_pet_db* pet_db_ptr = pd->get_pet_db();
 	int32 rate;
 
 	if(!type) {
@@ -852,7 +852,7 @@ static TIMER_FUNC(pet_hungry){
 	if (pd->pet.intimate <= PET_INTIMATE_NONE)
 		return 1; //You lost the pet already, the rest is irrelevant.
 
-	std::shared_ptr<s_pet_db> pet_db_ptr = pd->get_pet_db();
+	s_pet_db* pet_db_ptr = pd->get_pet_db();
 
 	if (battle_config.pet_hungry_delay_rate != 100)
 		interval = (pet_db_ptr->hungry_delay*battle_config.pet_hungry_delay_rate) / 100;
@@ -893,9 +893,9 @@ static TIMER_FUNC(pet_hungry){
  * @param type : pet type to search for (Catch, Egg, Equip, Food)
  * @return Pet DB pointer on success, nullptr on failure
  */
-std::shared_ptr<s_pet_db> pet_db_search( int32 key, enum e_pet_itemtype type ){
+s_pet_db* pet_db_search( int32 key, enum e_pet_itemtype type ){
 	for( auto &pair : pet_db ){
-		std::shared_ptr<s_pet_db> pet = pair.second;
+		s_pet_db* pet = pair.second.get();
 
 		switch(type) {
 			case PET_CATCH: if(pet->itemID == key) return pet; break;
@@ -1017,7 +1017,7 @@ bool pet_data_init(map_session_data *sd, struct s_pet *pet)
 		sd->status.pet_id = pet->pet_id;
 	}
 
-	std::shared_ptr<s_pet_db> pet_db_ptr = pet_db.find(pet->class_);
+	s_pet_db* pet_db_ptr = pet_db.find(pet->class_);
 
 	if( pet_db_ptr == nullptr ){
 		sd->status.pet_id = 0;
@@ -1201,7 +1201,7 @@ int32 pet_select_egg(map_session_data *sd,short egg_index)
 	if(sd->state.trading)	//The player have trade in progress.
 		return 0;
 
-	std::shared_ptr<s_pet_db> pet = pet_db_search(sd->inventory.u.items_inventory[egg_index].nameid, PET_EGG);
+	s_pet_db* pet = pet_db_search(sd->inventory.u.items_inventory[egg_index].nameid, PET_EGG);
 	if (!pet) {
 		ShowError("pet does not exist, egg id %u\n", sd->inventory.u.items_inventory[egg_index].nameid);
 		return 0;
@@ -1225,8 +1225,7 @@ void pet_catch_process_start( map_session_data& sd, t_itemid item_id, e_pet_catc
 		clif_displaymessage(sd.fd, msg_txt(&sd, 669)); // You can't catch any pet on this map.
 		return;
 	}
-
-	std::shared_ptr<s_pet_catch_process> process = util::umap_find( pet_catchprocesses, sd.status.char_id );
+	auto process = util::umap_find_shared( pet_catchprocesses, sd.status.char_id );
 
 	if( process == nullptr ){
 		process = std::make_shared<s_pet_catch_process>();
@@ -1248,7 +1247,7 @@ void pet_catch_process_start( map_session_data& sd, t_itemid item_id, e_pet_catc
  * @param target_id : monster ID of pet to catch
  */
 void pet_catch_process_end( map_session_data& sd, int32 target_id ){
-	std::shared_ptr<s_pet_catch_process> process = util::umap_find( pet_catchprocesses, sd.status.char_id );
+	s_pet_catch_process* process = util::umap_find( pet_catchprocesses, sd.status.char_id );
 
 	if( process == nullptr ){
 		clif_pet_roulette(sd, false);
@@ -1275,7 +1274,7 @@ void pet_catch_process_end( map_session_data& sd, int32 target_id ){
 
 	//FIXME: delete taming item here, if this was an item-invoked capture and the item was flagged as delay-consume [ultramage]
 
-	std::shared_ptr<s_pet_db> pet = pet_db.find(md->mob_id);
+	s_pet_db* pet = pet_db.find(md->mob_id);
 
 	if (pet == nullptr) {
 		clif_pet_roulette(sd, false);
@@ -1353,7 +1352,7 @@ void pet_catch_process_end( map_session_data& sd, int32 target_id ){
 		status_kill(&md->bl);
 		clif_pet_roulette( sd, true );
 
-		std::shared_ptr<s_mob_db> mdb = mob_db.find(pet->class_);
+		s_mob_db* mdb = mob_db.find(pet->class_);
 
 		intif_create_pet(sd.status.account_id, sd.status.char_id, pet->class_, mdb->lv, pet->EggID, 0, pet->intimate, 100, 0, 1, mdb->jname.c_str());
 	} else {
@@ -1392,7 +1391,7 @@ bool pet_get_egg(uint32 account_id, short pet_class, int32 pet_id ) {
 	// Before this change in cases where more than one pet egg were requested in a short
 	// period of time it wasn't possible to know which kind of egg was being requested after
 	// the first request. [Panikon]
-	std::shared_ptr<s_pet_db> pet = pet_db.find(pet_class);
+	s_pet_db* pet = pet_db.find(pet_class);
 
 	if(!pet) {
 		intif_delete_petdata(pet_id);
@@ -1540,7 +1539,7 @@ int32 pet_equipitem(map_session_data *sd,int32 index)
 	if (!pd)
 		return 1;
 
-	std::shared_ptr<s_pet_db> pet_db_ptr = pd->get_pet_db();
+	s_pet_db* pet_db_ptr = pd->get_pet_db();
 
 	if( pet_db_ptr == nullptr ){
 		return 1;
@@ -1645,7 +1644,7 @@ int32 pet_food(map_session_data *sd, struct pet_data *pd)
 	nullpo_retr(1, sd);
 	nullpo_retr(1, pd);
 
-	std::shared_ptr<s_pet_db> pet_db_ptr = pd->get_pet_db();
+	s_pet_db* pet_db_ptr = pd->get_pet_db();
 	int32 i,k;
 
 	k = pet_db_ptr->FoodID;
@@ -1957,13 +1956,13 @@ static int32 pet_ai_sub_hard_lootsearch(struct block_list *bl,va_list ap)
  */
 static TIMER_FUNC(pet_delay_item_drop){
 	uint32 bl_id = static_cast<uint32>( id );
-	std::shared_ptr<s_item_drop_list> list = util::umap_find( pet_delayed_drops, bl_id );
+	s_item_drop_list* list = util::umap_find( pet_delayed_drops, bl_id );
 
 	if( list == nullptr ){
 		return 0;
 	}
 
-	for( std::shared_ptr<s_item_drop>& ditem : list->items ){
+	for( auto& ditem : list->items ){
 		map_addflooritem(&ditem->item_data,ditem->item_data.amount,
 			list->m,list->x,list->y,
 			list->first_charid,list->second_charid,list->third_charid,4,0);
@@ -1984,7 +1983,7 @@ void pet_lootitem_drop( pet_data& pd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_drop_list> dlist = std::make_shared<s_item_drop_list>();
+	auto dlist = std::make_shared<s_item_drop_list>();
 
 	dlist->m = pd.bl.m;
 	dlist->x = pd.bl.x;
@@ -2008,7 +2007,7 @@ void pet_lootitem_drop( pet_data& pd, map_session_data* sd ){
 		}
 
 		// Store the drop for later
-		std::shared_ptr<s_item_drop> ditem = std::make_shared<s_item_drop>();
+		auto ditem = std::make_shared<s_item_drop>();
 
 		memcpy( &ditem->item_data, it, sizeof( struct item ) );
 
@@ -2302,7 +2301,7 @@ void pet_evolution(map_session_data *sd, int16 pet_id) {
 		}
 	}
 	
-	std::shared_ptr<s_pet_db> new_data = pet_db.find(pet_id);
+	s_pet_db* new_data = pet_db.find(pet_id);
 
 	if( new_data == nullptr ){
 		return;
@@ -2335,7 +2334,7 @@ void pet_evolution(map_session_data *sd, int16 pet_id) {
 	sd->pd->pet.egg_id = new_data->EggID;
 	pet_set_intimate(sd->pd, new_data->intimate);
 	if( !sd->pd->pet.rename_flag ){
-		std::shared_ptr<s_mob_db> mdb = mob_db.find( pet_id );
+		s_mob_db* mdb = mob_db.find( pet_id );
 
 		safestrncpy(sd->pd->pet.name, mdb->jname.c_str(), NAME_LENGTH);
 	}
@@ -2404,7 +2403,7 @@ bool pet_addautobonus(std::vector<std::shared_ptr<s_petautobonus>> &bonus, const
 	if (rate < -10000 || rate > 10000)
 		ShowWarning("pet_addautobonus: Bonus rate %d exceeds -10000~10000 range, capping.\n", rate);
 
-	std::shared_ptr<s_petautobonus> entry = std::make_shared<s_petautobonus>();
+	auto entry = std::make_shared<s_petautobonus>();
 
 	entry->rate = cap_value(rate, -10000, 10000);
 	entry->duration = dur;
@@ -2428,7 +2427,7 @@ void pet_delautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_petaut
 	std::vector<std::shared_ptr<s_petautobonus>>::iterator it = bonus.begin();
 
 	while (it != bonus.end()) {
-		std::shared_ptr<s_petautobonus> b = *it;
+		s_petautobonus* b = it->get();
 
 		if (b->timer != INVALID_TIMER && !b->bonus_script.empty() && restore) {
 			script_run_petautobonus(b->bonus_script, sd);
@@ -2471,7 +2470,7 @@ TIMER_FUNC(pet_endautobonus) {
 	nullpo_ret(sd);
 	nullpo_ret(bonus);
 
-	for (std::shared_ptr<s_petautobonus> autobonus : *bonus) {
+	for (auto& autobonus : *bonus){
 		if (autobonus->timer == tid) {
 			autobonus->timer = INVALID_TIMER;
 			break;

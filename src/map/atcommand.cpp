@@ -133,7 +133,7 @@ uint64 AtcommandAliasDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_atcommand_alias_info> info = this->find( command );
+	auto info = this->find_shared( command );
 	bool exists = info != nullptr;
 
 	if( !exists ){
@@ -226,7 +226,7 @@ static const char* atcommand_help_string( const char* command ){
 	command = atcommand_alias_db.checkAlias( command );
 
 	// attempt to find the first default help command
-	std::shared_ptr<s_atcommand_alias_info> info = atcommand_alias_db.find( command );
+	s_atcommand_alias_info* info = atcommand_alias_db.find( command );
 
 	// failed to find the help property in the configuration file
 	if( info == nullptr ){
@@ -1479,11 +1479,11 @@ ACMD_FUNC(item)
 		return -1;
 	}
 
-	std::vector<std::shared_ptr<item_data>> items;
+	std::vector<item_data*> items;
 	itemlist = strtok(item_name, ":");
 
 	while( itemlist != nullptr ){
-		std::shared_ptr<item_data> item = item_db.searchname( itemlist );
+		item_data* item = item_db.searchname( itemlist );
 
 		if( item == nullptr ){
 			item = item_db.find( strtoul( itemlist, nullptr, 10 ) );
@@ -1507,7 +1507,7 @@ ACMD_FUNC(item)
 		t_itemid item_id = item->nameid;
 
 		//Check if it's stackable.
-		if( !itemdb_isstackable2( item.get() ) ){
+		if( !itemdb_isstackable2( item ) ){
 			get_count = 1;
 		}
 
@@ -1571,7 +1571,7 @@ ACMD_FUNC(item2)
 	if (number <= 0)
 		number = 1;
 
-	std::shared_ptr<item_data> item_data = item_db.searchname( item_name );
+	item_data* item_data = item_db.searchname( item_name );
 
 	if( item_data == nullptr ){
 		item_data = item_db.find( strtoul( item_name, nullptr, 10 ) );
@@ -1582,7 +1582,7 @@ ACMD_FUNC(item2)
 		char flag = 0;
 
 		//Check if it's stackable.
-		if( !itemdb_isstackable2( item_data.get() ) ){
+		if( !itemdb_isstackable2( item_data ) ){
 			loop = number;
 			get_count = 1;
 		}else{
@@ -1590,7 +1590,7 @@ ACMD_FUNC(item2)
 			get_count = number;
 		}
 
-		if( itemdb_isequip2( item_data.get() ) ){
+		if( itemdb_isequip2( item_data ) ){
 			refine = cap_value( refine, 0, MAX_REFINE );
 		}else{
 			// All other items cannot be refined and are always identified
@@ -1808,7 +1808,7 @@ ACMD_FUNC(help){
 	}
 
 	// attempt to find the first default help command
-	std::shared_ptr<s_atcommand_alias_info> info = atcommand_alias_db.find( command_name );
+	s_atcommand_alias_info* info = atcommand_alias_db.find( command_name );
 
 	const char* text = info != nullptr ? info->help.c_str() : nullptr;
 
@@ -2310,7 +2310,7 @@ ACMD_FUNC(monster)
 	}
 
 	// If AegisName matches exactly, summon that monster
-	std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(monster);
+	s_mob_db* mob = mobdb_search_aegisname(monster);
 	if (mob != nullptr)
 		mob_id = mob->id;
 	else {
@@ -2610,7 +2610,7 @@ ACMD_FUNC(produce)
 		return -1;
 	}
 
-	std::shared_ptr<item_data> item_data = item_db.searchname( item_name );
+	item_data* item_data = item_db.searchname( item_name );
 
 	if( item_data == nullptr ){
 		item_data = item_db.find( strtoul( item_name, nullptr, 10 ) );
@@ -2623,7 +2623,7 @@ ACMD_FUNC(produce)
 
 	item_id = item_data->nameid;
 
-	if( itemdb_isequip2( item_data.get() ) ){
+	if( itemdb_isequip2( item_data ) ){
 		char flag = 0;
 		if (attribute < MIN_ATTRIBUTE || attribute > MAX_ATTRIBUTE)
 			attribute = ATTRIBUTE_NORMAL;
@@ -3183,13 +3183,13 @@ ACMD_FUNC(makeegg) {
 	else
 		id = atoi(message);
 
-	std::shared_ptr<s_pet_db> pet = pet_db.find(id);
+	s_pet_db* pet = pet_db.find(id);
 
 	if( pet == nullptr ){
 		t_itemid nameid;
 
 		// for egg name
-		std::shared_ptr<item_data> item_data = item_db.searchname( message );
+		item_data* item_data = item_db.searchname( message );
 		
 		if( item_data != nullptr ){
 			nameid = item_data->nameid;
@@ -3202,7 +3202,7 @@ ACMD_FUNC(makeegg) {
 
 	int32 res(-1);
 	if (pet != nullptr) {
-		std::shared_ptr<s_mob_db> mdb = mob_db.find(pet->class_);
+		s_mob_db* mdb = mob_db.find(pet->class_);
 		if(mdb){
 			if(intif_create_pet(sd->status.account_id, sd->status.char_id, pet->class_, mdb->lv, pet->EggID, 0, pet->intimate, 100, 0, 1, mdb->jname.c_str())){
 				res = 0;
@@ -4091,7 +4091,7 @@ ACMD_FUNC(idsearch)
 		clif_displaymessage(fd, atcmd_output);
 	}
 	for(const auto &result : item_array) {
-		std::shared_ptr<item_data> id = result.second;
+		item_data* id = result.second.get();
 
 		sprintf(atcmd_output, msg_txt(sd,78), item_db.create_item_link( id ).c_str(), id->nameid); // %s: %u
 		clif_displaymessage(fd, atcmd_output);
@@ -4336,7 +4336,7 @@ ACMD_FUNC(reloadscript){
 			bg_team_leave(bg_sd, false, false); // Kick Team A from battlegrounds
 		for (auto &bg_sd : bg->teamb_members)
 			bg_team_leave(bg_sd, false, false); // Kick Team B from battlegrounds
-		bg_queue_clear(bg, true);
+		bg_queue_clear(bg.get(), true);
 	}
 
 	flush_fifos();
@@ -6097,7 +6097,7 @@ ACMD_FUNC(dropall)
 
 	for( i = 0; i < MAX_INVENTORY; i++ ) {
 		if( sd->inventory.u.items_inventory[i].amount ) {
-			std::shared_ptr<item_data> id = item_db.find(sd->inventory.u.items_inventory[i].nameid);
+			item_data* id = item_db.find(sd->inventory.u.items_inventory[i].nameid);
 
 			if( id == nullptr ) {
 				ShowDebug("Non-existant item %d on dropall list (account_id: %d, char_id: %d)\n", sd->inventory.u.items_inventory[i].nameid, sd->status.account_id, sd->status.char_id);
@@ -6166,7 +6166,7 @@ ACMD_FUNC(stockall)
 	int32 count = 0, count2 = 0;
 	for ( uint16 i = 0; i < MAX_CART; i++ ) {
 		if ( sd->cart.u.items_cart[i].amount > 0 ) {
-			std::shared_ptr<item_data> id = item_db.find(sd->cart.u.items_cart[i].nameid);
+			item_data* id = item_db.find(sd->cart.u.items_cart[i].nameid);
 			if ( id == nullptr ) {
 				ShowDebug("Non-existent item %u on stockall list (account_id: %d, char_id: %d)\n", sd->cart.u.items_cart[i].nameid, sd->status.account_id, sd->status.char_id);
 				continue;
@@ -6874,7 +6874,7 @@ ACMD_FUNC(autoloot)
  *------------------------------------------*/
 ACMD_FUNC(autolootitem)
 {
-	std::shared_ptr<item_data> item_data;
+	item_data* item_data;
 	int32 i;
 	int32 action = 3; // 1=add, 2=remove, 3=help+list (default), 4=reset
 
@@ -7292,7 +7292,7 @@ ACMD_FUNC(mobsearch)
 	if (mob_id == 0)
 		 mob_id = mobdb_searchname(mob_name);
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	s_mob_db* mob = mob_db.find(mob_id);
 
 	if (mob == nullptr || mobdb_checkid(mob_id) == 0) {
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1219),mob_name); // Invalid mob ID %s!
@@ -7964,7 +7964,7 @@ ACMD_FUNC(mobinfo)
 		count = MAX_SEARCH;
 	}
 	for (uint16 k = 0; k < count; k++) {
-		std::shared_ptr<s_mob_db> mob = mob_db.find(mob_ids[k]);
+		s_mob_db* mob = mob_db.find(mob_ids[k]);
 
 		if (mob == nullptr)
 			continue;
@@ -8022,7 +8022,7 @@ ACMD_FUNC(mobinfo)
 			if (mob->dropitem[i].nameid == 0 || mob->dropitem[i].rate < 1)
 				continue;
 
-			std::shared_ptr<item_data> id = item_db.find(mob->dropitem[i].nameid);
+			item_data* id = item_db.find(mob->dropitem[i].nameid);
 
 			if (id == nullptr)
 				continue;
@@ -8053,7 +8053,7 @@ ACMD_FUNC(mobinfo)
 				if (mob->mvpitem[i].nameid == 0)
 					continue;
 
-				std::shared_ptr<item_data> id = item_db.find(mob->mvpitem[i].nameid);
+				item_data* id = item_db.find(mob->mvpitem[i].nameid);
 
 				if (id == nullptr)
 					continue;
@@ -8101,7 +8101,7 @@ ACMD_FUNC(showmobs)
 	if((mob_id = strtol(mob_name, nullptr, 10)) == 0)
 		mob_id = mobdb_searchname(mob_name);
 
-	std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+	s_mob_db* mob = mob_db.find(mob_id);
 
 	if (mob == nullptr || mobdb_checkid(mob_id) == 0) {
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1250),mob_name); // Invalid mob id %s!
@@ -8388,7 +8388,7 @@ ACMD_FUNC(hominfo)
 ACMD_FUNC(homstats)
 {
 	struct homun_data *hd;
-	std::shared_ptr<s_homunculus_db> db;
+	s_homunculus_db* db;
 	struct s_homunculus *hom;
 	int32 lv, min, max, evo;
 
@@ -8487,7 +8487,7 @@ ACMD_FUNC(iteminfo)
 	if (itemid == 0) // Entered a string
 		count = itemdb_searchname_array(item_array, MAX_SEARCH, message);
 	else {
-		if ((item_array[0] = item_db.find(itemid)) == nullptr)
+		if ((item_array[0] = item_db.find_shared(itemid)) == nullptr)
 			count = 0;
 	}
 
@@ -8501,7 +8501,7 @@ ACMD_FUNC(iteminfo)
 		clif_displaymessage(fd, atcmd_output);
 	}
 	for (const auto &result : item_array) {
-		std::shared_ptr<item_data> item_data = result.second;
+		item_data* item_data = result.second.get();
 
 		sprintf(atcmd_output, msg_txt(sd,1277), // Item: '%s'/'%s' (%u) Type: %s | Extra Effect: %s
 			item_data->name.c_str(), item_db.create_item_link( item_data ).c_str(),item_data->nameid,
@@ -8545,7 +8545,7 @@ ACMD_FUNC(whodrops)
 	if (itemid == 0) // Entered a string
 		count = itemdb_searchname_array(item_array, MAX_SEARCH, message);
 	else {
-		if ((item_array[0] = item_db.find(itemid)) == nullptr)
+		if ((item_array[0] = item_db.find_shared(itemid)) == nullptr)
 			count = 0;
 	}
 
@@ -8559,7 +8559,7 @@ ACMD_FUNC(whodrops)
 		clif_displaymessage(fd, atcmd_output);
 	}
 	for (const auto &result : item_array) {
-		std::shared_ptr<item_data> id = result.second;
+		item_data* id = result.second.get();
 
 		sprintf(atcmd_output, msg_txt(sd,1285), item_db.create_item_link( id ).c_str(), id->nameid); // Item: '%s' (ID:%u)
 		clif_displaymessage(fd, atcmd_output);
@@ -8574,7 +8574,7 @@ ACMD_FUNC(whodrops)
 			for (uint16 j=0; j < MAX_SEARCH && id->mob[j].chance > 0; j++)
 			{
 				int32 dropchance = id->mob[j].chance;
-				std::shared_ptr<s_mob_db> mob = mob_db.find(id->mob[j].id);
+				s_mob_db* mob = mob_db.find(id->mob[j].id);
 				if(!mob) continue;
 
 #ifdef RENEWAL_DROP
@@ -8626,7 +8626,7 @@ ACMD_FUNC(whereis)
 
 	for (int32 i = 0; i < count; i++) {
 		uint16 mob_id = mob_ids[i];
-		std::shared_ptr<s_mob_db> mob = mob_db.find(mob_id);
+		s_mob_db* mob = mob_db.find(mob_id);
 
 		if(!mob) continue;
 		snprintf(atcmd_output, sizeof atcmd_output, msg_txt(sd,1289), mob->jname.c_str()); // %s spawns in:
@@ -9555,7 +9555,7 @@ ACMD_FUNC(itemlist)
 		if( it->nameid == 0  )
 			continue;
 
-		std::shared_ptr<item_data> itd = item_db.find(it->nameid);
+		item_data* itd = item_db.find(it->nameid);
 
 		if (itd == nullptr)
 			continue;
@@ -9659,7 +9659,7 @@ ACMD_FUNC(itemlist)
 				if( it->card[j] == 0 )
 					continue;
 
-				std::shared_ptr<item_data> card = item_db.find(it->card[j]);
+				item_data* card = item_db.find(it->card[j]);
 
 				if (card == nullptr)
 					continue;
@@ -9795,7 +9795,7 @@ ACMD_FUNC(delitem)
 		return -1;
 	}
 
-	std::shared_ptr<item_data> id = item_db.searchname( item_name );
+	item_data* id = item_db.searchname( item_name );
 
 	if( id == nullptr ){
 		id = item_db.find( strtoul( item_name, nullptr, 10 ) );
@@ -11205,7 +11205,7 @@ ACMD_FUNC(setcard)
 		return -1;
 	}
 	if (card_id != 0) {
-		std::shared_ptr<item_data> item_data = item_db.find( card_id );
+		item_data* item_data = item_db.find( card_id );
 
 		if (item_data == nullptr) {
 			clif_displaymessage(fd, msg_txt(sd,1530)); // Invalid card ID.
@@ -11632,7 +11632,7 @@ static void atcommand_get_suggestions(map_session_data* sd, const char *name, bo
 	}
 
 	for( auto& pair : atcommand_alias_db ){
-		std::shared_ptr<s_atcommand_alias_info> info = pair.second;
+		s_atcommand_alias_info* info = pair.second.get();
 
 		if( pc_can_use_command( sd, info->command->command, type ) ){
 			for( const std::string& alias_str : info->aliases ){

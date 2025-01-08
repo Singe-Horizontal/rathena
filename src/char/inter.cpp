@@ -904,7 +904,7 @@ uint64 InterServerDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	auto storage_table = this->find( id );
+	auto storage_table = this->find_shared( id );
 	bool existing = storage_table != nullptr;
 
 	if( !existing ){
@@ -1074,7 +1074,7 @@ int32 mapif_broadcast(unsigned char *mes, int32 len, unsigned long fontColor, sh
 }
 
 // Wis sending
-int32 mapif_wis_message( std::shared_ptr<struct WisData> wd ){
+int32 mapif_wis_message( struct WisData* wd ){
 	unsigned char buf[2048];
 	int32 headersize = 12 + 2 * NAME_LENGTH;
 
@@ -1120,7 +1120,7 @@ void check_ttl_wisdata(){
 	t_tick tick = gettick();
 
 	for( auto it = wis_db.begin(); it != wis_db.end(); ){
-		std::shared_ptr<struct WisData> wd = it->second;
+		struct WisData* wd = it->second.get();
 
 		if( DIFF_TICK( tick, wd->tick ) > WISDATA_TTL ){
 			ShowWarning( "inter: wis data id=%d time out : from %s to %s\n", wd->id, wd->src, wd->dst );
@@ -1218,7 +1218,7 @@ int32 mapif_parse_WisRequest(int32 fd)
 			// Whether the failure of previous wisp/page transmission (timeout)
 			check_ttl_wisdata();
 
-			std::shared_ptr<struct WisData> wd = std::make_shared<struct WisData>();
+			auto wd = std::make_shared<struct WisData>();
 
 			wd->id = ++wisid;
 			wd->fd = fd;
@@ -1231,7 +1231,7 @@ int32 mapif_parse_WisRequest(int32 fd)
 
 			wis_db[wd->id] = wd;
 
-			mapif_wis_message( wd );
+			mapif_wis_message( wd.get() );
 		}
 	}
 
@@ -1248,7 +1248,7 @@ int32 mapif_parse_WisReply(int32 fd)
 
 	id = RFIFOL(fd,2);
 	flag = RFIFOB(fd,6);
-	std::shared_ptr<struct WisData> wd = util::umap_find( wis_db, id );
+	struct WisData* wd = util::umap_find( wis_db, id );
 
 	if( wd == nullptr ){
 		return 0;	// This wisp was probably suppress before, because it was timeout of because of target was found on another map-server

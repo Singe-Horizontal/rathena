@@ -63,7 +63,22 @@ namespace rathena {
 		 * @param key: Key wanted
 		 * @return Key value on success or nullptr on failure
 		 */
-		template <typename K, typename V> std::shared_ptr<V> map_find( std::map<K,std::shared_ptr<V>>& map, K key ){
+		template <typename K, typename V> V* map_find( std::map<K,std::shared_ptr<V>>& map, K key ){
+			auto it = map.find( key );
+
+			if( it != map.end() ){
+				return it->second.get();
+			}else{
+				return nullptr;
+			}
+		}
+		/**
+		 * Find a key-value pair and return the key value as a reference
+		 * @param map: Map to search through
+		 * @param key: Key wanted
+		 * @return Key value on success or nullptr on failure
+		 */
+		template <typename K, typename V> std::shared_ptr<V> map_find_shared( std::map<K,std::shared_ptr<V>>& map, K key ){
 			auto it = map.find( key );
 
 			if( it != map.end() ){
@@ -72,7 +87,6 @@ namespace rathena {
 				return nullptr;
 			}
 		}
-
 		/**
 		 * Get a key-value pair and return the key value
 		 * @param map: Map to search through
@@ -133,7 +147,22 @@ namespace rathena {
 		 * @param key: Key wanted
 		 * @return Key value on success or nullptr on failure
 		 */
-		template <typename K, typename V> std::shared_ptr<V> umap_find(std::unordered_map<K, std::shared_ptr<V>>& map, K key) {
+		template <typename K, typename V> V* umap_find(std::unordered_map<K,  std::shared_ptr<V>>& map, K key) {
+			auto it = map.find(key);
+
+			if (it != map.end())
+				return it->second.get();
+			else
+				return nullptr;
+		}
+
+		/**
+		 * Find a key-value pair and return the key value as a reference
+		 * @param map: Unordered Map to search through
+		 * @param key: Key wanted
+		 * @return Key value on success or nullptr on failure
+		 */
+		template <typename K, typename V> std::shared_ptr<V> umap_find_shared(std::unordered_map<K, std::shared_ptr<V>>& map, K key) {
 			auto it = map.find(key);
 
 			if (it != map.end())
@@ -172,7 +201,20 @@ namespace rathena {
 		 * @param map: Unordered Map to search through
 		 * @return A random value by reference
 		*/
-		template <typename K, typename V> V& umap_random( std::unordered_map<K, V>& map ){
+		template <typename K, typename V> V* umap_random( std::unordered_map<K, std::shared_ptr<V>>& map ){
+			auto it = map.begin();
+
+			std::advance( it, rnd_value<size_t>( 0, map.size() - 1 ) );
+
+			return it->second.get();
+		}
+
+		/**
+		 * Get a random value from the given unordered map
+		 * @param map: Unordered Map to search through
+		 * @return A random value by reference
+		*/
+		template <typename K, typename V> std::shared_ptr<V> umap_random_shared( std::unordered_map<K, std::shared_ptr<V>>& map ){
 			auto it = map.begin();
 
 			std::advance( it, rnd_value<size_t>( 0, map.size() - 1 ) );
@@ -248,6 +290,27 @@ namespace rathena {
 					vector.erase(it);
 			}
 		}
+
+			/**
+		 * Determine if a value exists in the vector and then erase it
+		 * This will only erase the first occurrence of the value
+		 * @param vector: Vector to erase value from
+		 * @param value: Value to remove
+		 */
+		template <typename V> void vector_erase_if_exists(std::vector<std::shared_ptr<V>>& vector, V* value) {
+			auto it = std::find_if(vector.begin(), vector.end(), [&](std::shared_ptr<V>& v){
+				return v.get() == value;
+				});
+
+			if (it != vector.end()) {
+				if (vector.size() == 1) {
+					vector.clear();
+					vector.shrink_to_fit();
+				} else
+					vector.erase(it);
+			}
+		}
+
 
 #if __has_builtin( __builtin_add_overflow ) || ( defined( __GNUC__ ) && !defined( __clang__ ) && defined( GCC_VERSION  ) && GCC_VERSION >= 50100 )
 		template <typename T> bool safe_addition(T a, T b, T &result) {

@@ -232,7 +232,7 @@ bool skill_get_nk_(uint16 skill_id, std::vector<e_skill_nk> nk) {
 		return false;
 	}
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (!skill)
 		return false;
@@ -250,7 +250,7 @@ bool skill_get_inf2_(uint16 skill_id, std::vector<e_skill_inf2> inf2) {
 		return false;
 	}
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (!skill)
 		return false;
@@ -268,7 +268,7 @@ bool skill_get_unit_flag_(uint16 skill_id, std::vector<e_skill_unit_flag> unit) 
 		return false;
 	}
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (!skill)
 		return false;
@@ -291,19 +291,19 @@ int32 skill_tree_get_max(uint16 skill_id, int32 b_class) {
 
 int32 skill_frostjoke_scream(struct block_list *bl,va_list ap);
 int32 skill_attack_area(struct block_list *bl,va_list ap);
-std::shared_ptr<s_skill_unit_group> skill_locate_element_field(struct block_list *bl); // [Skotlex]
+s_skill_unit_group* skill_locate_element_field(struct block_list *bl); // [Skotlex]
 int32 skill_graffitiremover(struct block_list *bl, va_list ap); // [Valaris]
 int32 skill_greed(struct block_list *bl, va_list ap);
 static int32 skill_cell_overlap(struct block_list *bl, va_list ap);
 static int32 skill_trap_splash(struct block_list *bl, va_list ap);
-struct skill_unit_group_tickset *skill_unitgrouptickset_search(struct block_list *bl,std::shared_ptr<s_skill_unit_group> sg,t_tick tick);
+struct skill_unit_group_tickset *skill_unitgrouptickset_search(struct block_list *bl,s_skill_unit_group* sg,t_tick tick);
 static int32 skill_unit_onplace(struct skill_unit *src,struct block_list *bl,t_tick tick);
 int32 skill_unit_onleft(uint16 skill_id, struct block_list *bl,t_tick tick);
 static int32 skill_unit_effect(struct block_list *bl,va_list ap);
 static int32 skill_bind_trap(struct block_list *bl, va_list ap);
 
 e_cast_type skill_get_casttype (uint16 skill_id) {
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if( skill == nullptr ){
 		return CAST_DAMAGE;
@@ -483,7 +483,7 @@ bool skill_pos_maxcount_check(struct block_list *src, int16 x, int16 y, uint16 s
 	struct unit_data *ud = unit_bl2ud(src);
 	map_session_data *sd = map_id2sd(src->id);
 	int32 maxcount = 0;
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (!(type&battle_config.skill_reiteration) && skill->unit_flag[UF_NOREITERATION] && skill_check_unit_range(src, x, y, skill_id, skill_lv)) {
 		if (sd && display_failure)
@@ -4402,7 +4402,7 @@ static int32 skill_check_condition_mercenary(struct block_list *bl, uint16 skill
 	status_data* status = status_get_status_data(*bl);
 	skill_lv = cap_value(skill_lv, 1, MAX_SKILL_LEVEL);
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (skill == nullptr)
 		return 0;
@@ -4905,7 +4905,7 @@ static int32 skill_active_reverberation(struct block_list *bl, va_list ap) {
 	if (bl->type != BL_SKILL)
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> sg = su->group;
+	s_skill_unit_group* sg = su->group.get();
 
 	if (su->alive && sg && sg->skill_id == NPC_REVERBERATION) {
 		map_foreachinallrange(skill_trap_splash, bl, skill_get_splash(sg->skill_id, sg->skill_lv), sg->bl_flag, bl, gettick());
@@ -6697,9 +6697,9 @@ int32 skill_castend_damage_id (struct block_list* src, struct block_list *bl, ui
 				status_change_end(bl, SC__SHADOWFORM); // Should only end, no damage dealt.
 		} else {
 			skill_unit *su = BL_CAST(BL_SKILL, bl);
-			std::shared_ptr<s_skill_unit_group> sg;
+			s_skill_unit_group* sg;
 
-			if (su && (sg = su->group) && skill_get_inf2(sg->skill_id, INF2_ISTRAP)) {
+			if (su && (sg = su->group.get()) && skill_get_inf2(sg->skill_id, INF2_ISTRAP)) {
 				if( !(sg->unit_id == UNT_USED_TRAPS || (sg->unit_id == UNT_ANKLESNARE && sg->val2 != 0 )) )
 				{
 					struct item item_tmp;
@@ -10242,12 +10242,12 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 	case HT_REMOVETRAP:
 		{
 			skill_unit* su = BL_CAST(BL_SKILL, bl);
-			std::shared_ptr<s_skill_unit_group> sg;
-			std::shared_ptr<s_skill_db> skill_group;
+			s_skill_unit_group* sg;
+			s_skill_db* skill_group;
 
 			// Mercenaries can remove any trap
 			// Players can only remove their own traps or traps on Vs maps.
-			if( su && (sg = su->group) && (src->type == BL_MER || sg->src_id == src->id || map_flag_vs(bl->m)) && ( skill_group = skill_db.find(sg->skill_id) ) && skill_group->inf2[INF2_ISTRAP] )
+			if( su && (sg = su->group.get()) && (src->type == BL_MER || sg->src_id == src->id || map_flag_vs(bl->m)) && ( skill_group = skill_db.find(sg->skill_id) ) && skill_group->inf2[INF2_ISTRAP] )
 			{
 				clif_skill_nodamage(src, *bl, skill_id, skill_lv);
 				if( sd && !(sg->unit_id == UNT_USED_TRAPS || (sg->unit_id == UNT_ANKLESNARE && sg->val2 != 0 )) )
@@ -10626,7 +10626,7 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 			int8 dy[9] = { 0, 0, 1,-1, 1,-1,-1, 1, 0};
 			uint8 j = 0, calls = 0, called = 0;
 			// i don't know if it actually summons in a circle, but oh well. ;P
-			auto g = sd?sd->guild:guild_search(status_get_guild_id(src));
+			auto g = sd?sd->guild.get():guild_search(status_get_guild_id(src));
 			if (!g)
 				break;
 
@@ -13280,7 +13280,7 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 		break;
 
 	default: {
-		std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+		s_skill_db* skill = skill_db.find(skill_id);
 		ShowWarning("skill_castend_nodamage_id: missing code case for skill %s(%d)\n", skill ? skill->name : "UNKNOWN", skill_id);
 		clif_skill_nodamage(src,*bl,skill_id,skill_lv);
 		map_freeblock_unlock();
@@ -13325,7 +13325,7 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
  * @return -1 success, others are failed @see enum useskill_fail_cause.
  **/
 static int8 skill_castend_id_check(struct block_list *src, struct block_list *target, uint16 skill_id, uint16 skill_lv) {
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 	int32 inf = skill->inf;
 	status_change *tsc = status_get_sc(target);
 
@@ -14128,7 +14128,7 @@ int32 skill_castend_pos2(struct block_list* src, int32 x, int32 y, uint16 skill_
 	case SA_DELUGE:
 	case SA_VIOLENTGALE:
 	{	//Does not consumes if the skill is already active. [Skotlex]
-		std::shared_ptr<s_skill_unit_group> sg2;
+		s_skill_unit_group* sg2;
 		if ((sg2= skill_locate_element_field(src)) != nullptr && ( sg2->skill_id == SA_VOLCANO || sg2->skill_id == SA_DELUGE || sg2->skill_id == SA_VIOLENTGALE ))
 		{
 			if (sg2->limit - DIFF_TICK(gettick(), sg2->tick) > 0)
@@ -14713,7 +14713,7 @@ int32 skill_castend_pos2(struct block_list* src, int32 x, int32 y, uint16 skill_
 		break;
 
 	case SC_FEINTBOMB: {
-			std::shared_ptr<s_skill_unit_group> group = skill_unitsetting(src,skill_id,skill_lv,x,y,0); // Set bomb on current Position
+			auto group = skill_unitsetting(src,skill_id,skill_lv,x,y,0); // Set bomb on current Position
 
 			if( group == nullptr || group->unit == nullptr ) {
 				if (sd)
@@ -15293,9 +15293,9 @@ static bool skill_dance_switch(struct skill_unit* unit, int32 flag)
 {
 	static int32 prevflag = 1;  // by default the backup is empty
 	static s_skill_unit_group backup;
-	std::shared_ptr<s_skill_unit_group> group;
+	s_skill_unit_group* group;
 
-	if( unit == nullptr || (group = unit->group) == nullptr )
+	if( unit == nullptr || (group = unit->group.get()) == nullptr )
 		return false;
 
 	//val2&(1 << UF_ENSEMBLE) is a hack to indicate dissonance
@@ -15370,7 +15370,7 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 
 	nullpo_retr(nullptr, src);
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	mapdata = map_getmapdata(src->m);
 	limit = skill_get_time3(mapdata, skill_id,skill_lv);
@@ -15490,7 +15490,7 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 	case SC_CHAOSPANIC:
 	case SOA_TOTEM_OF_TUTELARY:
 	{
-		std::shared_ptr<s_skill_unit_group> old_sg = skill_locate_element_field(src);
+		s_skill_unit_group* old_sg = skill_locate_element_field(src);
 
 		if (old_sg != nullptr)
 		{	//HelloKitty confirmed that these are interchangeable,
@@ -15925,7 +15925,7 @@ std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list *src, ui
 
 	if (!group->alive_count)
 	{	//No cells? Something that was blocked completely by Land Protector?
-		skill_delunitgroup(group);
+		skill_delunitgroup(group.get());
 		return nullptr;
 	}
 
@@ -15970,7 +15970,7 @@ static int32 skill_unit_onplace(struct skill_unit *unit, struct block_list *bl, 
 	if(bl->prev == nullptr || !unit->alive || status_isdead(*bl))
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> sg = unit->group;
+	s_skill_unit_group* sg = unit->group.get();
 
 	if (sg == nullptr)
 		return 0;
@@ -15983,7 +15983,7 @@ static int32 skill_unit_onplace(struct skill_unit *unit, struct block_list *bl, 
 		map_getcell(bl->m, bl->x, bl->y, CELL_CHKMAELSTROM) )
 		return 0; //AoE skills are ineffective. [Skotlex]
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(sg->skill_id);
+	s_skill_db* skill = skill_db.find(sg->skill_id);
 
 	if( (skill->inf2[INF2_ISSONG] || skill->inf2[INF2_ISENSEMBLE]) && map_getcell(bl->m, bl->x, bl->y, CELL_CHKBASILICA) )
 		return 0; //Songs don't work in Basilica
@@ -16317,7 +16317,7 @@ int32 skill_unit_onplace_timer(struct skill_unit *unit, struct block_list *bl, t
 	if (bl->prev == nullptr || !unit->alive || status_isdead(*bl))
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> sg = unit->group;
+	s_skill_unit_group* sg = unit->group.get();
 
 	if (sg == nullptr)
 		return 0;
@@ -17158,7 +17158,7 @@ int32 skill_unit_onout(struct skill_unit *src, struct block_list *bl, t_tick tic
 	nullpo_ret(src);
 	nullpo_ret(bl);
 
-	std::shared_ptr<s_skill_unit_group> sg = src->group;
+	s_skill_unit_group* sg = src->group.get();
 
 	if (sg == nullptr)
 		return 0;
@@ -17375,7 +17375,7 @@ static int32 skill_unit_effect(struct block_list* bl, va_list ap)
 	if( (!unit->alive && !(flag&4)) || bl->prev == nullptr )
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> group = unit->group;
+	s_skill_unit_group* group = unit->group.get();
 
 	if (group == nullptr)
 		return 0;
@@ -17420,7 +17420,7 @@ int64 skill_unit_ondamaged(struct skill_unit *unit, int64 damage)
 {
 	nullpo_ret(unit);
 
-	std::shared_ptr<s_skill_unit_group> sg = unit->group;
+	s_skill_unit_group* sg = unit->group.get();
 
 	if (sg == nullptr)
 		return 0;
@@ -17694,7 +17694,7 @@ static int32 skill_check_condition_mob_master_sub(struct block_list *bl, va_list
  */
 int32 skill_isammotype(map_session_data *sd, unsigned short skill_id)
 {
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	return (
 		battle_config.arrow_decrement == 2 &&
@@ -19250,7 +19250,7 @@ struct s_skill_condition skill_get_requirement(map_session_data* sd, uint16 skil
 
 	status = &sd->battle_status;
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	req.hp = skill->require.hp[skill_lv - 1];
 	hp_rate = skill->require.hp_rate[skill_lv - 1];
@@ -20106,14 +20106,14 @@ void skill_weaponrefine( map_session_data& sd, int32 idx ){
 				return;
 			}
 
-			std::shared_ptr<s_refine_level_info> info = refine_db.findLevelInfo( *ditem, *item );
+			s_refine_level_info* info = refine_db.findLevelInfo( *ditem, *item );
 
 			if( info == nullptr ){
 				clif_skill_fail( sd, sd.menuskill_id );
 				return;
 			}
 
-			std::shared_ptr<s_refine_cost> cost = util::umap_find( info->costs, (uint16)REFINE_COST_NORMAL );
+			s_refine_cost* cost = util::umap_find( info->costs, (uint16)REFINE_COST_NORMAL );
 
 			if( cost == nullptr ){
 				clif_skill_fail( sd, sd.menuskill_id );
@@ -20483,7 +20483,7 @@ int32 skill_clear_group(block_list *bl, uint8 flag)
 			case MH_LAVA_SLIDE:
 			case SOA_TOTEM_OF_TUTELARY:
 				if (flag & 1) {
-					skill_delunitgroup(*it);
+					skill_delunitgroup(it->get());
 					count++;
 					deleted = true;
 				}
@@ -20491,21 +20491,21 @@ int32 skill_clear_group(block_list *bl, uint8 flag)
 			case SO_CLOUD_KILL:
 			case NPC_CLOUD_KILL:
 				if (flag & 4) {
-					skill_delunitgroup(*it);
+					skill_delunitgroup(it->get());
 					count++;
 					deleted = true;
 				}
 				break;
 			case SO_WARMER:
 				if (flag & 8) {
-					skill_delunitgroup(*it);
+					skill_delunitgroup(it->get());
 					count++;
 					deleted = true;
 				}
 				break;
 			default:
 				if (flag & 2 && skill_get_inf2((*it)->skill_id, INF2_ISTRAP)) {
-					skill_delunitgroup(*it);
+					skill_delunitgroup(it->get());
 					count++;
 					deleted = true;
 				}
@@ -20521,7 +20521,7 @@ int32 skill_clear_group(block_list *bl, uint8 flag)
  * @param bl
  * @return s_skill_unit_group
  */
-std::shared_ptr<s_skill_unit_group> skill_locate_element_field(struct block_list *bl)
+s_skill_unit_group* skill_locate_element_field(struct block_list *bl)
 {
 	nullpo_ret(bl);
 
@@ -20530,7 +20530,7 @@ std::shared_ptr<s_skill_unit_group> skill_locate_element_field(struct block_list
 	if (ud == nullptr)
 		return nullptr;
 
-	for (const auto su : ud->skillunits) {
+	for (const auto& su : ud->skillunits) {
 		switch (su->skill_id) {
 			case SA_DELUGE:
 			case SA_VOLCANO:
@@ -20544,7 +20544,7 @@ std::shared_ptr<s_skill_unit_group> skill_locate_element_field(struct block_list
 			case MH_POISON_MIST:
 			case MH_LAVA_SLIDE:
 			case SOA_TOTEM_OF_TUTELARY:
-				return su;
+				return su.get();
 		}
 	}
 	return nullptr;
@@ -20600,7 +20600,7 @@ int32 skill_detonator(struct block_list *bl, va_list ap)
 	if (unit == nullptr)
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> group = unit->group;
+	s_skill_unit_group* group = unit->group.get();
 
 	if (group == nullptr || group->src_id != src->id)
 		return 0;
@@ -20706,13 +20706,13 @@ static int32 skill_cell_overlap(struct block_list *bl, va_list ap)
 					return 1;
 				}
 
-				std::shared_ptr<s_skill_db> skill = skill_db.find(unit->group->skill_id);
+				s_skill_db* skill = skill_db.find(unit->group->skill_id);
 
 				//It deletes everything except traps and barriers
 				if ((!skill->inf2[INF2_ISTRAP] && !skill->inf2[INF2_IGNORELANDPROTECTOR]) || unit->group->skill_id == WZ_FIREPILLAR) {
 					if (skill->unit_flag[UF_RANGEDSINGLEUNIT]) {
 						if (unit->val2&(1 << UF_RANGEDSINGLEUNIT))
-							skill_delunitgroup(unit->group);
+							skill_delunitgroup(unit->group.get());
 					} else
 						skill_delunit(unit);
 					return 1;
@@ -20728,7 +20728,7 @@ static int32 skill_cell_overlap(struct block_list *bl, va_list ap)
 			// Officially songs/dances are removed
 			if (skill_get_unit_flag(unit->group->skill_id, UF_RANGEDSINGLEUNIT)) {
 				if (unit->val2&(1 << UF_RANGEDSINGLEUNIT))
-					skill_delunitgroup(unit->group);
+					skill_delunitgroup(unit->group.get());
 			} else
 				skill_delunit(unit);
 			return 1;
@@ -20794,7 +20794,7 @@ static int32 skill_cell_overlap(struct block_list *bl, va_list ap)
 				if (uf[UF_REMOVEDBYFIRERAIN]) {
 					if (uf[UF_RANGEDSINGLEUNIT]) {
 						if (unit->val2&(1 << UF_RANGEDSINGLEUNIT))
-							skill_delunitgroup(unit->group);
+							skill_delunitgroup(unit->group.get());
 					} else
 						skill_delunit(unit);
 					return 1;
@@ -20831,7 +20831,7 @@ static int32 skill_trap_splash(struct block_list *bl, va_list ap)
 	if (!unit || !unit->alive || bl->prev == nullptr)
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> sg = unit->group;
+	s_skill_unit_group* sg = unit->group.get();
 
 	if (sg == nullptr)
 		return 0;
@@ -21171,7 +21171,7 @@ void skill_getareachar_skillunit_visibilty_single(struct skill_unit *su, struct 
  * @param val1
  * @param val2
  */
-struct skill_unit *skill_initunit(std::shared_ptr<s_skill_unit_group> group, int32 idx, int32 x, int32 y, int32 val1, int32 val2, bool hidden)
+struct skill_unit *skill_initunit(std::shared_ptr<s_skill_unit_group>& group, int32 idx, int32 x, int32 y, int32 val1, int32 val2, bool hidden)
 {
 	if (group == nullptr || group->unit == nullptr)
 		return nullptr;
@@ -21245,7 +21245,7 @@ int32 skill_delunit(struct skill_unit* unit)
 
 	unit->alive = 0;
 
-	std::shared_ptr<s_skill_unit_group> group = unit->group;
+	s_skill_unit_group* group = unit->group.get();
 
 	if (group == nullptr)
 		return 0;
@@ -21316,8 +21316,13 @@ int32 skill_delunit(struct skill_unit* unit)
 static std::unordered_map<int32, std::shared_ptr<s_skill_unit_group>> skillunit_group_db; /// Skill unit group DB. Key int32 group_id -> struct s_skill_unit_group*
 
 /// Returns the target s_skill_unit_group or nullptr if not found.
-std::shared_ptr<s_skill_unit_group> skill_id2group(int32 group_id) {
+s_skill_unit_group* skill_id2group(int32 group_id) {
 	return util::umap_find(skillunit_group_db, group_id);
+}
+
+/// Returns the target s_skill_unit_group or nullptr if not found.
+std::shared_ptr<s_skill_unit_group> skill_id2group_shared(int32 group_id) {
+	return util::umap_find_shared(skillunit_group_db, group_id);
 }
 
 static int32 skill_unit_group_newid = MAX_SKILL; /// Skill Unit Group ID
@@ -21405,7 +21410,7 @@ std::shared_ptr<s_skill_unit_group> skill_initunitgroup(struct block_list* src, 
  * @param line
  * @param *func
  */
-int32 skill_delunitgroup_(std::shared_ptr<s_skill_unit_group> group, const char* file, int32 line, const char* func)
+int32 skill_delunitgroup_(s_skill_unit_group* group, const char* file, int32 line, const char* func)
 {
 	struct block_list* src;
 	struct unit_data *ud;
@@ -21558,7 +21563,7 @@ int32 skill_delunitgroup_(std::shared_ptr<s_skill_unit_group> group, const char*
 	util::vector_erase_if_exists(ud->skillunits, group);
 
 	if(link_group_id) {
-		std::shared_ptr<s_skill_unit_group> group_cur = skill_id2group(link_group_id);
+		s_skill_unit_group* group_cur = skill_id2group(link_group_id);
 
 		if(group_cur)
 			skill_delunitgroup(group_cur);
@@ -21581,7 +21586,7 @@ void skill_clear_unitgroup(struct block_list *src)
 
 	// The after loop statement might look stupid, but this prevents iteration problems, if an entry was deleted
 	for (auto it = ud->skillunits.begin(); it != ud->skillunits.end(); it = ud->skillunits.begin()) {
-		skill_delunitgroup(*it);
+		skill_delunitgroup(it->get());
 	}
 }
 
@@ -21592,7 +21597,7 @@ void skill_clear_unitgroup(struct block_list *src)
  * @param tick
  * @return skill_unit_group_tickset if found
  */
-struct skill_unit_group_tickset *skill_unitgrouptickset_search(struct block_list *bl, std::shared_ptr<s_skill_unit_group> group, t_tick tick)
+struct skill_unit_group_tickset *skill_unitgrouptickset_search(struct block_list *bl, s_skill_unit_group* group, t_tick tick)
 {
 	int32 i, j = -1, s, id;
 	struct unit_data *ud;
@@ -21645,12 +21650,12 @@ int32 skill_unit_timer_sub_onplace(struct block_list* bl, va_list ap)
 	if( !unit->alive || bl->prev == nullptr )
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> group = unit->group;
+	s_skill_unit_group* group = unit->group.get();
 
 	if (group == nullptr)
 		return 0;
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(group->skill_id);
+	s_skill_db* skill = skill_db.find(group->skill_id);
 
 	if( !(skill->inf2[INF2_ISSONG] || skill->inf2[INF2_ISTRAP]) && !skill->inf2[INF2_IGNORELANDPROTECTOR] && group->skill_id != NC_NEUTRALBARRIER && (battle_config.land_protector_behavior ? map_getcell(bl->m, bl->x, bl->y, CELL_CHKLANDPROTECTOR) : map_getcell(unit->bl.m, unit->bl.x, unit->bl.y, CELL_CHKLANDPROTECTOR)) )
 		return 0; //AoE skills are ineffective. [Skotlex]
@@ -21684,7 +21689,7 @@ static int32 skill_unit_timer_sub(DBKey key, DBData *data, va_list ap)
 	if( !unit->alive )
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> group = unit->group;
+	s_skill_unit_group* group = unit->group.get();
 
 	if (group == nullptr)
 		return 0;
@@ -21984,7 +21989,7 @@ int32 skill_unit_move_sub(struct block_list* bl, va_list ap)
 	if( !unit->alive || target->prev == nullptr )
 		return 0;
 
-	std::shared_ptr<s_skill_unit_group> group = unit->group;
+	s_skill_unit_group* group = unit->group.get();
 
 	if (group == nullptr)
 		return 0;
@@ -22124,7 +22129,7 @@ void skill_unit_move_unit(struct block_list *bl, int32 dx, int32 dy) {
  * @param dx
  * @param dy
  */
-void skill_unit_move_unit_group(std::shared_ptr<s_skill_unit_group> group, int16 m, int16 dx, int16 dy)
+void skill_unit_move_unit_group(s_skill_unit_group* group, int16 m, int16 dx, int16 dy)
 {
 	int32 i, j;
 	t_tick tick = gettick();
@@ -22978,11 +22983,11 @@ bool skill_arrow_create(map_session_data *sd, t_itemid nameid)
 	if (!nameid || !item_db.exists(nameid) || skill_arrow_db.empty())
 		return false;
 
-	std::shared_ptr<s_skill_arrow_db> arrow = nullptr;
+	s_skill_arrow_db* arrow = nullptr;
 
 	for (const auto &it : skill_arrow_db) {
 		if (nameid == it.second->nameid) {
-			arrow = it.second;
+			arrow = it.second.get();
 			break;
 		}
 	}
@@ -23157,7 +23162,7 @@ void skill_spellbook(map_session_data &sd, t_itemid nameid) {
 		}
 	}
 
-	std::shared_ptr<s_skill_spellbook_db> spell = reading_spellbook_db.findBook(nameid);
+	s_skill_spellbook_db* spell = reading_spellbook_db.findBook(nameid);
 
 	if (spell == nullptr)
 		return;
@@ -23351,10 +23356,10 @@ static int32 skill_destroy_trap(struct block_list *bl, va_list ap)
 
 	nullpo_ret(su);
 
-	std::shared_ptr<s_skill_unit_group> sg;
+	s_skill_unit_group* sg;
 	t_tick tick = va_arg(ap, t_tick);
 
-	if (su->alive && (sg = su->group) && skill_get_inf2(sg->skill_id, INF2_ISTRAP)) {
+	if (su->alive && (sg = su->group.get()) && skill_get_inf2(sg->skill_id, INF2_ISTRAP)) {
 		switch( sg->unit_id ) {
 			case UNT_CLAYMORETRAP:
 			case UNT_FIRINGTRAP:
@@ -23618,7 +23623,7 @@ void skill_init_unit_layout (void) {
 	// afterwards add special ones
 	pos = i;
 	for (const auto &it : skill_db) {
-		std::shared_ptr<s_skill_db> skill = it.second;
+		s_skill_db* skill = it.second.get();
 		uint16 skill_id = skill->nameid;
 
 		if (!skill->unit_id || skill->unit_layout_type[0] != -1)
@@ -24111,7 +24116,7 @@ int32 skill_block_check(struct block_list *bl, sc_type type , uint16 skill_id) {
  * @return True on success or false otherwise
  */
 bool skill_disable_check(status_change &sc, uint16 skill_id) {
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (skill == nullptr || skill->sc <= SC_NONE || skill->sc >= SC_MAX)
 		return false;
@@ -24268,7 +24273,7 @@ uint64 SkillDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt16(node, "Id", skill_id))
 		return 0;
 
-	std::shared_ptr<s_skill_db> skill = this->find(skill_id);
+	std::shared_ptr<s_skill_db> skill = this->find_shared(skill_id);
 	bool exists = skill != nullptr;
 
 	if (!exists) {
@@ -24992,7 +24997,7 @@ uint64 SkillDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(it, "Item", item_name))
 					continue;
 
-				std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+				item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 				if (item == nullptr) {
 					this->invalidWarning(it["Item"], "Requires ItemCost Item %s does not exist.\n", item_name.c_str());
@@ -25034,7 +25039,7 @@ uint64 SkillDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				std::string item_name;
 				c4::from_chars(it.key(), &item_name);
 
-				std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+				item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 				if (item == nullptr) {
 					this->invalidWarning(it, "Requires Equipment %s does not exist.\n", item_name.c_str());
@@ -25293,7 +25298,7 @@ uint64 ReadingSpellbookDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_skill_spellbook_db> spell = this->find(skill_id);
+	std::shared_ptr<s_skill_spellbook_db> spell = this->find_shared(skill_id);
 	bool exists = spell != nullptr;
 
 	if (!exists) {
@@ -25310,7 +25315,7 @@ uint64 ReadingSpellbookDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "Book", book_name))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( book_name.c_str() );
+		item_data* item = item_db.search_aegisname( book_name.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(node["Book"], "Book item %s does not exist.\n", book_name.c_str());
@@ -25340,13 +25345,13 @@ uint64 ReadingSpellbookDatabase::parseBodyNode(const ryml::NodeRef& node) {
  * @param nameid: Book Item ID
  * @return Spell data or nullptr otherwise
  */
-std::shared_ptr<s_skill_spellbook_db> ReadingSpellbookDatabase::findBook(t_itemid nameid) {
+s_skill_spellbook_db* ReadingSpellbookDatabase::findBook(t_itemid nameid) {
 	if (!item_db.exists(nameid) || reading_spellbook_db.empty())
 		return nullptr;
 
 	for (const auto &spell : reading_spellbook_db) {
 		if (spell.second->nameid == nameid)
-			return spell.second;
+			return spell.second.get();
 	}
 
 	return nullptr;
@@ -25379,7 +25384,7 @@ uint64 MagicMushroomDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_skill_magicmushroom_db> mushroom = this->find(skill_id);
+	std::shared_ptr<s_skill_magicmushroom_db> mushroom = this->find_shared(skill_id);
 	bool exists = mushroom != nullptr;
 
 	if (!exists) {
@@ -25396,7 +25401,7 @@ uint64 MagicMushroomDatabase::parseBodyNode(const ryml::NodeRef& node) {
  * Structure: SkillID,Flag
  */
 static bool skill_parse_row_nocastdb( char* split[], size_t columns, size_t current ){
-	std::shared_ptr<s_skill_db> skill = skill_db.find(atoi(split[0]));
+	s_skill_db* skill = skill_db.find(atoi(split[0]));
 
 	if (!skill)
 		return false;
@@ -25464,7 +25469,7 @@ uint64 SkillArrowDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asString(node, "Source", source_name))
 		return 0;
 
-	std::shared_ptr<item_data> item = item_db.search_aegisname( source_name.c_str() );
+	item_data* item = item_db.search_aegisname( source_name.c_str() );
 
 	if (item == nullptr) {
 		this->invalidWarning(node["Source"], "Item %s does not exist.\n", source_name.c_str());
@@ -25473,7 +25478,7 @@ uint64 SkillArrowDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 	t_itemid nameid = item->nameid;
 
-	std::shared_ptr<s_skill_arrow_db> arrow = this->find(nameid);
+	std::shared_ptr<s_skill_arrow_db> arrow = this->find_shared(nameid);
 	bool exists = arrow != nullptr;
 
 	if (!exists) {
@@ -25489,7 +25494,7 @@ uint64 SkillArrowDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(it, "Item", item_name))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if (item == nullptr) {
 			this->invalidWarning(it["Item"], "Item %s does not exist.\n", item_name.c_str());
@@ -25547,7 +25552,7 @@ uint64 AbraDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_skill_abra_db> abra = this->find(skill_id);
+	std::shared_ptr<s_skill_abra_db> abra = this->find_shared(skill_id);
 	bool exists = abra != nullptr;
 
 	if (!exists) {
@@ -25673,7 +25678,7 @@ static bool skill_parse_row_skilldamage( char* split[], size_t columns, size_t c
 	} else
 		id = skill_name2id(split[0]);
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(id);
+	s_skill_db* skill = skill_db.find(id);
 
 	if (!skill)
 		return false;

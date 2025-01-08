@@ -60,7 +60,7 @@ uint64 InstanceDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_instance_db> instance = this->find(instance_id);
+	std::shared_ptr<s_instance_db> instance = this->find_shared(instance_id);
 	bool exists = instance != nullptr;
 
 	if (!exists) {
@@ -275,11 +275,11 @@ InstanceDatabase instance_db;
  * @param instance_name: Instance to search for
  * @return shared_ptr of instance or nullptr on failure
  */
-std::shared_ptr<s_instance_db> instance_search_db_name(const char *instance_name)
+s_instance_db* instance_search_db_name(const char *instance_name)
 {
 	for (const auto &it : instance_db) {
 		if (!strcmp(it.second->name.c_str(), instance_name))
-			return it.second;
+			return it.second.get();
 	}
 
 	return nullptr;
@@ -292,7 +292,7 @@ std::shared_ptr<s_instance_db> instance_search_db_name(const char *instance_name
  * @param target: Target display type
  */
 void instance_getsd(int32 instance_id, map_session_data *&sd, enum send_target *target) {
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (!idata) {
 		sd = nullptr;
@@ -341,14 +341,14 @@ static TIMER_FUNC(instance_subscription_timer){
 	if (instance_id <= 0 || instance_wait.id.empty())
 		return 0;
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (!idata)
 		return 0;
 
 	map_session_data *sd;
 	struct party_data *pd;
-	std::shared_ptr<MapGuild> gd;
+	MapGuild* gd;
 	struct clan *cd;
 	e_instance_mode mode = idata->mode;
 
@@ -399,13 +399,13 @@ static TIMER_FUNC(instance_subscription_timer){
  * @param instance_id: Instance ID to notify
  * @return True on success or false on failure
  */
-bool instance_startkeeptimer(std::shared_ptr<s_instance_data> idata, int32 instance_id)
+bool instance_startkeeptimer(s_instance_data* idata, int32 instance_id)
 {
 	// No timer
 	if (!idata || idata->keep_timer != INVALID_TIMER)
 		return false;
 
-	std::shared_ptr<s_instance_db> db = instance_db.find(idata->id);
+	s_instance_db* db = instance_db.find(idata->id);
 
 	if (!db)
 		return false;
@@ -450,13 +450,13 @@ bool instance_startkeeptimer(std::shared_ptr<s_instance_data> idata, int32 insta
  * @param instance_id: Instance ID to notify
  * @param True on success or false on failure
  */
-bool instance_startidletimer(std::shared_ptr<s_instance_data> idata, int32 instance_id)
+bool instance_startidletimer(s_instance_data* idata, int32 instance_id)
 {
 	// No current timer
 	if (!idata || idata->idle_timer != INVALID_TIMER)
 		return false;
 
-	std::shared_ptr<s_instance_db> db = instance_db.find(idata->id);
+	s_instance_db* db = instance_db.find(idata->id);
 
 	if (!db)
 		return false;
@@ -501,7 +501,7 @@ bool instance_startidletimer(std::shared_ptr<s_instance_data> idata, int32 insta
  * @param instance_id: Instance ID to notify
  * @return True on success or false on failure
  */
-bool instance_stopidletimer(std::shared_ptr<s_instance_data> idata, int32 instance_id)
+bool instance_stopidletimer(s_instance_data* idata, int32 instance_id)
 {
 	// No timer
 	if (!idata || idata->idle_timer == INVALID_TIMER)
@@ -581,7 +581,7 @@ static int32 instance_addnpc_sub(struct block_list *bl, va_list ap)
  * Add an NPC to an instance
  * @param idata: Instance data
  */
-void instance_addnpc(std::shared_ptr<s_instance_data> idata)
+void instance_addnpc(s_instance_data* idata)
 {
 	// First add the NPCs
 	for (const auto &it : idata->map) {
@@ -606,7 +606,7 @@ void instance_addnpc(std::shared_ptr<s_instance_data> idata)
  * @return -4 = no free instances | -3 = already exists | -2 = character/party/guild not found | -1 = invalid type | On success return instance_id
  */
 int32 instance_create(int32 owner_id, const char *name, e_instance_mode mode) {
-	std::shared_ptr<s_instance_db> db = instance_search_db_name(name);
+	s_instance_db* db = instance_search_db_name(name);
 
 	if (!db) {
 		ShowError("instance_create: Unknown instance %s creation was attempted.\n", name);
@@ -615,7 +615,7 @@ int32 instance_create(int32 owner_id, const char *name, e_instance_mode mode) {
 
 	map_session_data *sd = nullptr;
 	struct party_data *pd;
-	std::shared_ptr<MapGuild> gd;
+	MapGuild* gd;
 	struct clan* cd;
 
 	switch(mode) {
@@ -662,7 +662,7 @@ int32 instance_create(int32 owner_id, const char *name, e_instance_mode mode) {
 		return -4;
 
 	int32 instance_id = instance_count++;
-	std::shared_ptr<s_instance_data> entry = std::make_shared<s_instance_data>();
+	auto entry = std::make_shared<s_instance_data>();
 
 	entry->id = db->id;
 	entry->owner_id = owner_id;
@@ -702,7 +702,7 @@ int32 instance_create(int32 owner_id, const char *name, e_instance_mode mode) {
 	ShowInfo("[Instance] Created: %s (%d)\n", name, instance_id);
 
 	// Start the instance timer on instance creation
-	instance_startkeeptimer(entry, instance_id);
+	instance_startkeeptimer(entry.get(), instance_id);
 
 	return instance_id;
 }
@@ -716,13 +716,13 @@ size_t instance_addmap( int32 instance_id ){
 	if (instance_id <= 0)
 		return 0;
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	// If the instance isn't idle, we can't do anything
 	if (idata->state != INSTANCE_IDLE)
 		return 0;
 
-	std::shared_ptr<s_instance_db> db = instance_db.find(idata->id);
+	s_instance_db* db = instance_db.find(idata->id);
 
 	if (!db)
 		return 0;
@@ -827,7 +827,7 @@ int16 instance_mapid(int16 m, int32 instance_id)
 		return -1;
 	}
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if(!idata || idata->state != INSTANCE_BUSY)
 		return -1;
@@ -850,7 +850,7 @@ int16 instance_mapid(int16 m, int32 instance_id)
 void instance_destroy_command(map_session_data *sd) {
 	nullpo_retv(sd);
 
-	std::shared_ptr<s_instance_data> idata;
+	s_instance_data* idata;
 	int32 instance_id = 0;
 
 	if (sd->instance_mode == IM_CHAR && sd->instance_id > 0) {
@@ -933,14 +933,14 @@ void instance_destroy_command(map_session_data *sd) {
  */
 bool instance_destroy(int32 instance_id)
 {
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (!idata)
 		return false;
 
 	map_session_data *sd;
 	struct party_data *pd;
-	std::shared_ptr<MapGuild> gd;
+	MapGuild* gd;
 	struct clan *cd;
 	e_instance_mode mode = idata->mode;
 	e_instance_notify type = IN_NOTIFY;
@@ -1052,7 +1052,7 @@ e_instance_enter instance_enter(map_session_data *sd, int32 instance_id, const c
 {
 	nullpo_retr(IE_OTHER, sd);
 	
-	std::shared_ptr<s_instance_db> db = instance_search_db_name(name);
+	s_instance_db* db = instance_search_db_name(name);
 
 	if (!db) {
 		ShowError("instance_enter: Unknown instance \"%s\".\n", name);
@@ -1065,9 +1065,9 @@ e_instance_enter instance_enter(map_session_data *sd, int32 instance_id, const c
 		y = db->enter.y;
 	}
 
-	std::shared_ptr<s_instance_data> idata = nullptr;
+	s_instance_data* idata = nullptr;
 	struct party_data *pd;
-	std::shared_ptr<MapGuild> gd;
+	MapGuild* gd;
 	struct clan *cd;
 	e_instance_mode mode;
 
@@ -1147,7 +1147,7 @@ bool instance_reqinfo(map_session_data *sd, int32 instance_id)
 {
 	nullpo_retr(false, sd);
 
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if (!idata || !instance_db.find(idata->id))
 		return false;
@@ -1179,7 +1179,7 @@ bool instance_reqinfo(map_session_data *sd, int32 instance_id)
  */
 bool instance_addusers(int32 instance_id)
 {
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if(!idata || idata->state != INSTANCE_BUSY)
 		return false;
@@ -1200,7 +1200,7 @@ bool instance_addusers(int32 instance_id)
  */
 bool instance_delusers(int32 instance_id)
 {
-	std::shared_ptr<s_instance_data> idata = util::umap_find(instances, instance_id);
+	s_instance_data* idata = util::umap_find(instances, instance_id);
 
 	if(!idata || idata->state != INSTANCE_BUSY)
 		return false;
@@ -1225,7 +1225,7 @@ bool instance_delusers(int32 instance_id)
 void do_reload_instance(void)
 {
 	for (const auto &it : instances) {
-		std::shared_ptr<s_instance_data> idata = it.second;
+		s_instance_data* idata = it.second.get();
 
 		if (!idata || idata->map.empty())
 			continue;
@@ -1235,7 +1235,7 @@ void do_reload_instance(void)
 				instance_addnpc(idata);
 
 			// Create new keep timer
-			std::shared_ptr<s_instance_db> db = instance_db.find(idata->id);
+			s_instance_db* db = instance_db.find(idata->id);
 
 			if (db)
 				idata->keep_limit = time(nullptr) + db->limit;
@@ -1251,11 +1251,11 @@ void do_reload_instance(void)
 
 		if (sd && mapdata->instance_id > 0) {
 			struct party_data *pd;
-			std::shared_ptr<MapGuild> gd;
+			MapGuild* gd;
 			struct clan *cd;
 			int32 instance_id;
-			std::shared_ptr<s_instance_data> idata = util::umap_find(instances, map[sd->bl.m].instance_id);
-			std::shared_ptr<s_instance_db> db = instance_db.find(idata->id);
+			s_instance_data* idata = util::umap_find(instances, map[sd->bl.m].instance_id);
+			s_instance_db* db = instance_db.find(idata->id);
 
 			switch (idata->mode) {
 				case IM_NONE:

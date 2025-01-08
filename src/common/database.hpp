@@ -104,7 +104,17 @@ public:
 		return this->find( key ) != nullptr;
 	}
 
-	virtual std::shared_ptr<datatype> find( keytype key ){
+	virtual datatype* find( keytype key ){
+		auto it = this->data.find( key );
+
+		if( it != this->data.end() ){
+			return it->second.get();
+		}else{
+			return nullptr;
+		}
+	}
+
+	virtual std::shared_ptr<datatype> find_shared( keytype key ){
 		auto it = this->data.find( key );
 
 		if( it != this->data.end() ){
@@ -135,7 +145,7 @@ public:
 			return nullptr;
 		}
 
-		return rathena::util::umap_random( this->data );
+		return rathena::util::umap_random_shared( this->data );
 	}
 
 	virtual void erase(keytype key) {
@@ -164,11 +174,19 @@ public:
 		this->loaded = false;
 	}
 
-	std::shared_ptr<datatype> find( keytype key ) override{
+	std::shared_ptr<datatype> find_shared( keytype key ) override{
+		if( this->cache.empty() || key >= this->cache.size() ){
+			return TypesafeYamlDatabase<keytype, datatype>::find_shared( key );
+		}else{
+			return cache[this->calculateCacheKey( key )];
+		}
+	}
+
+	datatype* find( keytype key ) override{
 		if( this->cache.empty() || key >= this->cache.size() ){
 			return TypesafeYamlDatabase<keytype, datatype>::find( key );
 		}else{
-			return cache[this->calculateCacheKey( key )];
+			return cache[this->calculateCacheKey( key )].get();
 		}
 	}
 

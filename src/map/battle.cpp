@@ -510,10 +510,10 @@ int64 battle_attr_fix(struct block_list *src, struct block_list *target, int64 d
 	if( target && target->type == BL_SKILL ) {
 		if( atk_elem == ELE_FIRE && battle_getcurrentskill(target) == GN_WALLOFTHORN ) {
 			struct skill_unit *su = (struct skill_unit*)target;
-			std::shared_ptr<s_skill_unit_group> sg;
+			s_skill_unit_group* sg;
 			struct block_list *src2;
 
-			if( !su || !su->alive || (sg = su->group) == nullptr || !sg || sg->val3 == -1 ||
+			if( !su || !su->alive || (sg = su->group.get()) == nullptr || !sg || sg->val3 == -1 ||
 			   (src2 = map_id2bl(sg->src_id)) == nullptr || status_isdead(*src2) )
 				return 0;
 
@@ -1381,7 +1381,7 @@ bool battle_status_block_damage(struct block_list *src, struct block_list *targe
 
 	// ATK_BLOCK Type
 	if ((sce = sc->getSCE(SC_SAFETYWALL)) && (flag&(BF_SHORT | BF_MAGIC)) == BF_SHORT) {
-		std::shared_ptr<s_skill_unit_group> group = skill_id2group(sce->val3);
+		s_skill_unit_group* group = skill_id2group(sce->val3);
 
 		if (group) {
 			d->dmg_lv = ATK_BLOCK;
@@ -2091,7 +2091,7 @@ bool battle_can_hit_gvg_target(struct block_list *src,struct block_list *bl,uint
 		if ((status_bl_has_mode(bl,MD_SKILLIMMUNE) || (class_ == MOBID_EMPERIUM && !skill_get_inf2(skill_id, INF2_TARGETEMPERIUM))) && flag&BF_SKILL) //Skill immunity.
 			return false;
 		if( src->type != BL_MOB || mob_is_clone( ((struct mob_data*)src)->mob_id ) ){
-			auto g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild_search(status_get_guild_id(src));
+			auto g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild_search_shared(status_get_guild_id(src));
 
 			if (class_ == MOBID_EMPERIUM && (!g || guild_checkskill(g->guild, GD_APPROVAL) <= 0 ))
 				return false;
@@ -2708,7 +2708,7 @@ static enum e_skill_damage_type battle_skill_damage_type( struct block_list* bl 
  * @return Skill damage rate
  */
 static int32 battle_skill_damage_skill(struct block_list *src, struct block_list *target, uint16 skill_id) {
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (!skill || !skill->damage.map)
 		return 0;
@@ -7846,7 +7846,7 @@ struct Damage battle_calc_magic_attack(struct block_list *src,struct block_list 
 	ad.miscflag = mflag;
 	ad.dmg_lv = ATK_DEF;
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 	std::bitset<NK_MAX> nk;
 
 	if (skill)
@@ -9278,7 +9278,7 @@ struct Damage battle_calc_misc_attack(struct block_list *src,struct block_list *
 	md.flag = BF_MISC|BF_SKILL;
 	md.miscflag = mflag;
 
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 	std::bitset<NK_MAX> nk;
 
 	if (skill)
@@ -10465,7 +10465,7 @@ enum damage_lv battle_weapon_attack(struct block_list* src, struct block_list* t
 
 				if( (type = skill_get_casttype(r_skill)) == CAST_GROUND ) {
 					int32 maxcount = 0;
-					std::shared_ptr<s_skill_db> skill = skill_db.find(r_skill);
+					s_skill_db* skill = skill_db.find(r_skill);
 
 					if( !(BL_PC&battle_config.skill_reiteration) && skill->unit_flag[UF_NOREITERATION] )
 							type = -1;

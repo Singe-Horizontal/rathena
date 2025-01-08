@@ -479,7 +479,7 @@ int32 clif_send(const void* buf, int32 len, struct block_list* bl, enum send_tar
 	int32 i;
 	map_session_data *sd, *tsd;
 	struct party_data *p = nullptr;
-	std::shared_ptr<s_battleground_data> bg;
+	s_battleground_data* bg;
 	int32 x0 = 0, x1 = 0, y0 = 0, y1 = 0, fd;
 	struct s_mapiterator* iter;
 
@@ -2235,10 +2235,10 @@ void clif_buylist( map_session_data& sd, npc_data& nd ){
 		p->items[count].itemType = itemtype( nd.u.shop.shop_item[i].nameid );
 		p->items[count].itemId = client_nameid( nd.u.shop.shop_item[i].nameid );
 #if PACKETVER_MAIN_NUM >= 20210203 || PACKETVER_RE_NUM >= 20211103
-		std::shared_ptr<item_data> id = item_db.find(nd.u.shop.shop_item[i].nameid);
+		item_data* id = item_db.find(nd.u.shop.shop_item[i].nameid);
 
 		p->items[count].viewSprite = id->look;
-		p->items[count].location = pc_equippoint_sub( &sd, id.get() );
+		p->items[count].location = pc_equippoint_sub( &sd, id );
 #endif
 
 		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( p->items[0] ) );
@@ -2333,7 +2333,7 @@ void clif_npc_market_open( map_session_data& sd, npc_data& nd ){
 			continue;
 		}
 
-		std::shared_ptr<item_data> id = item_db.find(item->nameid);
+		item_data* id = item_db.find(item->nameid);
 
 		if( !id ){
 			continue;
@@ -2347,7 +2347,7 @@ void clif_npc_market_open( map_session_data& sd, npc_data& nd ){
 		entry.qty = item->qty;
 		entry.weight = id->weight;
 #if PACKETVER_MAIN_NUM >= 20210203 || PACKETVER_RE_NUM >= 20211103
-		entry.location = pc_equippoint_sub( &sd, id.get() );
+		entry.location = pc_equippoint_sub( &sd, id );
 #endif
 
 		p->packetLength += static_cast<decltype(p->packetLength)>( sizeof( entry ) );
@@ -3377,7 +3377,7 @@ void clif_guild_castle_list(map_session_data& sd){
 /*==========================================
  * Send castle info Economy/Defence. [Asheraf] / [Balfear]
  *------------------------------------------*/
-void clif_guild_castleinfo(map_session_data& sd, std::shared_ptr<guild_castle> castle ){
+void clif_guild_castleinfo(map_session_data& sd, guild_castle* castle ){
 #if PACKETVER_MAIN_NUM >= 20190731 || PACKETVER_RE_NUM >= 20190717 || PACKETVER_ZERO_NUM >= 20190814
 	if( castle->client_id == 0 ){
 		return;
@@ -3424,7 +3424,7 @@ void clif_parse_guild_castle_info_request(int32 fd, map_session_data* sd){
 
 	const PACKET_CZ_REQ_AGIT_INVESTMENT* p = reinterpret_cast<PACKET_CZ_REQ_AGIT_INVESTMENT*>( RFIFOP( fd, 0 ) );
 
-	std::shared_ptr<guild_castle> gc = castle_db.find_by_clientid( p->castle_id );
+	guild_castle* gc = castle_db.find_by_clientid( p->castle_id );
 
 	if (gc == nullptr)
 		return;
@@ -3446,7 +3446,7 @@ void clif_parse_guild_castle_teleport_request(int32 fd, map_session_data* sd){
 	if (g == nullptr)
 		return;
 
-	std::shared_ptr<guild_castle> gc = castle_db.find_by_clientid( p->castle_id );
+	guild_castle* gc = castle_db.find_by_clientid( p->castle_id );
 
 	if (gc == nullptr)
 		return;
@@ -14810,12 +14810,12 @@ void clif_parse_GM_Item_Monster(int32 fd, map_session_data *sd)
 		return;
 	}
 
-	std::shared_ptr<item_data> id = item_db.searchname( str );
+	item_data* id = item_db.searchname( str );
 
 	// Item
 	if( id ){
 		StringBuf_Init(&command);
-		if( !itemdb_isstackable2( id.get() ) ){ //Nonstackable
+		if( !itemdb_isstackable2( id ) ){ //Nonstackable
 			StringBuf_Printf(&command, "%citem2 %u 1 0 0 0 0 0 0 0", atcommand_symbol, id->nameid);
 		}else{
 			if (id->flag.guid)
@@ -14831,7 +14831,7 @@ void clif_parse_GM_Item_Monster(int32 fd, map_session_data *sd)
 	// Monster
 	if (pc_can_use_command(sd, "monster", COMMAND_ATCOMMAND)) {
 		// If AegisName matches exactly, summon that monster (official behavior)
-		std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(str);
+		s_mob_db* mob = mobdb_search_aegisname(str);
 		// Otherwise, search for monster with that ID or name (rAthena added behavior)
 		if (mob == nullptr) {
 			// Check for ID first as this is faster; if search string is not a number it will return 0
@@ -16197,7 +16197,7 @@ void clif_Mail_read( map_session_data *sd, int32 mail_id ){
 		WFIFOL(fd,72) = 0;
 		WFIFOL(fd,76) = msg->zeny;
 
-		std::shared_ptr<item_data> data = item_db.find(item->nameid);
+		item_data* data = item_db.find(item->nameid);
 
 		if( item->nameid && data != nullptr ) {
 			WFIFOL(fd,80) = item->amount;
@@ -16235,7 +16235,7 @@ void clif_Mail_read( map_session_data *sd, int32 mail_id ){
 		for( int32 j = 0; j < MAIL_MAX_ITEM; j++ ){
 			item = &msg->item[j];
 
-			std::shared_ptr<item_data> data = item_db.find(item->nameid);
+			item_data* data = item_db.find(item->nameid);
 
 			if( item->nameid > 0 && item->amount > 0 && data != nullptr ){
 				PACKET_ZC_ACK_READ_RODEX_SUB* mailitem = reinterpret_cast<PACKET_ZC_ACK_READ_RODEX_SUB*>( WBUFP( p, p->PacketLength ) );
@@ -16246,7 +16246,7 @@ void clif_Mail_read( map_session_data *sd, int32 mail_id ){
 				mailitem->IsIdentified = item->identify ? 1 : 0;
 				mailitem->IsDamaged = item->attribute ? 1 : 0;
 				mailitem->refiningLevel = item->refine;
-				mailitem->location = pc_equippoint_sub( sd, data.get() );
+				mailitem->location = pc_equippoint_sub( sd, data );
 				mailitem->viewSprite = data->look;
 				mailitem->bindOnEquip = item->bound ? 2 : data->flag.bindOnEquip ? 1 : 0;
 				clif_addcards( &mailitem->slot, item );
@@ -16440,7 +16440,7 @@ void clif_parse_Mail_getattach( int32 fd, map_session_data *sd ){
 			struct item* item = &msg->item[i];
 
 			if( item->nameid > 0 && item->amount > 0 ){
-				std::shared_ptr<item_data> data = item_db.find(item->nameid);
+				item_data* data = item_db.find(item->nameid);
 
 				if(data == nullptr)
 					continue;
@@ -16826,7 +16826,7 @@ void clif_parse_Auction_setitem(int32 fd, map_session_data *sd){
 		return;
 	}
 
-	std::shared_ptr<item_data> id = item_db.find(sd->inventory.u.items_inventory[idx].nameid);
+	item_data* id = item_db.find(sd->inventory.u.items_inventory[idx].nameid);
 
 	if( id != nullptr && !(id->type == IT_ARMOR || id->type == IT_PETARMOR || id->type == IT_WEAPON || id->type == IT_CARD || id->type == IT_ETC || id->type == IT_SHADOWGEAR) )
 	{ // Consumable or pets are not allowed
@@ -16945,7 +16945,7 @@ void clif_parse_Auction_register( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<item_data> id = item_db.find(sd->inventory.u.items_inventory[sd->auction.index].nameid);
+	item_data* id = item_db.find(sd->inventory.u.items_inventory[sd->auction.index].nameid);
 
 	if( id == nullptr )
 	{ // Just in case
@@ -17123,7 +17123,7 @@ void clif_parse_CashShopReqTab(int32 fd, map_session_data *sd) {
 // TODO: most likely wrong answer packet. Most likely HEADER_ZC_ACK_SE_CASH_ITEM_LIST (0x847) would be correct [Lemongrass]
 // [4144] packet exists only in 2011 and was dropped after
 #if PACKETVER >= 20110222 && PACKETVER < 20120000
-	std::shared_ptr<s_cash_item_tab> tab = cash_shop_db.find( static_cast<e_cash_shop_tab>( p_in->tab ) );
+	s_cash_item_tab* tab = cash_shop_db.find( static_cast<e_cash_shop_tab>( p_in->tab ) );
 
 	if( tab == nullptr ){
 		return;
@@ -17147,7 +17147,7 @@ void clif_parse_CashShopReqTab(int32 fd, map_session_data *sd) {
 	p->tab = tab->tab;
 	p->count = 0;
 
-	for( std::shared_ptr<s_cash_item> item : tab->items ){
+	for( s_cash_item* item : tab->items ){
 		p->items[p->count].itemId = client_nameid( item->nameid );
 		p->items[p->count].price = item->price;
 
@@ -17163,7 +17163,7 @@ void clif_parse_CashShopReqTab(int32 fd, map_session_data *sd) {
 //08ca <len>.W <itemcount> W <tabcode>.W (ZC_ACK_SCHEDULER_CASHITEM)
 void clif_cashshop_list( map_session_data& sd ){
 	for( const auto& pair : cash_shop_db ){
-		std::shared_ptr<s_cash_item_tab> tab = pair.second;
+		s_cash_item_tab* tab = pair.second.get();
 
 		// Skip empty tabs, the client only expects filled ones
 		if( tab->items.empty() ){
@@ -17183,7 +17183,7 @@ void clif_cashshop_list( map_session_data& sd ){
 		p->count = 0;
 		p->tabNum = tab->tab;
 
-		for( std::shared_ptr<s_cash_item> item : tab->items ){
+		for( auto& item : tab->items ){
 			p->items[p->count].itemId = client_nameid( item->nameid );
 			p->items[p->count].price = item->price;
 #ifdef ENABLE_CASHSHOP_PREVIEW_PATCH
@@ -17608,7 +17608,7 @@ static void clif_quest_len(int32 def_len, int32 info_len, int32 avail_quests, in
 	(*len_out) = ((*limit_out) * info_len) + def_len;
 }
 
-std::string clif_quest_string( std::shared_ptr<s_quest_objective> objective ){
+std::string clif_quest_string( s_quest_objective* objective ){
 	std::string race_name;
 
 	switch( objective->race ){
@@ -17722,7 +17722,7 @@ void clif_quest_send_list(map_session_data *sd)
 	WFIFOL(fd, 4) = limit;
 
 	for (i = 0; i < limit; i++) {
-		std::shared_ptr<s_quest_db> qi = quest_search(sd->quest_log[i].quest_id);
+		s_quest_db* qi = quest_search(sd->quest_log[i].quest_id);
 
 		WFIFOL(fd, offset) = sd->quest_log[i].quest_id;
 		offset += 4;
@@ -17736,7 +17736,7 @@ void clif_quest_send_list(map_session_data *sd)
 		offset += 2;
 		
 		if (!qi->objectives.empty()) {
-			std::shared_ptr<s_mob_db> mob;
+			s_mob_db* mob;
 
 			for (int32 j = 0; j < qi->objectives.size(); j++) {
 				mob = mob_db.find(qi->objectives[j]->mob_id);
@@ -17766,7 +17766,7 @@ void clif_quest_send_list(map_session_data *sd)
 				if (mob && qi->objectives[j]->mob_id > 0)
 					safestrncpy(WFIFOCP(fd,offset), mob->jname.c_str(), NAME_LENGTH);
 				else
-					safestrncpy(WFIFOCP(fd,offset), clif_quest_string(qi->objectives[j]).c_str(), NAME_LENGTH);
+					safestrncpy(WFIFOCP(fd,offset), clif_quest_string(qi->objectives[j].get()).c_str(), NAME_LENGTH);
 				offset += NAME_LENGTH;
 			}
 		}
@@ -17809,7 +17809,7 @@ void clif_quest_send_mission(map_session_data *sd)
 	WFIFOL(fd, 4) = limit;
 
 	for (int32 i = 0; i < limit; i++) {
-		std::shared_ptr<s_quest_db> qi = quest_search(sd->quest_log[i].quest_id);
+		s_quest_db* qi = quest_search(sd->quest_log[i].quest_id);
 
 		WFIFOL(fd, i*104+8) = sd->quest_log[i].quest_id;
 		WFIFOL(fd, i*104+12) = static_cast<uint32>(sd->quest_log[i].time - qi->time);
@@ -17817,14 +17817,14 @@ void clif_quest_send_mission(map_session_data *sd)
 		WFIFOW(fd, i*104+20) = static_cast<uint16>(qi->objectives.size());
 
 		for (int32 j = 0 ; j < qi->objectives.size(); j++) {
-			std::shared_ptr<s_mob_db> mob = mob_db.find(qi->objectives[j]->mob_id);
+			s_mob_db* mob = mob_db.find(qi->objectives[j]->mob_id);
 
 			WFIFOL(fd, i*104+22+j*30) = (mob ? qi->objectives[j]->mob_id : MOBID_PORING);
 			WFIFOW(fd, i*104+26+j*30) = sd->quest_log[i].count[j];
 			if (mob && qi->objectives[j]->mob_id > 0)
 				safestrncpy(WFIFOCP(fd, i*104+28+j*30), mob->jname.c_str(), NAME_LENGTH);
 			else
-				safestrncpy(WFIFOCP(fd, i*104+28+j*30), clif_quest_string(qi->objectives[j]).c_str(), NAME_LENGTH);
+				safestrncpy(WFIFOCP(fd, i*104+28+j*30), clif_quest_string(qi->objectives[j].get()).c_str(), NAME_LENGTH);
 		}
 	}
 
@@ -17842,7 +17842,7 @@ void clif_quest_add(map_session_data *sd, struct quest *qd)
 	nullpo_retv(qd);
 
 	int32 fd = sd->fd;
-	std::shared_ptr<s_quest_db> qi = quest_search(qd->quest_id);
+	s_quest_db* qi = quest_search(qd->quest_id);
 	if (!qi)
 		return;
 #if PACKETVER >= 20150513
@@ -17860,7 +17860,7 @@ void clif_quest_add(map_session_data *sd, struct quest *qd)
 	WFIFOW(fd, 15) = static_cast<uint16>(qi->objectives.size());
 
 	for (int32 i = 0, offset = 17; i < qi->objectives.size(); i++) {
-		std::shared_ptr<s_mob_db> mob = mob_db.find(qi->objectives[i]->mob_id);
+		s_mob_db* mob = mob_db.find(qi->objectives[i]->mob_id);
 		e_race race = qi->objectives[i]->race;
 		e_size size = qi->objectives[i]->size;
 		e_element element = qi->objectives[i]->element;
@@ -17884,7 +17884,7 @@ void clif_quest_add(map_session_data *sd, struct quest *qd)
 		if (mob && qi->objectives[i]->mob_id > 0)
 			safestrncpy(WFIFOCP(fd,offset), mob->jname.c_str(), NAME_LENGTH);
 		else
-			safestrncpy(WFIFOCP(fd,offset), clif_quest_string(qi->objectives[i]).c_str(), NAME_LENGTH);
+			safestrncpy(WFIFOCP(fd,offset), clif_quest_string(qi->objectives[i].get()).c_str(), NAME_LENGTH);
 		offset += NAME_LENGTH;
 	}
 
@@ -17932,7 +17932,7 @@ void clif_quest_update_objective(map_session_data *sd, struct quest *qd)
 {
 	int32 fd = sd->fd;
 	int32 offset = 6;
-	std::shared_ptr<s_quest_db> qi = quest_search(qd->quest_id);
+	s_quest_db* qi = quest_search(qd->quest_id);
 	int16 len;
 	len = static_cast<decltype(len)>( qi->objectives.size() * 12 + 6 );
 #if PACKETVER >= 20150513
@@ -18449,7 +18449,7 @@ void clif_bg_queue_apply_notify(const char *name, map_session_data *sd)
 {
 	nullpo_retv(sd);
 
-	std::shared_ptr<s_battleground_queue> queue = bg_search_queue(sd->bg_queue_id);
+	s_battleground_queue* queue = bg_search_queue(sd->bg_queue_id);
 
 	if (queue == nullptr) {
 		ShowError("clif_bg_queue_apply_notify: Player is not in a battleground queue.\n");
@@ -18492,7 +18492,7 @@ void clif_parse_bg_queue_cancel_request(int32 fd, map_session_data *sd)
 	bool success;
 
 	if (sd->bg_queue_id > 0) {
-		std::shared_ptr<s_battleground_queue> queue = bg_search_queue(sd->bg_queue_id);
+		s_battleground_queue* queue = bg_search_queue(sd->bg_queue_id);
 
 		if (queue && queue->state == QUEUE_STATE_SETUP_DELAY)
 			return; // Make the cancel button do nothing if the entry window is open. Otherwise it'll crash the game when you click on both the queue status and entry status window.
@@ -18616,7 +18616,7 @@ void clif_instance_create( int32 instance_id, size_t num ){
 	if (!sd)
 		return;
 
-	std::shared_ptr<s_instance_db> db = instance_db.find(util::umap_find(instances, instance_id)->id);
+	s_instance_db* db = instance_db.find(util::umap_find(instances, instance_id)->id);
 
 	if (!db)
 		return;
@@ -18665,7 +18665,7 @@ void clif_instance_status(int32 instance_id, uint32 limit1, uint32 limit2)
 	if (!sd)
 		return;
 
-	std::shared_ptr<s_instance_db> db = instance_db.find(util::umap_find(instances, instance_id)->id);
+	s_instance_db* db = instance_db.find(util::umap_find(instances, instance_id)->id);
 
 	if (!db)
 		return;
@@ -19328,7 +19328,7 @@ void clif_search_store_info_ack( map_session_data& sd ){
 	p->usesCount = static_cast<decltype(p->usesCount)>( std::min<decltype(sd.searchstore.uses)>( sd.searchstore.uses, std::numeric_limits<decltype(p->usesCount)>::max() ) );
 
 	for( int32 i = 0, count = 0; i < end - start; i++ ){
-		std::shared_ptr<s_search_store_info_item> ssitem = sd.searchstore.items[start + i];
+		s_search_store_info_item* ssitem = sd.searchstore.items[start + i].get();
 
 		if( ssitem == nullptr ){
 			continue;
@@ -21210,7 +21210,7 @@ void clif_broadcast_obtain_special_item( const char *char_name, t_itemid nameid,
 				safestrncpy( p.Name, name, sizeof( p.Name ) );
 
 				if( type == ITEMOBTAIN_TYPE_MONSTER_ITEM ){
-					std::shared_ptr<s_mob_db> db = mob_db.find( container );
+					s_mob_db* db = mob_db.find( container );
 
 					p.monsterNameLen = NAME_LENGTH;
 					safestrncpy( p.monsterName, db->name.c_str(), NAME_LENGTH );
@@ -21504,7 +21504,7 @@ void clif_parse_sale_close(int32 fd, map_session_data* sd) {
 
 /// Reply to a item search request for item sale administration.
 /// 09ad <result>.W <item id>.W <price>.L (ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO)
-void clif_sale_search_reply( map_session_data* sd, std::shared_ptr<s_cash_item> item ){
+void clif_sale_search_reply( map_session_data* sd, s_cash_item* item ){
 #if PACKETVER_SUPPORTS_SALES
 	PACKET_ZC_ACK_CASH_BARGAIN_SALE_ITEM_INFO p = {};
 
@@ -21542,7 +21542,7 @@ void clif_parse_sale_search( int32 fd, map_session_data* sd ){
 
 	safestrncpy( item_name, RFIFOCP(fd, 8), min(RFIFOW(fd, 2) - 7, ITEM_NAME_LENGTH) );
 
-	std::shared_ptr<item_data> id = item_db.searchname( item_name );
+	item_data* id = item_db.searchname( item_name );
 
 	// not found
 	if( id == nullptr ){
@@ -22404,7 +22404,7 @@ void clif_refineui_info( map_session_data* sd, uint16 index ){
 	p->packetLength = sizeof( *p );
 	p->itemIndex = client_index( index );
 
-	std::shared_ptr<s_refine_level_info> info = refine_db.findLevelInfo( *id, *item );
+	s_refine_level_info* info = refine_db.findLevelInfo( *id, *item );
 
 	// No possibilities were found
 	if( info == nullptr ){
@@ -22413,7 +22413,7 @@ void clif_refineui_info( map_session_data* sd, uint16 index ){
 		p->blacksmithBlessing = static_cast<decltype(p->blacksmithBlessing)>( info->blessing_amount );
 
 		for( uint16 i = REFINE_COST_NORMAL, count = 0; i < REFINE_COST_MAX; i++ ){
-			std::shared_ptr<s_refine_cost> cost = util::umap_find( info->costs, i );
+			s_refine_cost* cost = util::umap_find( info->costs, i );
 
 			if( cost == nullptr ){
 				continue;
@@ -22507,7 +22507,7 @@ void clif_parse_refineui_refine( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_refine_level_info> info = refine_db.findLevelInfo( *id, *item );
+	s_refine_level_info* info = refine_db.findLevelInfo( *id, *item );
 
 	// No refine possible
 	if( info == nullptr ){
@@ -22547,11 +22547,11 @@ void clif_parse_refineui_refine( int32 fd, map_session_data* sd ){
 		}
 	}
 
-	std::shared_ptr<s_refine_cost> cost = nullptr;
+	s_refine_cost* cost = nullptr;
 
 	for( const auto& pair : info->costs ){
 		if( pair.second->nameid == material ){
-			cost = pair.second;
+			cost = pair.second.get();
 			break;
 		}
 	}
@@ -22677,24 +22677,24 @@ void clif_stylist_response( map_session_data* sd, bool failed ){
 }
 
 bool clif_parse_stylist_buy_sub( map_session_data* sd, _look look, int16 index ){
-	std::shared_ptr<s_stylist_list> list = stylist_db.find( look );
+	s_stylist_list* list = stylist_db.find( look );
 
 	if( list == nullptr ){
 		return false;
 	}
 
-	std::shared_ptr<s_stylist_entry> entry = util::umap_find( list->entries, index );
+	s_stylist_entry* entry = util::umap_find( list->entries, index );
 
 	if( entry == nullptr ){
 		return false;
 	}
 
-	std::shared_ptr<s_stylist_costs> costs;
+	s_stylist_costs* costs;
 
 	if( ( sd->class_ & MAPID_BASEMASK ) == MAPID_SUMMONER ){
-		costs = entry->doram;
+		costs = entry->doram.get();
 	}else{
-		costs = entry->human;
+		costs = entry->human.get();
 	}
 
 	if( costs == nullptr ){
@@ -23012,7 +23012,7 @@ void clif_barter_open( map_session_data& sd, struct npc_data& nd ){
 		return;
 	}
 
-	std::shared_ptr<s_npc_barter> barter = barter_db.find( nd.exname );
+	s_npc_barter* barter = barter_db.find( nd.exname );
 
 	if( barter == nullptr ){
 		return;
@@ -23027,7 +23027,7 @@ void clif_barter_open( map_session_data& sd, struct npc_data& nd ){
 
 	int16 count = 0;
 	for( const auto& itemPair : barter->items ){
-		std::shared_ptr<item_data> id = item_db.find(itemPair.second->nameid);
+		item_data* id = item_db.find(itemPair.second->nameid);
 
 		if( id == nullptr ){
 			continue;
@@ -23046,12 +23046,12 @@ void clif_barter_open( map_session_data& sd, struct npc_data& nd ){
 		item.index = itemPair.second->index;
 #if PACKETVER_MAIN_NUM >= 20210203 || PACKETVER_RE_NUM >= 20211103
 		item.viewSprite = id->look;
-		item.location = pc_equippoint_sub( &sd, id.get() );
+		item.location = pc_equippoint_sub( &sd, id );
 #endif
 
 		// Use a loop if someone did not start with index 0
 		for( const auto& requirementPair : itemPair.second->requirements ){
-			std::shared_ptr<s_npc_barter_requirement> requirement = requirementPair.second;
+			s_npc_barter_requirement* requirement = requirementPair.second.get();
 
 			item.currencyNameid = client_nameid( requirement->nameid );
 			item.currencyAmount = requirement->amount;
@@ -23101,7 +23101,7 @@ void clif_parse_barter_buy( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_npc_barter> barter = barter_db.find( nd->exname );
+	s_npc_barter* barter = barter_db.find( nd->exname );
 
 	if( barter == nullptr ){
 		return;
@@ -23122,7 +23122,7 @@ void clif_parse_barter_buy( int32 fd, map_session_data* sd ){
 
 	// Make sure each shop index and target item id is only used once
 	for( int32 i = 0; i < entries; i++ ){
-		std::shared_ptr<s_npc_barter_item> item = util::map_find( barter->items, (uint16)p->list[i].shopIndex );
+		auto item = util::map_find_shared( barter->items, (uint16)p->list[i].shopIndex );
 
 		// Invalid shop index
 		if( item == nullptr ){
@@ -23135,7 +23135,7 @@ void clif_parse_barter_buy( int32 fd, map_session_data* sd ){
 				return;
 			}
 
-			std::shared_ptr<s_npc_barter_item> item2 = util::map_find( barter->items, (uint16)p->list[j].shopIndex );
+			s_npc_barter_item* item2 = util::map_find( barter->items, (uint16)p->list[j].shopIndex );
 
 			// Invalid shop index
 			if( item2 == nullptr ){
@@ -23166,7 +23166,7 @@ void clif_barter_extended_open( map_session_data& sd, struct npc_data& nd ){
 		return;
 	}
 
-	std::shared_ptr<s_npc_barter> barter = barter_db.find( nd.exname );
+	s_npc_barter* barter = barter_db.find( nd.exname );
 
 	if( barter == nullptr ){
 		return;
@@ -23181,7 +23181,7 @@ void clif_barter_extended_open( map_session_data& sd, struct npc_data& nd ){
 	p->items_count = 0;
 
 	for( const auto& itemPair : barter->items ){
-		std::shared_ptr<item_data> id = item_db.find(itemPair.second->nameid);
+		item_data* id = item_db.find(itemPair.second->nameid);
 
 		if( id == nullptr ){
 			continue;
@@ -23202,7 +23202,7 @@ void clif_barter_extended_open( map_session_data& sd, struct npc_data& nd ){
 		item->zeny = itemPair.second->price;
 #if PACKETVER_MAIN_NUM >= 20210203 || PACKETVER_RE_NUM >= 20211103
 		item->viewSprite = id->look;
-		item->location = pc_equippoint_sub( &sd, id.get() );
+		item->location = pc_equippoint_sub( &sd, id );
 #endif
 
 		// Because of a MSVS bug, the currencies have been defined with a fixed array entry, which has to be substracted
@@ -23214,7 +23214,7 @@ void clif_barter_extended_open( map_session_data& sd, struct npc_data& nd ){
 		for( const auto& requirementPair : itemPair.second->requirements ){
 			// Needs dynamic calculation, because of variable currencies
 			PACKET_ZC_NPC_EXPANDED_BARTER_MARKET_ITEMINFO_sub2* req = reinterpret_cast<PACKET_ZC_NPC_EXPANDED_BARTER_MARKET_ITEMINFO_sub2*>( WBUFP( p, p->packetLength ) );
-			std::shared_ptr<s_npc_barter_requirement> requirement = requirementPair.second;
+			s_npc_barter_requirement* requirement = requirementPair.second.get();
 
 			req->nameid = requirement->nameid;
 			if( requirement->refine >= 0 ){
@@ -23267,7 +23267,7 @@ void clif_parse_barter_extended_buy( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_npc_barter> barter = barter_db.find( nd->exname );
+	s_npc_barter* barter = barter_db.find( nd->exname );
 
 	if( barter == nullptr ){
 		return;
@@ -23288,7 +23288,7 @@ void clif_parse_barter_extended_buy( int32 fd, map_session_data* sd ){
 
 	// Make sure each shop index and target item id is only used once
 	for( int32 i = 0; i < entries; i++ ){
-		std::shared_ptr<s_npc_barter_item> item = util::map_find( barter->items, (uint16)p->list[i].shopIndex );
+		auto item = util::map_find_shared( barter->items, (uint16)p->list[i].shopIndex );
 
 		// Invalid shop index
 		if( item == nullptr ){
@@ -23301,7 +23301,7 @@ void clif_parse_barter_extended_buy( int32 fd, map_session_data* sd ){
 				return;
 			}
 
-			std::shared_ptr<s_npc_barter_item> item2 = util::map_find( barter->items, (uint16)p->list[j].shopIndex );
+			s_npc_barter_item* item2 = util::map_find( barter->items, (uint16)p->list[j].shopIndex );
 
 			// Invalid shop index
 			if( item2 == nullptr ){
@@ -23364,7 +23364,7 @@ void clif_summon_hp_bar(struct mob_data& md) {
 #endif
 }
 
-void clif_laphine_synthesis_open( map_session_data *sd, std::shared_ptr<s_laphine_synthesis> synthesis ){
+void clif_laphine_synthesis_open( map_session_data *sd, s_laphine_synthesis* synthesis ){
 #if PACKETVER_MAIN_NUM >= 20160601 || PACKETVER_RE_NUM >= 20160525 || defined(PACKETVER_ZERO)
 	nullpo_retv( sd );
 
@@ -23416,7 +23416,7 @@ void clif_parse_laphine_synthesis( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_laphine_synthesis> synthesis = laphine_synthesis_db.find( sd->state.laphine_synthesis );
+	s_laphine_synthesis* synthesis = laphine_synthesis_db.find( sd->state.laphine_synthesis );
 
 	if( synthesis == nullptr ){
 		return;
@@ -23451,7 +23451,7 @@ void clif_parse_laphine_synthesis( int32 fd, map_session_data* sd ){
 
 		struct item* item = &sd->inventory.u.items_inventory[index];
 
-		std::shared_ptr<s_laphine_synthesis_requirement> requirement = util::umap_find( synthesis->requirements, item->nameid );
+		s_laphine_synthesis_requirement* requirement = util::umap_find( synthesis->requirements, item->nameid );
 
 		if( requirement == nullptr ){
 			clif_laphine_synthesis_result( sd, LAPHINE_SYNTHESIS_ITEM );
@@ -23519,7 +23519,7 @@ void clif_parse_laphine_synthesis( int32 fd, map_session_data* sd ){
 #endif
 }
 
-void clif_laphine_upgrade_open( map_session_data* sd, std::shared_ptr<s_laphine_upgrade> upgrade ){
+void clif_laphine_upgrade_open( map_session_data* sd, s_laphine_upgrade* upgrade ){
 #if PACKETVER_MAIN_NUM >= 20170726 || PACKETVER_RE_NUM >= 20170621 || defined(PACKETVER_ZERO)
 	nullpo_retv( sd );
 
@@ -23587,7 +23587,7 @@ void clif_parse_laphine_upgrade( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_laphine_upgrade> upgrade = laphine_upgrade_db.find( sd->state.laphine_upgrade );
+	s_laphine_upgrade* upgrade = laphine_upgrade_db.find( sd->state.laphine_upgrade );
 
 	if( upgrade == nullptr ){
 		return;
@@ -23722,7 +23722,7 @@ void clif_parse_laphine_upgrade( int32 fd, map_session_data* sd ){
 #endif
 }
 
-void clif_enchantgrade_add( map_session_data& sd, uint16 index = UINT16_MAX, std::shared_ptr<s_enchantgradelevel> gradeLevel = nullptr ){
+void clif_enchantgrade_add( map_session_data& sd, uint16 index = UINT16_MAX, s_enchantgradelevel* gradeLevel = nullptr ){
 #if PACKETVER_MAIN_NUM >= 20200916 || PACKETVER_RE_NUM >= 20200724
 	PACKET_ZC_GRADE_ENCHANT_MATERIAL_LIST* p = reinterpret_cast<PACKET_ZC_GRADE_ENCHANT_MATERIAL_LIST*>( packet_buffer );
 
@@ -23743,7 +23743,7 @@ void clif_enchantgrade_add( map_session_data& sd, uint16 index = UINT16_MAX, std
 		int32 i = 0;
 		for( const auto& pair : gradeLevel->options ){
 			GRADE_ENCHANT_MATERIAL& mat = p->material_info[i];
-			std::shared_ptr<s_enchantgradeoption> option = pair.second;
+			s_enchantgradeoption* option = pair.second.get();
 
 			mat.nameid = client_nameid( option->item );
 			mat.amount = option->amount;
@@ -23785,7 +23785,7 @@ void clif_parse_enchantgrade_add( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_enchantgrade> enchantgrade = enchantgrade_db.find( sd->inventory_data[index]->type );
+	s_enchantgrade* enchantgrade = enchantgrade_db.find( sd->inventory_data[index]->type );
 
 	// Unsupported item type - no answer, because client should have actually prevented this request
 	if( enchantgrade == nullptr ){
@@ -23813,7 +23813,7 @@ void clif_parse_enchantgrade_add( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_enchantgradelevel> enchantgradelevel = util::map_find( enchantgradelevels->second, (e_enchantgrade)sd->inventory.u.items_inventory[index].enchantgrade );
+	s_enchantgradelevel* enchantgradelevel = util::map_find( enchantgradelevels->second, (e_enchantgrade)sd->inventory.u.items_inventory[index].enchantgrade );
 
 	// Cannot increase enchantgrade any further - no answer, because client should have actually prevented this request
 	if( enchantgradelevel == nullptr ){
@@ -23879,7 +23879,7 @@ void clif_parse_enchantgrade_start( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_enchantgrade> enchantgrade = enchantgrade_db.find( sd->inventory_data[index]->type );
+	s_enchantgrade* enchantgrade = enchantgrade_db.find( sd->inventory_data[index]->type );
 
 	// Unsupported item type - no answer
 	if( enchantgrade == nullptr ){
@@ -23901,7 +23901,7 @@ void clif_parse_enchantgrade_start( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_enchantgradelevel> enchantgradelevel = util::map_find( enchantgradelevels->second, (e_enchantgrade)sd->inventory.u.items_inventory[index].enchantgrade );
+	s_enchantgradelevel* enchantgradelevel = util::map_find( enchantgradelevels->second, (e_enchantgrade)sd->inventory.u.items_inventory[index].enchantgrade );
 
 	// Cannot increase enchantgrade any further - no answer
 	if( enchantgradelevel == nullptr ){
@@ -23915,7 +23915,7 @@ void clif_parse_enchantgrade_start( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_enchantgradeoption> option = util::map_find( enchantgradelevel->options, (uint16)p->material_index );
+	s_enchantgradeoption* option = util::map_find( enchantgradelevel->options, (uint16)p->material_index );
 
 	// Unknown option id - no answer
 	if( option == nullptr ){
@@ -24086,7 +24086,7 @@ void clif_reputation_list( map_session_data& sd ){
 
 	size_t index = 0;
 	for( const auto& entry : reputation_db ){
-		std::shared_ptr<s_reputation> reputation = entry.second;
+		s_reputation* reputation = entry.second.get();
 
 		PACKET_ZC_REPUTE_INFO_sub& list_entry = p->list[index];
 
@@ -24161,7 +24161,7 @@ void clif_parse_item_reform_start( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_reform> reform = item_reform_db.find( sd->state.item_reform );
+	s_item_reform* reform = item_reform_db.find( sd->state.item_reform );
 
 	if( reform == nullptr ){
 		return;
@@ -24169,7 +24169,7 @@ void clif_parse_item_reform_start( int32 fd, map_session_data* sd ){
 
 	struct item& selected_item = sd->inventory.u.items_inventory[index];
 
-	std::shared_ptr<s_item_reform_base> base = util::umap_find( reform->base_items, selected_item.nameid );
+	s_item_reform_base* base = util::umap_find( reform->base_items, selected_item.nameid );
 
 	if( base == nullptr ){
 		return;
@@ -24331,7 +24331,7 @@ void clif_enchantwindow_result( map_session_data& sd, bool success, t_itemid enc
 #endif
 }
 
-bool clif_parse_enchant_basecheck( struct item& selected_item, std::shared_ptr<s_item_enchant> enchant ){
+bool clif_parse_enchant_basecheck( struct item& selected_item, s_item_enchant* enchant ){
 	if( selected_item.equip != 0 ){
 		return false;
 	}
@@ -24386,7 +24386,7 @@ void clif_parse_enchantwindow_general( int32 fd, map_session_data* sd ){
 	}
 
 	struct item& selected_item = sd->inventory.u.items_inventory[index];
-	std::shared_ptr<s_item_enchant> enchant = item_enchant_db.find( p->enchant_group );
+	s_item_enchant* enchant = item_enchant_db.find( p->enchant_group );
 
 	if( enchant == nullptr ){
 		return;
@@ -24413,13 +24413,13 @@ void clif_parse_enchantwindow_general( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant_slot> enchant_slot = util::umap_find( enchant->slots, slot );
+	s_item_enchant_slot* enchant_slot = util::umap_find( enchant->slots, slot );
 
 	if( enchant_slot == nullptr ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant_normal> enchants_for_enchantgrade = util::umap_find( enchant_slot->normal.enchants, (uint16)selected_item.enchantgrade );
+	s_item_enchant_normal* enchants_for_enchantgrade = util::umap_find( enchant_slot->normal.enchants, (uint16)selected_item.enchantgrade );
 
 	if( enchants_for_enchantgrade == nullptr ){
 		clif_messagecolor( &sd->bl, color_table[COLOR_RED], msg_txt( sd, 829 ), false, SELF); // Enchanting is not possible for your item's enchant grade.
@@ -24475,7 +24475,7 @@ void clif_parse_enchantwindow_general( int32 fd, map_session_data* sd ){
 	bool enchanted = false;
 
 	for( int32 i = 0; i < maximum; i++ ){
-		std::shared_ptr<s_item_enchant_normal_sub> normal_enchant = util::umap_random( enchants_for_enchantgrade->enchants );
+		s_item_enchant_normal_sub* normal_enchant = util::umap_random( enchants_for_enchantgrade->enchants );
 
 		if( rnd_value( 0, 10000 ) < normal_enchant->chance ){
 			selected_item.card[slot] = normal_enchant->item_id;
@@ -24485,7 +24485,7 @@ void clif_parse_enchantwindow_general( int32 fd, map_session_data* sd ){
 	}
 
 	if( !enchanted ){
-		std::shared_ptr<s_item_enchant_normal_sub> normal_enchant = util::umap_random( enchants_for_enchantgrade->enchants );
+		s_item_enchant_normal_sub* normal_enchant = util::umap_random( enchants_for_enchantgrade->enchants );
 		selected_item.card[slot] = normal_enchant->item_id;
 	}
 
@@ -24515,7 +24515,7 @@ void clif_parse_enchantwindow_perfect( int32 fd, map_session_data* sd ){
 	}
 
 	struct item& selected_item = sd->inventory.u.items_inventory[index];
-	std::shared_ptr<s_item_enchant> enchant = item_enchant_db.find( p->enchant_group );
+	s_item_enchant* enchant = item_enchant_db.find( p->enchant_group );
 
 	if( enchant == nullptr ){
 		return;
@@ -24542,13 +24542,13 @@ void clif_parse_enchantwindow_perfect( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant_slot> enchant_slot = util::umap_find( enchant->slots, slot );
+	s_item_enchant_slot* enchant_slot = util::umap_find( enchant->slots, slot );
 
 	if( enchant_slot == nullptr ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant_perfect> perfect_enchant = util::umap_find( enchant_slot->perfect.enchants, p->ITID );
+	s_item_enchant_perfect* perfect_enchant = util::umap_find( enchant_slot->perfect.enchants, p->ITID );
 
 	if( perfect_enchant == nullptr ){
 		return;
@@ -24615,7 +24615,7 @@ void clif_parse_enchantwindow_upgrade( int32 fd, map_session_data* sd ){
 	}
 
 	struct item& selected_item = sd->inventory.u.items_inventory[index];
-	std::shared_ptr<s_item_enchant> enchant = item_enchant_db.find( p->enchant_group );
+	s_item_enchant* enchant = item_enchant_db.find( p->enchant_group );
 
 	if( enchant == nullptr ){
 		return;
@@ -24639,13 +24639,13 @@ void clif_parse_enchantwindow_upgrade( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant_slot> enchant_slot = util::umap_find( enchant->slots, slot );
+	s_item_enchant_slot* enchant_slot = util::umap_find( enchant->slots, slot );
 
 	if( enchant_slot == nullptr ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant_upgrade> upgrade = util::umap_find( enchant_slot->upgrade.enchants, selected_item.card[slot] );
+	s_item_enchant_upgrade* upgrade = util::umap_find( enchant_slot->upgrade.enchants, selected_item.card[slot] );
 
 	if( upgrade == nullptr ){
 		return;
@@ -24725,7 +24725,7 @@ void clif_parse_enchantwindow_reset( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_enchant> enchant = item_enchant_db.find( p->enchant_group );
+	s_item_enchant* enchant = item_enchant_db.find( p->enchant_group );
 
 	if( enchant == nullptr ){
 		return;
@@ -24843,13 +24843,13 @@ void clif_parse_itempackage_select( int32 fd, map_session_data* sd ){
 		return;
 	}
 
-	std::shared_ptr<s_item_package> package = item_package_db.find( p->itemID );
+	s_item_package* package = item_package_db.find( p->itemID );
 
 	if( package == nullptr ){
 		return;
 	}
 
-	std::shared_ptr<s_item_package_group> group = util::umap_find( package->groups, p->BoxIndex );
+	s_item_package_group* group = util::umap_find( package->groups, p->BoxIndex );
 
 	if( group == nullptr ){
 		return;
@@ -24871,7 +24871,7 @@ void clif_parse_itempackage_select( int32 fd, map_session_data* sd ){
 		}
 
 		// Check if it is a pet egg
-		std::shared_ptr<s_pet_db> pet = pet_db_search( item.nameid, PET_EGG );
+		s_pet_db* pet = pet_db_search( item.nameid, PET_EGG );
 
 		if( pet != nullptr ){
 			for( int32 i = 0; i < entry.second->amount; i++ ){
@@ -24996,7 +24996,7 @@ void clif_parse_captcha_preview_request(int32 fd, map_session_data *sd) {
 #endif
 }
 
-void clif_captcha_preview_response(map_session_data &sd, std::shared_ptr<s_captcha_data> cd) {
+void clif_captcha_preview_response(map_session_data &sd, s_captcha_data* cd) {
 #if PACKETVER >= 20160330
 	PACKET_ZC_ACK_PREVIEW_MACRO_DETECTOR p = {};
 
@@ -25033,7 +25033,7 @@ void clif_captcha_preview_response(map_session_data &sd, std::shared_ptr<s_captc
 
 void clif_macro_detector_request(map_session_data &sd) {
 #if PACKETVER >= 20160330
-	std::shared_ptr<s_captcha_data> cd = sd.macro_detect.cd;
+	s_captcha_data* cd = sd.macro_detect.cd.get();
 
 	if (cd == nullptr) {
 		return;

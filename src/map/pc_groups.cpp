@@ -70,7 +70,7 @@ uint64 PlayerGroupDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_player_group> group = this->find( groupId );
+	std::shared_ptr<s_player_group> group = this->find_shared( groupId );
 	bool exists = group != nullptr;
 
 	if( !exists ){
@@ -231,7 +231,7 @@ void PlayerGroupDatabase::loadingFinished(){
 				continue;
 			}
 
-			std::shared_ptr<s_player_group> group = this->find( entry.first );
+			auto group = this->find_shared( entry.first );
 
 			auto it = entry.second.begin();
 
@@ -241,7 +241,7 @@ void PlayerGroupDatabase::loadingFinished(){
 				bool inherited = false;
 
 				for( const auto& it : *this ){
-					std::shared_ptr<s_player_group> otherGroup = it.second;
+					s_player_group* otherGroup = it.second.get();
 					// Copy the string
 					std::string otherGroupName = otherGroup->name;
 
@@ -346,7 +346,7 @@ bool s_player_group::can_use_command( const std::string& command, AtCommandType 
  * @param sd Player
  */
 void pc_group_pc_load(map_session_data * sd) {
-	std::shared_ptr<s_player_group> group = player_group_db.find( sd->group_id );
+	s_player_group* group = player_group_db.find( sd->group_id );
 
 	if( group == nullptr ){
 		ShowWarning("pc_group_pc_load: %s (AID:%d) logged in with unknown group id (%d)! kicking...\n",

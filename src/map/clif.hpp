@@ -1444,8 +1444,8 @@ void clif_summon_init(struct mob_data& md);
 void clif_summon_hp_bar(struct mob_data& md);
 
 // Laphine System
-void clif_laphine_synthesis_open( map_session_data *sd, std::shared_ptr<s_laphine_synthesis> synthesis );
-void clif_laphine_upgrade_open( map_session_data* sd, std::shared_ptr<s_laphine_upgrade> upgrade );
+void clif_laphine_synthesis_open( map_session_data *sd, s_laphine_synthesis* synthesis );
+void clif_laphine_upgrade_open( map_session_data* sd, s_laphine_upgrade* upgrade );
 
 // Reputation System
 void clif_reputation_type( map_session_data& sd, int64 type, int64 points );
@@ -1467,7 +1467,7 @@ void clif_captcha_upload_request(map_session_data &sd);
 void clif_captcha_upload_end(map_session_data &sd);
 
 // Captcha Preview
-void clif_captcha_preview_response(map_session_data &sd, std::shared_ptr<s_captcha_data> cd);
+void clif_captcha_preview_response(map_session_data &sd, s_captcha_data* cd);
 
 // Macro Detector
 void clif_macro_detector_request(map_session_data &sd);

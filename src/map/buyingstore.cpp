@@ -162,7 +162,7 @@ int8 buyingstore_create( map_session_data* sd, int32 zenylimit, unsigned char re
 	// check item list
 	for( i = 0; i < count; i++ ){
 		const struct PACKET_CZ_REQ_OPEN_BUYING_STORE_sub *item = &itemlist[i];
-		std::shared_ptr<item_data> id = item_db.find(item->itemId);
+		item_data* id = item_db.find(item->itemId);
 
 		// invalid input
 		if( id == nullptr || item->amount == 0 ){	
@@ -175,7 +175,7 @@ int8 buyingstore_create( map_session_data* sd, int32 zenylimit, unsigned char re
 		}
 
 		// restrictions: allowed and no character-bound items
-		if( !id->flag.buyingstore || !itemdb_cantrade_sub( id.get(), pc_get_group_level( sd ), pc_get_group_level( sd ) ) ){ 
+		if( !id->flag.buyingstore || !itemdb_cantrade_sub( id, pc_get_group_level( sd ), pc_get_group_level( sd ) ) ){ 
 			break;
 		}
 
@@ -572,7 +572,7 @@ bool buyingstore_searchall(map_session_data* sd, const struct s_search_store_sea
 			return false;
 		}
 
-		std::shared_ptr<s_search_store_info_item> ssitem = std::make_shared<s_search_store_info_item>();
+		auto ssitem = std::make_shared<s_search_store_info_item>();
 
 		ssitem->store_id = sd->buyer_id;
 		ssitem->account_id = sd->status.account_id;

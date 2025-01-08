@@ -145,7 +145,7 @@ static char log_feedingtype2char(e_log_feeding_type type) {
 static bool should_log_item(t_itemid nameid, int32 amount, int32 refine)
 {
 	int32 filter = log_config.filter;
-	std::shared_ptr<item_data> id = item_db.find(nameid);
+	item_data* id = item_db.find(nameid);
 
 	if( id == nullptr )
 		return false;

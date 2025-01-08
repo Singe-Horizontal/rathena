@@ -47,7 +47,7 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 	e_cash_shop_tab tab = static_cast<e_cash_shop_tab>( constant );
 
-	std::shared_ptr<s_cash_item_tab> entry = this->find( static_cast<uint16>( tab ) );
+	std::shared_ptr<s_cash_item_tab> entry = this->find_shared( static_cast<uint16>( tab ) );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -66,7 +66,7 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+		item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 		if( item == nullptr ){
 			this->invalidWarning( it["Item"], "Cash item %s does not exist, skipping.\n", item_name.c_str() );
@@ -76,7 +76,7 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		std::shared_ptr<s_cash_item> cash_item = nullptr;
 		bool cash_item_exists = false;
 
-		for( std::shared_ptr<s_cash_item> cash_it : entry->items ){
+		for( auto& cash_it : entry->items ){
 			if( cash_it->nameid == item->nameid ){
 				cash_item = cash_it;
 				cash_item_exists = true;
@@ -119,16 +119,16 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 	return 1;
 }
 
-std::shared_ptr<s_cash_item> CashShopDatabase::findItemInTab( e_cash_shop_tab tab, t_itemid nameid ){
-	std::shared_ptr<s_cash_item_tab> cash_tab = this->find( static_cast<uint16>( tab ) );
+s_cash_item* CashShopDatabase::findItemInTab( e_cash_shop_tab tab, t_itemid nameid ){
+	auto cash_tab = this->find_shared( static_cast<uint16>( tab ) );
 
 	if( cash_tab == nullptr ){
 		return nullptr;
 	}
 
-	for( std::shared_ptr<s_cash_item> cash_it : cash_tab->items ){
+	for( auto& cash_it : cash_tab->items ){
 		if( cash_it->nameid == nameid ){
-			return cash_it;
+			return cash_it.get();
 		}
 	}
 
@@ -463,7 +463,7 @@ bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int32 n, const 
 			return false;
 		}
 
-		std::shared_ptr<s_cash_item> cash_item = cash_shop_db.findItemInTab( static_cast<e_cash_shop_tab>( tab ), nameid );
+		s_cash_item* cash_item = cash_shop_db.findItemInTab( static_cast<e_cash_shop_tab>( tab ), nameid );
 
 		if( cash_item == nullptr ){
 			clif_cashshop_result( sd, nameid, CASHSHOP_RESULT_ERROR_UNKONWN_ITEM );
@@ -471,7 +471,7 @@ bool cashshop_buylist( map_session_data* sd, uint32 kafrapoints, int32 n, const 
 		}
 
 
-		std::shared_ptr<item_data> id = item_db.find(nameid);
+		item_data* id = item_db.find(nameid);
 
 		if( !id ){
 			clif_cashshop_result( sd, nameid, CASHSHOP_RESULT_ERROR_UNKONWN_ITEM );

@@ -3129,7 +3129,7 @@ public:
 	uint64 parseBodyNode(const ryml::NodeRef& node) override;
 
 	// Additional
-	bool add_option(const ryml::NodeRef& node, std::shared_ptr<s_random_opt_group_entry> &entry);
+	bool add_option(const ryml::NodeRef& node, std::shared_ptr<s_random_opt_group_entry>& entry);
 	bool option_exists(std::string name);
 	bool option_get_id(std::string name, uint16 &id);
 };
@@ -3150,7 +3150,7 @@ struct s_item_group_entry
 		isStacked, /// Whether stackable items are given stacked
 		isNamed; /// Named the item (if possible)
 	uint8 bound; /// Makes the item as bound item (according to bound type)
-	std::shared_ptr<s_random_opt_group> randomOptionGroup;
+	s_random_opt_group* randomOptionGroup;
 	uint16 refineMinimum;
 	uint16 refineMaximum;
 };
@@ -3280,9 +3280,9 @@ private:
 	std::unordered_map<std::string, std::shared_ptr<item_data>> nameToItemDataMap;
 	std::unordered_map<std::string, std::shared_ptr<item_data>> aegisNameToItemDataMap;
 
-	e_sex defaultGender( const ryml::NodeRef& node, std::shared_ptr<item_data> id );
+	e_sex defaultGender( const ryml::NodeRef& node, const item_data* id );
 
-	std::string create_item_link(struct item& item, std::shared_ptr<item_data>& data);
+	std::string create_item_link(struct item& item, item_data* data);
 
 	struct s_pricevalue {
 		bool has_buy;
@@ -3307,11 +3307,11 @@ public:
 	}
 
 	// Additional
-	std::shared_ptr<item_data> searchname( const char* name );
-	std::shared_ptr<item_data> search_aegisname( const char *name );
-	std::string create_item_link(struct item& item);
-	std::string create_item_link( std::shared_ptr<item_data>& data );
-	std::string create_item_link_for_mes( std::shared_ptr<item_data>& data, bool use_brackets, const char* name );
+	item_data* searchname( const char* name );
+	item_data* search_aegisname( const char *name );
+	std::string create_item_link( struct item& item);
+	std::string create_item_link( item_data* data );
+	std::string create_item_link_for_mes( item_data* data, bool use_brackets, const char* name );
 };
 
 extern ItemDatabase item_db;
@@ -3329,12 +3329,12 @@ public:
 	// Additional
 	bool item_exists(uint16 group_id, t_itemid nameid);
 	int16 item_exists_pc(map_session_data *sd, uint16 group_id);
-	std::shared_ptr<s_item_group_entry> get_random_entry(uint16 group_id, uint8 sub_group, e_group_algorithm_type algorithm = GROUP_ALGORITHM_USEDB);
+	s_item_group_entry* get_random_entry(uint16 group_id, uint8 sub_group, e_group_algorithm_type algorithm = GROUP_ALGORITHM_USEDB);
 	uint8 pc_get_itemgroup( uint16 group_id, bool identify, map_session_data& sd );
 
 private:
-	std::shared_ptr<s_item_group_entry> get_random_itemsubgroup(std::shared_ptr<s_item_group_random> random, e_group_algorithm_type algorithm = GROUP_ALGORITHM_USEDB);
-	void pc_get_itemgroup_sub( map_session_data& sd, bool identify, std::shared_ptr<s_item_group_entry> data );
+	s_item_group_entry* get_random_itemsubgroup(s_item_group_random* random, e_group_algorithm_type algorithm = GROUP_ALGORITHM_USEDB);
+	void pc_get_itemgroup_sub( map_session_data& sd, bool identify, s_item_group_entry* data );
 };
 
 extern ItemGroupDatabase itemdb_group;
@@ -3372,7 +3372,7 @@ struct s_laphine_upgrade{
 	uint16 maximumRefine;
 	uint16 requiredRandomOptions;
 	bool cardsAllowed;
-	std::shared_ptr<s_random_opt_group> randomOptionGroup;
+	s_random_opt_group* randomOptionGroup;
 	uint16 resultRefine;
 	uint16 resultRefineMinimum;
 	uint16 resultRefineMaximum;
@@ -3399,7 +3399,7 @@ struct s_item_reform_base{
 	std::unordered_map<t_itemid, uint16> materials;
 	t_itemid resultItemId;
 	int16 refineChange;
-	std::shared_ptr<s_random_opt_group> randomOptionGroup;
+	s_random_opt_group* randomOptionGroup;
 	bool clearSlots;
 	bool removeEnchantgrade;
 };
@@ -3496,7 +3496,7 @@ struct s_item_package_item{
 	uint16 amount;
 	uint16 rentalhours;
 	uint16 refine;
-	std::shared_ptr<s_random_opt_group> randomOptionGroup;
+	s_random_opt_group* randomOptionGroup;
 };
 
 struct s_item_package_group{

@@ -37,7 +37,7 @@ MercenaryDatabase mercenary_db;
 * @return View Data of Mercenary
 **/
 struct view_data *mercenary_get_viewdata( uint16 class_ ){
-	std::shared_ptr<s_mercenary_db> db = mercenary_db.find(class_);
+	s_mercenary_db* db = mercenary_db.find(class_);
 
 	if( db ){
 		return &db->vd;
@@ -56,7 +56,7 @@ struct view_data *mercenary_get_viewdata( uint16 class_ ){
 bool mercenary_create(map_session_data *sd, uint16 class_, uint32 lifetime) {
 	nullpo_retr(false,sd);
 
-	std::shared_ptr<s_mercenary_db> db = mercenary_db.find(class_);
+	s_mercenary_db* db = mercenary_db.find(class_);
 
 	if (db == nullptr) {
 		ShowError("mercenary_create: Unknown mercenary class %d.\n", class_);
@@ -356,7 +356,7 @@ bool mercenary_recv_data(s_mercenary *merc, bool flag)
 	if( (sd = map_charid2sd(merc->char_id)) == nullptr )
 		return false;
 
-	std::shared_ptr<s_mercenary_db> db = mercenary_db.find(merc->class_);
+	s_mercenary_db* db = mercenary_db.find(merc->class_);
 
 	if( !flag || !db ){ // Not created - loaded - DB info
 		sd->status.mer_id = 0;
@@ -503,7 +503,7 @@ uint64 MercenaryDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt32(node, "Id", id))
 		return 0;
 
-	std::shared_ptr<s_mercenary_db> mercenary = this->find(id);
+	std::shared_ptr<s_mercenary_db> mercenary = this->find_shared(id);
 	bool exists = mercenary != nullptr;
 
 	if (!exists) {

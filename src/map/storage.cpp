@@ -37,7 +37,7 @@ std::map<int32, struct s_storage> guild_storage_db;
  * @return Storage name or "Storage" if not found
  **/
 const char *storage_getName(uint8 id) {
-	std::shared_ptr<struct s_storage_table> storage = util::umap_find( storage_db, (uint16)id );
+	struct s_storage_table* storage = util::umap_find( storage_db, (uint16)id );
 
 	if( storage ){
 		return storage->name;
@@ -801,12 +801,12 @@ bool storage_guild_additem2(struct s_storage* stor, struct item* item, int32 amo
 	if (item->nameid == 0 || amount <= 0)
 		return false;
 
-	std::shared_ptr<item_data> id = item_db.find(item->nameid);
+	item_data* id = item_db.find(item->nameid);
 
 	if (id == nullptr || item->expire_time)
 		return false;
 
-	if (itemdb_isstackable2(id.get())) { // Stackable
+	if (itemdb_isstackable2(id)) { // Stackable
 		for (i = 0; i < stor->max_amount; i++) {
 			if (compare_item(&stor->u.items_guild[i], item)) {
 				// Set the amount, make it fit with max amount

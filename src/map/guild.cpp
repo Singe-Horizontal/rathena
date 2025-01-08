@@ -65,7 +65,7 @@ struct s_guild_skill_requirement{
 struct s_guild_skill_tree{
 	uint16 id;
 	uint16 max;
-	std::unordered_map<uint16,std::shared_ptr<s_guild_skill_requirement>> need;
+	std::unordered_map<uint16, std::shared_ptr<s_guild_skill_requirement>> need;
 };
 
 class GuildSkillTreeDatabase : public TypesafeYamlDatabase<uint16, s_guild_skill_tree>{
@@ -101,7 +101,7 @@ uint64 GuildSkillTreeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_guild_skill_tree> skill = this->find( skill_id );
+	std::shared_ptr<s_guild_skill_tree> skill = this->find_shared( skill_id );
 	bool exists = skill != nullptr;
 
 	if( !exists ){
@@ -150,7 +150,7 @@ uint64 GuildSkillTreeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_guild_skill_requirement> requirement = util::umap_find( skill->need, requiredSkillId );
+			auto requirement = util::umap_find_shared( skill->need, requiredSkillId );
 			bool requirement_exists = requirement != nullptr;
 
 			if( !requirement_exists ){
@@ -233,7 +233,7 @@ static TBL_PC* guild_sd_check(int32 guild_id, uint32 account_id, uint32 char_id)
 
 // Modified [Komurka]
 uint16 guild_skill_get_max( uint16 id ){
-	std::shared_ptr<s_guild_skill_tree> skill = guild_skill_tree_db.find( id );
+	s_guild_skill_tree* skill = guild_skill_tree_db.find( id );
 
 	if( skill == nullptr ){
 		return 0;
@@ -253,7 +253,7 @@ int32 guild_checkskill(const struct mmo_guild &g, int32 id) {
  * Guild skill check - from jA [Komurka]
  *------------------------------------------*/
 bool guild_check_skill_require(const struct mmo_guild &g, uint16 id ){
-	std::shared_ptr<s_guild_skill_tree> skill = guild_skill_tree_db.find( id );
+	s_guild_skill_tree* skill = guild_skill_tree_db.find( id );
 
 	if( skill == nullptr ){
 		return false;
@@ -278,7 +278,7 @@ uint64 CastleDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asInt32(node, "Id", castle_id))
 		return 0;
 
-	std::shared_ptr<guild_castle> gc = this->find(castle_id);
+	std::shared_ptr<guild_castle> gc = this->find_shared(castle_id);
 	bool exists = gc != nullptr;
 
 	if (!exists) {
@@ -477,12 +477,12 @@ uint64 CastleDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 void CastleDatabase::loadingFinished(){
 	for( const auto& pair : *this ){
-		std::shared_ptr<guild_castle> castle = pair.second;
+		guild_castle* castle = pair.second.get();
 
 		if( castle->client_id != 0 ){
 			// Check if ClientId is unique
 			for( const auto& pair2 : *this ){
-				std::shared_ptr<guild_castle> castle2 = pair2.second;
+				guild_castle* castle2 = pair2.second.get();
 
 				if( castle->castle_id == castle2->castle_id ){
 					continue;
@@ -518,17 +518,22 @@ void CastleDatabase::loadingFinished(){
 }
 
 /// lookup: guild id -> guild
-std::shared_ptr<MapGuild> guild_search(int32 guild_id) {
+MapGuild* guild_search(int32 guild_id) {
 	return util::umap_find(guild_db, guild_id);
 }
 
+/// lookup: guild id -> guild
+std::shared_ptr<MapGuild> guild_search_shared(int32 guild_id) {
+	return util::umap_find_shared(guild_db, guild_id);
+}
+
 /// lookup: guild name -> guild
-std::shared_ptr<MapGuild> guild_searchname(const char* str) {
+MapGuild* guild_searchname(const char* str) {
 	if (!str)
 		return nullptr;
 	for (const auto &it : guild_db) {
 		if (it.second && (strcmp(it.second->guild.name, str) == 0))
-			return it.second;
+			return it.second.get();
 	}
 
 	return nullptr;
@@ -538,7 +543,7 @@ std::shared_ptr<MapGuild> guild_searchname(const char* str) {
  * Helper function to find a guild via a string
  * The string might be a guild_id, so test names first then id
 */
-std::shared_ptr<MapGuild> guild_searchnameid(const char *str) {
+MapGuild* guild_searchnameid(const char *str) {
 	if (!str)
 		return nullptr;
 
@@ -550,23 +555,23 @@ std::shared_ptr<MapGuild> guild_searchnameid(const char *str) {
 }
 
 /// lookup: map index -> castle*
-std::shared_ptr<guild_castle> CastleDatabase::mapindex2gc(int16 mapindex) {
+guild_castle* CastleDatabase::mapindex2gc(int16 mapindex) {
 	for (const auto &it : *this) {
 		if (it.second->mapindex == mapindex)
-			return it.second;
+			return it.second.get();
 	}
 	return nullptr;
 }
 
 /// lookup: map name -> castle*
-std::shared_ptr<guild_castle> CastleDatabase::mapname2gc(const char* mapname) {
+guild_castle* CastleDatabase::mapname2gc(const char* mapname) {
 	return castle_db.mapindex2gc(mapindex_name2id(mapname));
 }
 
-std::shared_ptr<guild_castle> CastleDatabase::find_by_clientid( uint16 client_id ){
+guild_castle* CastleDatabase::find_by_clientid( uint16 client_id ){
 	for( const auto &it : *this ){
 		if( it.second->client_id == client_id ){
-			return it.second;
+			return it.second.get();
 		}
 	}
 
@@ -826,7 +831,7 @@ int32 guild_recv_info(const struct mmo_guild &sg) {
 	map_session_data *sd;
 	bool guild_new = false;
 
-	auto g = guild_search(sg.guild_id);
+	auto g = guild_search_shared(sg.guild_id);
 
 	if (!g) {
 		g = std::make_shared<MapGuild>();
@@ -1072,7 +1077,7 @@ bool guild_reply_invite( map_session_data& sd, int32 guild_id, int32 flag ){
 //- Player must be authed and must belong to a guild before invoking this method
 void guild_member_joined(map_session_data *sd) {
 	int32 i;
-	auto g = guild_search(sd->status.guild_id);
+	auto g = guild_search_shared(sd->status.guild_id);
 	if (!g) {
 		guild_request_info(sd->status.guild_id);
 		return;
@@ -1104,7 +1109,7 @@ void guild_member_joined(map_session_data *sd) {
  *----------------------------------------*/
 int32 guild_member_added(int32 guild_id,uint32 account_id,uint32 char_id,int32 flag) {
 	map_session_data *sd= map_id2sd(account_id),*sd2;
-	auto g = guild_search(guild_id);
+	auto g = guild_search_shared(guild_id);
 
 	if (!g)
 		return 0;
@@ -1797,7 +1802,7 @@ void guild_guildaura_refresh(map_session_data *sd, uint16 skill_id, uint16 skill
 
 	status_change_end(&sd->bl, type);
 
-	std::shared_ptr<s_skill_unit_group> group = skill_unitsetting(&sd->bl,skill_id,skill_lv,sd->bl.x,sd->bl.y,0);
+	auto group = skill_unitsetting(&sd->bl,skill_id,skill_lv,sd->bl.x,sd->bl.y,0);
 
 	if( group )
 		sc_start4(nullptr,&sd->bl,type,100,(battle_config.guild_aura&16)?0:skill_lv,0,0,group->group_id,600000);//duration doesn't matter these status never end with val4
@@ -2131,7 +2136,7 @@ int32 guild_broken_sub(struct mmo_guild &g, int32 guild_id) {
  */
 void castle_guild_broken_sub(int32 guild_id) {
 	for (const auto &it : castle_db) {
-		std::shared_ptr<guild_castle> gc = it.second;
+		guild_castle* gc = it.second.get();
 		if (gc->guild_id == guild_id) {
 			char name[EVENT_NAME_LENGTH];
 			// We call castle_event::OnGuildBreak of all castles of the guild
@@ -2336,7 +2341,7 @@ int32 guild_break( map_session_data& sd, const char* name ){
 	if( ( ud = unit_bl2ud( &sd.bl ) ) ){
 		std::vector<std::shared_ptr<s_skill_unit_group>> group;
 
-		for (const auto su : ud->skillunits) {
+		for (const auto& su : ud->skillunits) {
 			switch (su->skill_id) {
 				case GD_LEADERSHIP:
 				case GD_GLORYWOUNDS:
@@ -2348,7 +2353,7 @@ int32 guild_break( map_session_data& sd, const char* name ){
 		}
 
 		for (auto it = group.begin(); it != group.end(); it++) {
-			skill_delunitgroup(*it);
+			skill_delunitgroup(it->get());
 		}
 	}
 
@@ -2388,7 +2393,7 @@ void guild_castle_map_init(void) {
  * @param value New value
  */
 int32 guild_castledatasave(int32 castle_id, int32 index, int32 value) {
-	std::shared_ptr<guild_castle> gc = castle_db.find(castle_id);
+	guild_castle* gc = castle_db.find(castle_id);
 
 	if (gc == nullptr) {
 		ShowWarning("guild_castledatasave: guild castle '%d' not found\n", castle_id);
@@ -2497,7 +2502,7 @@ int32 guild_castledataloadack(int32 len, struct guild_castle *gc) {
 		npc_event_doall( script_config.agit_init3_event_name );
 	} else // load received castles into memory, one by one
 	for( i = 0; i < n; i++, gc++ ) {
-		std::shared_ptr<guild_castle> c = castle_db.find(gc->castle_id);
+		guild_castle* c = castle_db.find(gc->castle_id);
 
 		if (c == nullptr) {
 			ShowError("guild_castledataloadack: castle id=%d not found.\n", gc->castle_id);

@@ -28,7 +28,7 @@ using namespace rathena;
 // int32 auction_id -> struct auction_data*
 static std::unordered_map<uint32, std::shared_ptr<struct auction_data>> auction_db;
 
-void auction_delete( std::shared_ptr<struct auction_data> auction );
+void auction_delete( struct auction_data* auction );
 TIMER_FUNC(auction_end_timer);
 
 int32 auction_count(uint32 char_id, bool buy)
@@ -36,7 +36,7 @@ int32 auction_count(uint32 char_id, bool buy)
 	int32 i = 0;
 
 	for( const auto& pair : auction_db ){
-		std::shared_ptr<struct auction_data> auction = pair.second;
+		struct auction_data* auction = pair.second.get();
 
 		if( ( buy && auction->buyer_id == char_id ) || ( !buy && auction->seller_id == char_id ) ){
 			i++;
@@ -46,7 +46,7 @@ int32 auction_count(uint32 char_id, bool buy)
 	return i;
 }
 
-void auction_save( std::shared_ptr<struct auction_data> auction ){
+void auction_save( struct auction_data* auction ){
 	int32 j;
 	StringBuf buf;
 	SqlStmt stmt{ *sql_handle };
@@ -148,7 +148,7 @@ void mapif_Auction_message(uint32 char_id, unsigned char result)
 }
 
 TIMER_FUNC(auction_end_timer){
-	std::shared_ptr<struct auction_data> auction = util::umap_find( auction_db, static_cast<uint32>( id ) );
+	struct auction_data* auction = util::umap_find( auction_db, static_cast<uint32>( id ) );
 
 	if( auction != nullptr ){
 		if( auction->buyer_id )
@@ -169,7 +169,7 @@ TIMER_FUNC(auction_end_timer){
 	return 0;
 }
 
-void auction_delete( std::shared_ptr<struct auction_data> auction ){
+void auction_delete( struct auction_data* auction ){
 	uint32 auction_id = auction->auction_id;
 
 	if( SQL_ERROR == Sql_Query(sql_handle, "DELETE FROM `%s` WHERE `auction_id` = '%d'", schema_config.auction_db, auction_id) )
@@ -209,7 +209,7 @@ void inter_auctions_fromsql(void)
 	while( SQL_SUCCESS == Sql_NextRow(sql_handle) )
 	{
 		struct item *item;
-		std::shared_ptr<struct auction_data> auction = std::make_shared<struct auction_data>();
+		auto auction = std::make_shared<struct auction_data>();
 
 		Sql_GetData(sql_handle, 0, &data, nullptr); auction->auction_id = atoi(data);
 		Sql_GetData(sql_handle, 1, &data, nullptr); auction->seller_id = atoi(data);
@@ -289,7 +289,7 @@ void mapif_parse_Auction_requestlist(int32 fd)
 	memcpy(searchtext, RFIFOP(fd,16), NAME_LENGTH);
 
 	for( const auto& pair : auction_db ){
-		std::shared_ptr<struct auction_data> auction = pair.second;
+		struct auction_data* auction = pair.second.get();
 
 		if( (type == 0 && auction->type != IT_ARMOR && auction->type != IT_PETARMOR) ||
 			(type == 1 && auction->type != IT_WEAPON) ||
@@ -311,7 +311,7 @@ void mapif_parse_Auction_requestlist(int32 fd)
 		if( page != pages )
 			continue; // This is not the requested Page
 
-		memcpy( WBUFP( buf, j * len ), auction.get(), len );
+		memcpy( WBUFP( buf, j * len ), auction, len );
 		j++; // Found Results
 	}
 
@@ -362,7 +362,7 @@ void mapif_parse_Auction_cancel(int32 fd)
 {
 	uint32 char_id = RFIFOL(fd,2), auction_id = RFIFOL(fd,6);
 
-	std::shared_ptr<struct auction_data> auction = util::umap_find( auction_db, auction_id );
+	struct auction_data* auction = util::umap_find( auction_db, auction_id );
 
 	if( auction == nullptr ){
 		mapif_Auction_cancel(fd, char_id, 1); // Bid Number is Incorrect
@@ -399,7 +399,7 @@ void mapif_Auction_close(int32 fd, uint32 char_id, unsigned char result)
 void mapif_parse_Auction_close(int32 fd)
 {
 	uint32 char_id = RFIFOL(fd,2), auction_id = RFIFOL(fd,6);
-	std::shared_ptr<struct auction_data> auction = util::umap_find( auction_db, auction_id );
+	struct auction_data* auction = util::umap_find( auction_db, auction_id );
 
 	if( auction == nullptr ){
 		mapif_Auction_close(fd, char_id, 2); // Bid Number is Incorrect
@@ -442,7 +442,7 @@ void mapif_parse_Auction_bid(int32 fd)
 {
 	uint32 char_id = RFIFOL(fd,4), auction_id = RFIFOL(fd,8);
 	int32 bid = RFIFOL(fd,12);
-	std::shared_ptr<struct auction_data> auction = util::umap_find( auction_db, auction_id );
+	struct auction_data* auction = util::umap_find( auction_db, auction_id );
 
 	if( auction == nullptr || auction->price >= bid || auction->seller_id == char_id ){
 		mapif_Auction_bid(fd, char_id, bid, 0); // You have failed to bid in the auction

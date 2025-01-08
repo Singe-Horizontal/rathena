@@ -398,7 +398,7 @@ void write_npc(std::ostream &os, const struct npc_data *nd) {
 	os << "},\n";
 }
 
-void write_spawn(std::ostream &os, const struct map_data * m, const std::shared_ptr<s_mob_db> mobinfo, int32 amount, int32 idx) {
+void write_spawn(std::ostream &os, const struct map_data * m, const s_mob_db* mobinfo, int32 amount, int32 idx) {
 
 	os << "\t{";
 	os << "\"" << m->name << "\", ";

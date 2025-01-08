@@ -285,7 +285,7 @@ int32 channel_ajoin(MapGuild &g) {
 	if (!g.channel)
 		return -1;
 	for (i = 0; i < MAX_GUILDALLIANCE; i++){
-		std::shared_ptr<MapGuild> ag; //allied guild
+		MapGuild* ag; //allied guild
 		struct guild_alliance *ga = &g.guild.alliance[i]; //guild alliance
 		if(ga->guild_id && (ga->opposition==0) && (ag=guild_search(ga->guild_id))){
 			for (j = 0; j < ag->guild.max_member; j++){ //load all guildmember
@@ -327,7 +327,7 @@ int32 channel_gjoin(map_session_data *sd, int32 flag){
 	if(flag&2){
 		int32 i;
 		for (i = 0; i < MAX_GUILDALLIANCE; i++){
-			std::shared_ptr<MapGuild> ag; //allied guild
+			MapGuild* ag; //allied guild
 			struct guild_alliance *ga = &g->guild.alliance[i]; //guild alliance
 			if(ga->guild_id && (ga->opposition==0) && (ag=guild_search(ga->guild_id)) ) //only join allies
 				channel_join(ag->channel,sd);
@@ -408,7 +408,7 @@ int32 channel_pcquit(map_session_data *sd, int32 type){
 		}
 		if(type&2){
 			for (i = 0; i < MAX_GUILDALLIANCE; i++) { //leave all alliance chan
-				std::shared_ptr<MapGuild> ag; //allied guild
+				MapGuild* ag; //allied guild
 				if( g->guild.alliance[i].guild_id && (ag = guild_search(g->guild.alliance[i].guild_id) ) ) {
 					if(channel_haspc(ag->channel,sd) == 1)
 						channel_clean(ag->channel,sd,0);

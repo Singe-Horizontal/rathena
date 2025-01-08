@@ -46,7 +46,7 @@ struct s_mercenary_data {
 	status_change sc;
 	regen_data regen;
 
-	std::shared_ptr<s_mercenary_db> db;
+	s_mercenary_db* db;
 	s_mercenary mercenary;
 	std::unordered_map<uint16, int32> scd;
 

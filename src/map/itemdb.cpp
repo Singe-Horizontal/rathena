@@ -52,7 +52,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt32(node, "Id", nameid))
 		return 0;
 
-	std::shared_ptr<item_data> item = this->find(nameid);
+	auto item = this->find_shared(nameid);
 	bool exists = item != nullptr;
 
 	if (!exists) {
@@ -74,7 +74,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			this->invalidWarning(node["AegisName"], "AegisName \"%s\" exceeds maximum of %d characters, capping...\n", name.c_str(), ITEM_NAME_LENGTH - 1);
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		item_data* id = item_db.search_aegisname( name.c_str() );
 
 		if (id != nullptr && id->nameid != nameid) {
 			this->invalidWarning(node["AegisName"], "Found duplicate item Aegis name for %s, skipping.\n", name.c_str());
@@ -435,11 +435,11 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		}
 
 		item->sex = static_cast<e_sex>(constant);
-		item->sex = this->defaultGender( node, item );
+		item->sex = this->defaultGender( node, item.get() );
 	} else {
 		if (!exists) {
 			item->sex = SEX_BOTH;
-			item->sex = this->defaultGender( node, item );
+			item->sex = this->defaultGender( node, item.get() );
 		}
 	}
 
@@ -611,7 +611,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		if (!this->asString(node, "AliasName", view))
 			return 0;
 
-		std::shared_ptr<item_data> view_data = item_db.search_aegisname( view.c_str() );
+		item_data* view_data = item_db.search_aegisname( view.c_str() );
 
 		if (view_data == nullptr) {
 			this->invalidWarning(node["AliasName"], "Unable to change the alias because %s is an unknown item.\n", view.c_str());
@@ -1116,7 +1116,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 void ItemDatabase::loadingFinished(){
 	for (auto &tmp_item : item_db) {
-		std::shared_ptr<item_data> item = tmp_item.second;
+		item_data* item = tmp_item.second.get();
 
 		// Items that are consumed only after target confirmation
 		if (item->type == IT_DELAYCONSUME) {
@@ -1201,7 +1201,7 @@ void ItemDatabase::loadingFinished(){
 
 	if( !this->exists( ITEMID_DUMMY ) ){
 		// Create dummy item
-		std::shared_ptr<item_data> dummy_item = std::make_shared<item_data>();
+		auto dummy_item = std::make_shared<item_data>();
 
 		dummy_item->nameid = ITEMID_DUMMY;
 		dummy_item->weight = 1;
@@ -1224,7 +1224,7 @@ void ItemDatabase::loadingFinished(){
  * @param node: the already parsed item data.
  * @return gender that should be used.
  */
-e_sex ItemDatabase::defaultGender( const ryml::NodeRef& node, std::shared_ptr<item_data> id ){
+e_sex ItemDatabase::defaultGender( const ryml::NodeRef& node, const item_data* id ){
 	if (id->nameid == WEDDING_RING_M) //Grom Ring
 		return SEX_MALE;
 	if (id->nameid == WEDDING_RING_F) //Bride Ring
@@ -1250,7 +1250,7 @@ e_sex ItemDatabase::defaultGender( const ryml::NodeRef& node, std::shared_ptr<it
 	return static_cast<e_sex>( id->sex );
 }
 
-std::shared_ptr<item_data> ItemDatabase::search_aegisname( const char* name ){
+item_data* ItemDatabase::search_aegisname( const char* name ){
 	// Create a copy
 	std::string lowername = name;
 	// Convert it to lower
@@ -1259,13 +1259,13 @@ std::shared_ptr<item_data> ItemDatabase::search_aegisname( const char* name ){
 	return util::umap_find( this->aegisNameToItemDataMap, lowername );
 }
 
-std::shared_ptr<item_data> ItemDatabase::searchname( const char *name ){
+item_data* ItemDatabase::searchname( const char *name ){
 	// Create a copy
 	std::string lowername = name;
 	// Convert it to lower
 	util::tolower( lowername );
 
-	std::shared_ptr<item_data> result = util::umap_find( this->aegisNameToItemDataMap, lowername );
+	item_data* result = util::umap_find( this->aegisNameToItemDataMap, lowername );
 
 	if( result != nullptr ){
 		return result;
@@ -1280,14 +1280,14 @@ std::shared_ptr<item_data> ItemDatabase::searchname( const char *name ){
 * @return <ITEML> string for the item
 * @author [Cydh]
 **/
-std::string ItemDatabase::create_item_link(struct item& item, std::shared_ptr<item_data>& data){
+std::string ItemDatabase::create_item_link(struct item& item, item_data* data){
 	if( data == nullptr ){
 		ShowError( "Tried to create itemlink for unknown item %u.\n", item.nameid );
 		return "Unknown item";
 	}
 
 	std::string itemstr;
-	struct item_data* id = data.get();
+	struct item_data* id = data;
 
 // All these dates are unconfirmed
 #if PACKETVER >= 20151104
@@ -1374,7 +1374,7 @@ std::string ItemDatabase::create_item_link(struct item& item, std::shared_ptr<it
 	return itemstr;
 }
 
-std::string ItemDatabase::create_item_link( std::shared_ptr<item_data>& data ){
+std::string ItemDatabase::create_item_link( item_data* data ){
 	struct item it = {};
 	it.nameid = data->nameid;
 
@@ -1382,12 +1382,12 @@ std::string ItemDatabase::create_item_link( std::shared_ptr<item_data>& data ){
 }
 
 std::string ItemDatabase::create_item_link(struct item& item) {
-	std::shared_ptr<item_data> data = this->find(item.nameid);
+       item_data* data = this->find(item.nameid);
 
-	return this->create_item_link(item, data);
+       return this->create_item_link(item, data);
 }
 
-std::string ItemDatabase::create_item_link_for_mes( std::shared_ptr<item_data>& data, bool use_brackets, const char* name ){
+std::string ItemDatabase::create_item_link_for_mes( item_data* data, bool use_brackets, const char* name ){
 	if( data == nullptr ){
 		return "Unknown item";
 	}
@@ -1457,7 +1457,7 @@ ItemDatabase item_db;
  */
 bool ItemGroupDatabase::item_exists(uint16 group_id, t_itemid nameid)
 {
-	std::shared_ptr<s_item_group_db> group = this->find(group_id);
+	std::shared_ptr<s_item_group_db> group = this->find_shared(group_id);
 
 	if (group == nullptr)
 		return false;
@@ -1479,7 +1479,7 @@ bool ItemGroupDatabase::item_exists(uint16 group_id, t_itemid nameid)
  */
 int16 ItemGroupDatabase::item_exists_pc(map_session_data *sd, uint16 group_id)
 {
-	std::shared_ptr<s_item_group_db> group = this->find(group_id);
+	std::shared_ptr<s_item_group_db> group = this->find_shared(group_id);
 
 	if (group == nullptr || group->random.empty())
 		return -1;
@@ -1510,7 +1510,7 @@ uint64 LaphineSynthesisDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		item_data* id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1520,7 +1520,7 @@ uint64 LaphineSynthesisDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		item_id = id->nameid;
 	}
 
-	std::shared_ptr<s_laphine_synthesis> entry = this->find( item_id );
+	std::shared_ptr<s_laphine_synthesis> entry = this->find_shared( item_id );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -1580,14 +1580,14 @@ uint64 LaphineSynthesisDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+			item_data* id = item_db.search_aegisname( name.c_str() );
 
 			if( id == nullptr ){
 				this->invalidWarning( requirementNode["Item"], "Unknown item \"%s\".\n", name.c_str() );
 				return 0;
 			}
 
-			std::shared_ptr<s_laphine_synthesis_requirement> requirement = util::umap_find( entry->requirements, id->nameid );
+			auto requirement = util::umap_find_shared( entry->requirements, id->nameid );
 			bool requirement_exists = requirement != nullptr;
 
 			if( !requirement_exists ){
@@ -1681,7 +1681,7 @@ uint64 LaphineUpgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		item_data* id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1691,7 +1691,7 @@ uint64 LaphineUpgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		item_id = id->nameid;
 	}
 
-	std::shared_ptr<s_laphine_upgrade> entry = this->find( item_id );
+	std::shared_ptr<s_laphine_upgrade> entry = this->find_shared( item_id );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -1732,7 +1732,7 @@ uint64 LaphineUpgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+			item_data* id = item_db.search_aegisname( name.c_str() );
 
 			if( id == nullptr ){
 				this->invalidWarning( targetNode["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1896,7 +1896,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		item_data* id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1906,7 +1906,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		item_id = id->nameid;
 	}
 
-	std::shared_ptr<s_item_reform> entry = this->find( item_id );
+	std::shared_ptr<s_item_reform> entry = this->find_shared( item_id );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -1929,7 +1929,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+				item_data* id = item_db.search_aegisname( name.c_str() );
 
 				if( id == nullptr ){
 					this->invalidWarning( baseNode["BaseItem"], "Unknown item \"%s\".\n", name.c_str() );
@@ -1939,7 +1939,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				base_itemid = id->nameid;
 			}
 
-			std::shared_ptr<s_item_reform_base> base = util::umap_find( entry->base_items, base_itemid );
+			auto base = util::umap_find_shared( entry->base_items, base_itemid );
 			bool base_exists = base != nullptr;
 
 			if( !base_exists ){
@@ -2030,7 +2030,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+					item_data* id = item_db.search_aegisname( name.c_str() );
 
 					if( id == nullptr ){
 						this->invalidWarning( materialNode["Material"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2071,7 +2071,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+				item_data* id = item_db.search_aegisname( name.c_str() );
 
 				if( id == nullptr ){
 					this->invalidWarning( baseNode["ResultItem"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2180,7 +2180,7 @@ bool ItemEnchantDatabase::parseMaterials( const ryml::NodeRef& node, std::unorde
 				return false;
 			}
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname( name.c_str() );
+			item_data* item = item_db.search_aegisname( name.c_str() );
 
 			if( item == nullptr ){
 				this->invalidWarning( materialNode["Material"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2226,7 +2226,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_item_enchant> enchant = this->find( id );
+	std::shared_ptr<s_item_enchant> enchant = this->find_shared( id );
 	bool exists = enchant != nullptr;
 
 	if( !exists ){
@@ -2246,7 +2246,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 			c4::from_chars( it.key(), &name );
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname( name.c_str() );
+			item_data* item = item_db.search_aegisname( name.c_str() );
 
 			if( item == nullptr ){
 				this->invalidWarning( it, "Unknown item \"%s\".\n", name.c_str() );
@@ -2404,7 +2404,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_item_enchant_slot> enchant_slot = util::umap_find( enchant->slots, slot );
+			auto enchant_slot = util::umap_find_shared( enchant->slots, slot );
 			bool slot_exists = enchant_slot != nullptr;
 
 			if( !slot_exists ){
@@ -2489,7 +2489,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<s_item_enchant_normal> enchants_for_enchantgrade = util::umap_find( enchant_slot->normal.enchants, enchantgrade );
+					auto enchants_for_enchantgrade = util::umap_find_shared( enchant_slot->normal.enchants, enchantgrade );
 					bool enchants_for_enchantgrade_exists = enchants_for_enchantgrade != nullptr;
 
 					if( !enchants_for_enchantgrade_exists ){
@@ -2505,14 +2505,14 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 								return 0;
 							}
 
-							std::shared_ptr<item_data> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
+							item_data* enchant_item = item_db.search_aegisname( enchant_name.c_str() );
 
 							if( enchant_item == nullptr ){
 								this->invalidWarning( itemNode["Item"], "Unknown item \"%s\".\n", enchant_name.c_str() );
 								return 0;
 							}
 
-							std::shared_ptr<s_item_enchant_normal_sub> enchant = util::umap_find( enchants_for_enchantgrade->enchants, enchant_item->nameid );
+							auto enchant = util::umap_find_shared( enchants_for_enchantgrade->enchants, enchant_item->nameid );
 							bool enchant_exists = enchant != nullptr;
 
 							if( !enchant_exists ){
@@ -2554,14 +2554,14 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
+					item_data* enchant_item = item_db.search_aegisname( enchant_name.c_str() );
 
 					if( enchant_item == nullptr ){
 						this->invalidWarning( enchantNode["Item"], "Unknown item \"%s\".\n", enchant_name.c_str() );
 						return 0;
 					}
 
-					std::shared_ptr<s_item_enchant_perfect> enchant = util::umap_find( enchant_slot->perfect.enchants, enchant_item->nameid );
+					auto enchant = util::umap_find_shared( enchant_slot->perfect.enchants, enchant_item->nameid );
 					bool enchant_exists = enchant != nullptr;
 
 					if( !enchant_exists ){
@@ -2606,14 +2606,14 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					std::shared_ptr<item_data> enchant_item = item_db.search_aegisname( enchant_name.c_str() );
+					item_data* enchant_item = item_db.search_aegisname( enchant_name.c_str() );
 
 					if( enchant_item == nullptr ){
 						this->invalidWarning( upgradeNode["Enchant"], "Unknown item \"%s\".\n", enchant_name.c_str() );
 						return 0;
 					}
 
-					std::shared_ptr<s_item_enchant_upgrade> enchant_upgrade = util::umap_find( enchant_slot->upgrade.enchants, enchant_item->nameid );
+					auto enchant_upgrade = util::umap_find_shared( enchant_slot->upgrade.enchants, enchant_item->nameid );
 					bool enchant_upgrade_exists = enchant_upgrade != nullptr;
 
 					if( !enchant_upgrade_exists ){
@@ -2632,7 +2632,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 							return 0;
 						}
 
-						std::shared_ptr<item_data> upgrade_item = item_db.search_aegisname( upgrade_name.c_str() );
+						item_data* upgrade_item = item_db.search_aegisname( upgrade_name.c_str() );
 
 						if( upgrade_item == nullptr ){
 							this->invalidWarning( upgradeNode["Upgrade"], "Unknown item \"%s\".\n", upgrade_name.c_str() );
@@ -2700,7 +2700,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 			return 0;
 		}
 
-		std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+		item_data* id = item_db.search_aegisname( name.c_str() );
 
 		if( id == nullptr ){
 			this->invalidWarning( node["Item"], "Unknown item \"%s\".\n", name.c_str() );
@@ -2710,7 +2710,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		item_id = id->nameid;
 	}
 
-	std::shared_ptr<s_item_package> entry = this->find( item_id );
+	std::shared_ptr<s_item_package> entry = this->find_shared( item_id );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -2730,7 +2730,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			std::shared_ptr<s_item_package_group> group = util::umap_find( entry->groups, groupIndex );
+			auto group = util::umap_find_shared( entry->groups, groupIndex );
 			bool group_exists = group != nullptr;
 
 			if( !group_exists ){
@@ -2749,14 +2749,14 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				std::shared_ptr<item_data> id = item_db.search_aegisname( name.c_str() );
+				item_data* id = item_db.search_aegisname( name.c_str() );
 
 				if( id == nullptr ){
 					this->invalidWarning( itemNode["Item"], "Unknown item \"%s\".\n", name.c_str() );
 					return 0;
 				}
 
-				std::shared_ptr<s_item_package_item> package_item = util::umap_find( group->items, id->nameid );
+				auto package_item = util::umap_find_shared( group->items, id->nameid );
 				bool package_item_exists = package_item != nullptr;
 
 				if( !package_item_exists ){
@@ -2873,11 +2873,7 @@ ItemPackageDatabase item_package_db;
  *------------------------------------------*/
 uint16 itemdb_searchname_array(std::map<t_itemid, std::shared_ptr<item_data>> &data, uint16 size, const char *str)
 {
-	for (const auto &item : item_db) {
-		std::shared_ptr<item_data> id = item.second;
-
-		if (id == nullptr)
-			continue;
+	for (const auto& [_,id] : item_db) {
 		if (stristr(id->name.c_str(), str) != nullptr || stristr(id->ename.c_str(), str) != nullptr || strcmpi(id->ename.c_str(), str) == 0)
 			data[id->nameid] = id;
 	}
@@ -2888,7 +2884,7 @@ uint16 itemdb_searchname_array(std::map<t_itemid, std::shared_ptr<item_data>> &d
 	return static_cast<uint16>(data.size());
 }
 
-std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_itemsubgroup(std::shared_ptr<s_item_group_random> random, e_group_algorithm_type algorithm) {
+s_item_group_entry* ItemGroupDatabase::get_random_itemsubgroup(s_item_group_random* random, e_group_algorithm_type algorithm) {
 	if (random == nullptr)
 		return nullptr;
 
@@ -2899,7 +2895,7 @@ std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_itemsubgroup(s
 	switch( algorithm ) {
 		case GROUP_ALGORITHM_DROP: {
 			// We pick a random item from the group and then do a drop check based on the rate. On fail, do not return any item
-			std::shared_ptr<s_item_group_entry> entry = util::umap_random(random->data);
+			s_item_group_entry* entry = util::umap_random(random->data);
 			if (rnd_chance_official<uint16>(entry->adj_rate, 10000))
 				return entry;
 			break;
@@ -2922,7 +2918,7 @@ std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_itemsubgroup(s
 				current_pos += entry->rate;
 				// If we passed the target position, entry is the item we are looking for
 				if (current_pos > pos)
-					return entry;
+					return entry.get();
 			}
 			break;
 		}
@@ -2950,7 +2946,7 @@ std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_itemsubgroup(s
 							reset_entry->given = 0;
 						}
 					}
-					return entry;
+					return entry.get();
 				}
 			}
 			break;
@@ -2967,8 +2963,8 @@ std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_itemsubgroup(s
 * @param search_type: see e_group_algorithm_type
 * @return Item group entry or nullptr on fail
 */
-std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_entry(uint16 group_id, uint8 sub_group, e_group_algorithm_type algorithm) {
-	std::shared_ptr<s_item_group_db> group = this->find(group_id);
+s_item_group_entry* ItemGroupDatabase::get_random_entry(uint16 group_id, uint8 sub_group, e_group_algorithm_type algorithm) {
+	std::shared_ptr<s_item_group_db> group = this->find_shared(group_id);
 
 	if (group == nullptr) {
 		ShowError("get_random_entry: Invalid group id %hu.\n", group_id);
@@ -2983,7 +2979,7 @@ std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_entry(uint16 g
 		return nullptr;
 	}
 
-	return this->get_random_itemsubgroup(group->random[sub_group], algorithm);
+	return this->get_random_itemsubgroup(group->random[sub_group].get(), algorithm);
 }
 
 /** [Cydh]
@@ -2992,7 +2988,7 @@ std::shared_ptr<s_item_group_entry> ItemGroupDatabase::get_random_entry(uint16 g
 * @param identify
 * @param data: item data selected in a subgroup
 */
-void ItemGroupDatabase::pc_get_itemgroup_sub( map_session_data& sd, bool identify, std::shared_ptr<s_item_group_entry> data ){
+void ItemGroupDatabase::pc_get_itemgroup_sub( map_session_data& sd, bool identify, s_item_group_entry* data ){
 	if (data == nullptr)
 		return;
 
@@ -3059,7 +3055,7 @@ void ItemGroupDatabase::pc_get_itemgroup_sub( map_session_data& sd, bool identif
 * @return val: 0:success, 2:invalid item group
 */
 uint8 ItemGroupDatabase::pc_get_itemgroup( uint16 group_id, bool identify, map_session_data& sd ){
-	std::shared_ptr<s_item_group_db> group = this->find(group_id);
+	std::shared_ptr<s_item_group_db> group = this->find_shared(group_id);
 
 	if (group == nullptr) {
 		ShowError("pc_get_itemgroup: Invalid group id '%d' specified.\n",group_id);
@@ -3072,11 +3068,11 @@ uint8 ItemGroupDatabase::pc_get_itemgroup( uint16 group_id, bool identify, map_s
 		switch( random.second->algorithm ) {
 			case GROUP_ALGORITHM_RANDOM:
 			case GROUP_ALGORITHM_SHAREDPOOL:
-				this->pc_get_itemgroup_sub( sd, identify, this->get_random_itemsubgroup( random.second ) );
+				this->pc_get_itemgroup_sub( sd, identify, this->get_random_itemsubgroup( random.second.get() ) );
 				break;
 			case GROUP_ALGORITHM_ALL:
 				for (const auto &it : random.second->data)
-					this->pc_get_itemgroup_sub( sd, identify, it.second );
+					this->pc_get_itemgroup_sub( sd, identify, it.second.get() );
 				break;
 		}
 	}
@@ -3089,7 +3085,7 @@ uint8 ItemGroupDatabase::pc_get_itemgroup( uint16 group_id, bool identify, map_s
 * @return *item_data if item is exist, or nullptr if not
 */
 std::shared_ptr<item_data> itemdb_exists(t_itemid nameid) {
-	return item_db.find(nameid);
+	return item_db.find_shared(nameid);
 }
 
 /// Returns name type of ammunition [Cydh]
@@ -3176,13 +3172,13 @@ static void itemdb_jobid2mapid(uint64 bclass[3], e_mapid jobmask, bool active)
  * @return *item_data or *dummy_item if item not found
  *------------------------------------------*/
 struct item_data* itemdb_search(t_itemid nameid) {
-	std::shared_ptr<item_data> id;
+	item_data* id;
 
 	if (!(id = item_db.find(nameid))) {
 		ShowWarning("itemdb_search: Item ID %u does not exists in the item_db. Using dummy data.\n", nameid);
 		id = item_db.find(ITEMID_DUMMY);
 	}
-	return id.get();
+	return id;
 }
 
 /** Checks if item is equip type or not
@@ -3320,7 +3316,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 	uint16 id = static_cast<uint16>(constant);
 
-	std::shared_ptr<s_item_group_db> group = this->find(id);
+	std::shared_ptr<s_item_group_db> group = this->find_shared(id);
 	bool exists = group != nullptr;
 
 	if (!exists) {
@@ -3353,7 +3349,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			if (!this->asUInt16(subit, "SubGroup", subgroup))
 				continue;
 
-			std::shared_ptr<s_item_group_random> random = util::umap_find(group->random, subgroup);
+			auto random = util::umap_find_shared(group->random, subgroup);
 			bool random_exists = random != nullptr;
 
 			if (!random_exists) {
@@ -3402,7 +3398,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 					continue;
 				}
 
-				std::shared_ptr<s_item_group_entry> entry = util::umap_find(random->data, index);
+				auto entry = util::umap_find_shared(random->data, index);
 				bool entry_exists = entry != nullptr;
 
 				if (!entry_exists) {
@@ -3413,7 +3409,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 					random->data[index] = entry;
 				}
 
-				std::shared_ptr<item_data> item = nullptr;
+				item_data* item = nullptr;
 
 				if (this->nodeExists(listit, "Item")) {
 					std::string item_name;
@@ -3666,7 +3662,7 @@ static bool itemdb_read_noequip( char* str[], size_t columns, size_t current ){
 	nameid = strtoul(str[0], nullptr, 10);
 	flag = atoi(str[1]);
 
-	std::shared_ptr<item_data> id = item_db.find(nameid);
+	item_data* id = item_db.find(nameid);
 
 	if( id == nullptr )
 	{
@@ -3730,7 +3726,7 @@ uint64 ComboDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			std::string item_name;
 			c4::from_chars(it.val(), &item_name);
 
-			std::shared_ptr<item_data> item = item_db.search_aegisname(item_name.c_str());
+			item_data* item = item_db.search_aegisname(item_name.c_str());
 
 			if (item == nullptr) {
 				this->invalidWarning(it, "Invalid item %s, skipping.\n", item_name.c_str());
@@ -3787,7 +3783,7 @@ uint64 ComboDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	for (const auto &itemsit : items_list) {
 		// Find the id when the combo exists
 		uint16 id = this->find_combo_id(itemsit);
-		std::shared_ptr<s_item_combo> combo = this->find(id);
+		std::shared_ptr<s_item_combo> combo = this->find_shared(id);
 		bool exists = combo != nullptr;
 
 		if (!exists) {
@@ -3827,7 +3823,7 @@ void ComboDatabase::loadingFinished() {
 	// Populate item_data to refer to the combo
 	for (const auto &combo : *this) {
 		for (const auto &itm : combo.second->nameid) {
-			std::shared_ptr<item_data> it = item_db.find(itm);
+			item_data* it = item_db.find(itm);
 
 			if (it != nullptr)
 				it->combos.push_back(combo.second);
@@ -4364,7 +4360,7 @@ uint64 RandomOptionDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt16(node, "Id", id))
 		return 0;
 
-	std::shared_ptr<s_random_opt_data> randopt = this->find(id);
+	std::shared_ptr<s_random_opt_data> randopt = this->find_shared(id);
 	bool exists = randopt != nullptr;
 
 	if (!exists) {
@@ -4469,7 +4465,7 @@ const std::string RandomOptionGroupDatabase::getDefaultLocation() {
 	return std::string(db_path) + "/item_randomopt_group.yml";
 }
 
-bool RandomOptionGroupDatabase::add_option(const ryml::NodeRef& node, std::shared_ptr<s_random_opt_group_entry> &entry) {
+bool RandomOptionGroupDatabase::add_option(const ryml::NodeRef& node, std::shared_ptr<s_random_opt_group_entry>& entry) {
 	uint16 option_id;
 
 	if (this->nodeExists(node, "Option")) {
@@ -4543,7 +4539,7 @@ bool RandomOptionGroupDatabase::add_option(const ryml::NodeRef& node, std::share
 }
 
 void s_random_opt_group::apply( struct item& item ){
-	auto apply_sub = []( s_item_randomoption& item_option, const std::shared_ptr<s_random_opt_group_entry>& option ){
+	auto apply_sub = []( s_item_randomoption& item_option, const s_random_opt_group_entry* option ){
 		item_option.id = option->id;
 		item_option.value = rnd_value( option->min_value, option->max_value );
 		item_option.param = option->param;
@@ -4560,7 +4556,7 @@ void s_random_opt_group::apply( struct item& item ){
 	for( size_t i = 0; i < this->slots.size(); i++ ){
 		// Try to apply an entry
 		for( size_t j = 0, max = this->slots[static_cast<uint16>(i)].size() * 3; j < max; j++ ){
-			std::shared_ptr<s_random_opt_group_entry> option = util::vector_random( this->slots[static_cast<uint16>(i)] );
+			s_random_opt_group_entry* option = util::vector_random( this->slots[static_cast<uint16>(i)] ).get();
 
 			if ( rnd_chance<uint16>(option->chance, 10000) ) {
 				apply_sub( item.option[i], option );
@@ -4570,7 +4566,7 @@ void s_random_opt_group::apply( struct item& item ){
 
 		// If no entry was applied, assign one
 		if( item.option[i].id == 0 ){
-			std::shared_ptr<s_random_opt_group_entry> option = util::vector_random( this->slots[static_cast<uint16>(i)] );
+			s_random_opt_group_entry* option = util::vector_random( this->slots[static_cast<uint16>(i)] ).get();
 
 			// Apply an entry without checking the chance
 			apply_sub( item.option[i], option );
@@ -4585,10 +4581,10 @@ void s_random_opt_group::apply( struct item& item ){
 				continue;
 			}
 
-			std::shared_ptr<s_random_opt_group_entry> option = util::vector_random( this->random_options );
+			auto option = util::vector_random( this->random_options );
 
 			if ( rnd_chance<uint16>(option->chance, 10000) ){
-				apply_sub( item.option[i], option );
+				apply_sub( item.option[i], option.get() );
 			}
 		}
 	}
@@ -4635,7 +4631,7 @@ uint64 RandomOptionGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt16(node, "Id", id))
 		return 0;
 
-	std::shared_ptr<s_random_opt_group> randopt = this->find(id);
+	std::shared_ptr<s_random_opt_group> randopt = this->find_shared(id);
 	bool exists = randopt != nullptr;
 
 	if (!exists) {
