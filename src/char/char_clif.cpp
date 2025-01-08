@@ -781,7 +781,7 @@ int32 chclif_parse_reqtoconnect(int32 fd, struct char_session_data* sd,uint32 ip
 		}
 
 		// search authentification
-		std::shared_ptr<struct auth_node> node = util::umap_find( char_get_authdb(), account_id);
+		struct auth_node* node = util::umap_find( char_get_authdb(), account_id);
 
 		if( node != nullptr &&
 			node->account_id == account_id &&
@@ -822,7 +822,7 @@ int32 chclif_parse_req_charlist(int32 fd, struct char_session_data* sd){
 }
 
 //Send player to map
-void chclif_send_map_data( int32 fd, std::shared_ptr<struct mmo_charstatus> cd, uint32 ipl, int32 map_server_index ){
+void chclif_send_map_data( int32 fd, struct mmo_charstatus* cd, uint32 ipl, int32 map_server_index ){
 #if PACKETVER >= 20170315
 	int32 cmd = 0xAC5;
 	int32 size = 156;
@@ -901,7 +901,7 @@ int32 chclif_parse_select_accessible_map( int32 fd, struct char_session_data* sd
 	}
 
 	// Have to switch over to the DB instance otherwise data won't propagate [Kevin]
-	std::shared_ptr<struct mmo_charstatus> cd = util::umap_find( char_get_chardb(), char_id );
+	struct mmo_charstatus* cd = util::umap_find( char_get_chardb(), char_id );
 
 	if( charserv_config.log_char ){
 		char esc_name[NAME_LENGTH*2+1];
@@ -958,7 +958,7 @@ int32 chclif_parse_select_accessible_map( int32 fd, struct char_session_data* sd
 	chclif_send_map_data( fd, cd, ipl, mapserver );
 
 	// create temporary auth entry
-	std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
+	auto node = std::make_shared<struct auth_node>();
 
 	node->account_id = sd->account_id;
 	node->char_id = cd->char_id;
@@ -1062,7 +1062,7 @@ int32 chclif_parse_charselect(int32 fd, struct char_session_data* sd,uint32 ipl)
 		}
 
 		//Have to switch over to the DB instance otherwise data won't propagate [Kevin]
-		std::shared_ptr<struct mmo_charstatus> cd = util::umap_find( char_get_chardb(), char_id );
+		struct mmo_charstatus* cd = util::umap_find( char_get_chardb(), char_id );
 
 		if (charserv_config.log_char) {
 			char esc_name[NAME_LENGTH*2+1];
@@ -1128,7 +1128,7 @@ int32 chclif_parse_charselect(int32 fd, struct char_session_data* sd,uint32 ipl)
 		chclif_send_map_data( fd, cd, ipl, i );
 
 		// create temporary auth entry
-		std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
+		auto node = std::make_shared<struct auth_node>();
 
 		node->account_id = sd->account_id;
 		node->char_id = cd->char_id;
@@ -1562,7 +1562,7 @@ int32 chclif_parse(int32 fd) {
 
 	if(session[fd]->flag.eof) {
 		if( sd != nullptr && sd->auth ) { // already authed client
-			std::shared_ptr<struct online_char_data> data = util::umap_find( char_get_onlinedb(), sd->account_id );
+			struct online_char_data* data = util::umap_find( char_get_onlinedb(), sd->account_id );
 
 			if( data != nullptr && data->fd == fd ){
 				data->fd = -1;

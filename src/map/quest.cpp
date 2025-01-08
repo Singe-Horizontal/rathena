@@ -45,7 +45,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt32(node, "Id", quest_id))
 		return 0;
 
-	std::shared_ptr<s_quest_db> quest = this->find(quest_id);
+	std::shared_ptr<s_quest_db> quest = this->find_shared(quest_id);
 	bool exists = quest != nullptr;
 
 	if (!exists) {
@@ -128,7 +128,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(targetNode, "Mob", mob_name))
 					return 0;
 
-				std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+				s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 				if (!mob) {
 					this->invalidWarning(targetNode["Mob"], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -137,7 +137,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 				mob_id = mob->id;
 
-				it = std::find_if(quest->objectives.begin(), quest->objectives.end(), [&](std::shared_ptr<s_quest_objective> const &v) {
+				it = std::find_if(quest->objectives.begin(), quest->objectives.end(), [&](const auto &v) {
 					return (*v).mob_id == mob_id;
 				});
 			}
@@ -151,7 +151,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 					return 0;
 				}
 
-				it = std::find_if(quest->objectives.begin(), quest->objectives.end(), [&](std::shared_ptr<s_quest_objective> const &v) {
+				it = std::find_if(quest->objectives.begin(), quest->objectives.end(), [&](const auto &v) {
 					return (*v).index == index;
 				});
 			}
@@ -303,7 +303,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 						std::string mob_name;
 						c4::from_chars(MapMobTargetsIt.key(), &mob_name);
 
-						std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+						s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 						if (!mob) {
 							this->invalidWarning(MapMobTargetsNode[MapMobTargetsIt.key()], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -355,7 +355,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(dropNode, "Mob", mob_name))
 					return 0;
 
-				std::shared_ptr<s_mob_db> mob = mobdb_search_aegisname(mob_name.c_str());
+				s_mob_db* mob = mobdb_search_aegisname(mob_name.c_str());
 
 				if (!mob) {
 					this->invalidWarning(dropNode["Mob"], "Mob %s does not exist, skipping.\n", mob_name.c_str());
@@ -365,9 +365,9 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				mob_id = mob->id;
 			}
 
-			//std::shared_ptr<s_quest_dropitem> target = util::vector_find(quest->dropitem, mob_id);
+			//s_quest_dropitem* target = util::vector_find(quest->dropitem, mob_id);
 			std::shared_ptr<s_quest_dropitem> target;
-			std::vector<std::shared_ptr<s_quest_dropitem>>::iterator it = std::find_if(quest->dropitem.begin(), quest->dropitem.end(), [&](std::shared_ptr<s_quest_dropitem> const &v) {
+			auto it = std::find_if(quest->dropitem.begin(), quest->dropitem.end(), [&](const auto &v) {
 				return (*v).mob_id == mob_id;
 			});
 
@@ -399,7 +399,7 @@ uint64 QuestDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				if (!this->asString(dropNode, "Item", item_name))
 					return 0;
 
-				std::shared_ptr<item_data> item = item_db.search_aegisname( item_name.c_str() );
+				item_data* item = item_db.search_aegisname( item_name.c_str() );
 
 				if (!item) {
 					this->invalidWarning(dropNode["Item"], "Item %s does not exist, skipping.\n", item_name.c_str());
@@ -513,7 +513,7 @@ static int32 split_exact_quest_time(char* modif_p, int* week, int* day, int* hou
  * @param quest_id : ID to lookup
  * @return Quest entry or nullptr on failure
  */
-std::shared_ptr<s_quest_db> quest_search(int32 quest_id)
+s_quest_db* quest_search(int32 quest_id)
 {
 	auto quest = quest_db.find(quest_id);
 
@@ -551,7 +551,7 @@ int32 quest_pc_login(map_session_data *sd)
  * @param qi: Quest data
  * @return Time limit value
  */
-static time_t quest_time(std::shared_ptr<s_quest_db> qi)
+static time_t quest_time(s_quest_db* qi)
 {
 	if (!qi || qi->time < 0)
 		return 0;
@@ -589,7 +589,7 @@ static time_t quest_time(std::shared_ptr<s_quest_db> qi)
  */
 int32 quest_add(map_session_data *sd, int32 quest_id)
 {
-	std::shared_ptr<s_quest_db> qi = quest_search(quest_id);
+	s_quest_db* qi = quest_search(quest_id);
 
 	if (!qi) {
 		ShowError("quest_add: quest %d not found in DB.\n", quest_id);
@@ -635,7 +635,7 @@ int32 quest_add(map_session_data *sd, int32 quest_id)
  */
 int32 quest_change(map_session_data *sd, int32 qid1, int32 qid2)
 {
-	std::shared_ptr<s_quest_db> qi = quest_search(qid2);
+	s_quest_db* qi = quest_search(qid2);
 
 	if (!qi) {
 		ShowError("quest_change: quest %d not found in DB.\n", qid2);
@@ -762,7 +762,7 @@ void quest_update_objective(map_session_data *sd, struct mob_data* md)
 		if (sd->quest_log[i].state == Q_COMPLETE) // Skip complete quests
 			continue;
 
-		std::shared_ptr<s_quest_db> qi = quest_search(sd->quest_log[i].quest_id);
+		s_quest_db* qi = quest_search(sd->quest_log[i].quest_id);
 		if (!qi)
 			continue;
 
@@ -913,7 +913,7 @@ int32 quest_check(map_session_data *sd, int32 quest_id, e_quest_check_type type)
 		case HUNTING:
 			if (sd->quest_log[i].state == Q_INACTIVE || sd->quest_log[i].state == Q_ACTIVE) {
 				int32 j;
-				std::shared_ptr<s_quest_db> qi = quest_search(sd->quest_log[i].quest_id);
+				s_quest_db* qi = quest_search(sd->quest_log[i].quest_id);
 
 				ARR_FIND(0, qi->objectives.size(), j, sd->quest_log[i].count[j] < qi->objectives[j]->count);
 				if (j == qi->objectives.size())
@@ -944,7 +944,7 @@ static int32 quest_reload_check_sub(map_session_data *sd, va_list ap)
 	int32 i, j = 0;
 
 	for (i = 0; i < sd->num_quests; i++) {
-		std::shared_ptr<s_quest_db> qi = quest_search(sd->quest_log[i].quest_id);
+		s_quest_db* qi = quest_search(sd->quest_log[i].quest_id);
 
 		if (!qi) { //Remove no longer existing entries
 			if (sd->quest_log[i].state != Q_COMPLETE) //And inform the client if necessary

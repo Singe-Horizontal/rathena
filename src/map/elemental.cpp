@@ -32,7 +32,7 @@ using namespace rathena;
 ElementalDatabase elemental_db;
 
 struct view_data * elemental_get_viewdata(int32 class_) {
-	std::shared_ptr<s_elemental_db> db = elemental_db.find(class_);
+	s_elemental_db* db = elemental_db.find(class_);
 	if (db == nullptr)
 		return 0;
 
@@ -42,7 +42,7 @@ struct view_data * elemental_get_viewdata(int32 class_) {
 int32 elemental_create(map_session_data *sd, int32 class_, uint32 lifetime) {
 	nullpo_retr(1,sd);
 
-	std::shared_ptr<s_elemental_db> db = elemental_db.find(class_);
+	s_elemental_db* db = elemental_db.find(class_);
 	if (db == nullptr) {
 		ShowError("elemental_create: Unknown elemental class %d.\n", class_);
 		return 0;
@@ -231,7 +231,7 @@ int32 elemental_data_received(s_elemental *ele, bool flag) {
 	if( (sd = map_charid2sd(ele->char_id)) == nullptr )
 		return 0;
 
-	std::shared_ptr<s_elemental_db> db = elemental_db.find(ele->class_);
+	s_elemental_db* db = elemental_db.find(ele->class_);
 
 	if( !flag || db == nullptr ) { // Not created - loaded - DB info
 		sd->status.ele_id = 0;
@@ -309,7 +309,7 @@ int32 elemental_action(s_elemental_data *ed, block_list *bl, t_tick tick) {
 	if( ed->target_id )
 		elemental_unlocktarget(ed);	// Remove previous target.
 
-	std::shared_ptr<s_elemental_skill> skill = util::umap_find(ed->db->skill, EL_SKILLMODE_AGGRESSIVE);	// only one skill per mode is supported
+	s_elemental_skill* skill = util::umap_find(ed->db->skill, EL_SKILLMODE_AGGRESSIVE);	// only one skill per mode is supported
 	if (skill == nullptr)
 		return 0;
 
@@ -382,7 +382,7 @@ int32 elemental_change_mode_ack(s_elemental_data *ed, e_elemental_skillmode skil
 	if( !bl )
 		return 0;
 
-	std::shared_ptr<s_elemental_skill> skill = util::umap_find(ed->db->skill, skill_mode);
+	s_elemental_skill* skill = util::umap_find(ed->db->skill, skill_mode);
 	if (skill == nullptr)
 		return 0;
 
@@ -477,7 +477,7 @@ bool elemental_skillnotok( uint16 skill_id, s_elemental_data& ed ){
 
 struct s_skill_condition elemental_skill_get_requirements(uint16 skill_id, uint16 skill_lv){
 	s_skill_condition req = {};
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if( !skill ) // invalid skill id
 		return req;
@@ -680,7 +680,7 @@ uint64 ElementalDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_elemental_db> elemental = this->find(id);
+	std::shared_ptr<s_elemental_db> elemental = this->find_shared(id);
 	bool exists = elemental != nullptr;
 
 	if (!exists) {
@@ -1076,7 +1076,7 @@ uint64 ElementalDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 			e_elemental_skillmode mode = static_cast<e_elemental_skillmode>(constant);
 
-			std::shared_ptr<s_elemental_skill> entry = util::umap_find(elemental->skill, mode);
+			auto entry = util::umap_find_shared(elemental->skill, mode);
 			bool mode_exists = entry != nullptr;
 
 			if (!mode_exists)

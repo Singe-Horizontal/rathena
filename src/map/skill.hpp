@@ -565,12 +565,13 @@ short skill_blown(struct block_list* src, struct block_list* target, char count,
 int32 skill_break_equip(struct block_list *src,struct block_list *bl, unsigned short where, int32 rate, int32 flag);
 int32 skill_strip_equip(struct block_list *src,struct block_list *bl, unsigned short where, int32 rate, int32 lv, int32 time);
 // Skills unit
-std::shared_ptr<s_skill_unit_group> skill_id2group(int32 group_id);
+s_skill_unit_group* skill_id2group(int32 group_id);
+std::shared_ptr<s_skill_unit_group> skill_id2group_shared(int32 group_id);
 std::shared_ptr<s_skill_unit_group> skill_unitsetting(struct block_list* src, uint16 skill_id, uint16 skill_lv, int16 x, int16 y, int32 flag);
-struct skill_unit *skill_initunit (std::shared_ptr<s_skill_unit_group> group, int32 idx, int32 x, int32 y, int32 val1, int32 val2, bool hidden);
+struct skill_unit *skill_initunit (std::shared_ptr<s_skill_unit_group>& group, int32 idx, int32 x, int32 y, int32 val1, int32 val2, bool hidden);
 int32 skill_delunit(struct skill_unit *unit);
 std::shared_ptr<s_skill_unit_group> skill_initunitgroup(struct block_list* src, int32 count, uint16 skill_id, uint16 skill_lv, int32 unit_id, t_tick limit, int32 interval);
-int32 skill_delunitgroup_(std::shared_ptr<s_skill_unit_group> group, const char* file, int32 line, const char* func);
+int32 skill_delunitgroup_(s_skill_unit_group* group, const char* file, int32 line, const char* func);
 #define skill_delunitgroup(group) skill_delunitgroup_(group,__FILE__,__LINE__,__func__)
 void skill_clear_unitgroup(struct block_list *src);
 int32 skill_clear_group(block_list *bl, uint8 flag);
@@ -602,7 +603,7 @@ bool skill_pos_maxcount_check(struct block_list *src, int16 x, int16 y, uint16 s
 
 int32 skill_check_pc_partner(map_session_data *sd, uint16 skill_id, uint16 *skill_lv, int32 range, int32 cast_flag);
 int32 skill_unit_move(struct block_list *bl,t_tick tick,int32 flag);
-void skill_unit_move_unit_group( std::shared_ptr<s_skill_unit_group> group, int16 m,int16 dx,int16 dy);
+void skill_unit_move_unit_group( s_skill_unit_group* group, int16 m,int16 dx,int16 dy);
 void skill_unit_move_unit(struct block_list *bl, int32 dx, int32 dy);
 
 int32 skill_sit(map_session_data *sd, bool sitting);
@@ -2783,7 +2784,7 @@ public:
 	uint64 parseBodyNode(const ryml::NodeRef& node) override;
 
 	// Additional
-	std::shared_ptr<s_skill_spellbook_db> findBook(t_itemid nameid);
+	s_skill_spellbook_db* findBook(t_itemid nameid);
 };
 
 extern ReadingSpellbookDatabase reading_spellbook_db;

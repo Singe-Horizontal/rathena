@@ -76,7 +76,7 @@ uint64 HomExpDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_homun_exp_db> homun_exp = this->find(level);
+	auto homun_exp = this->find_shared(level);
 	bool exists = homun_exp != nullptr;
 
 	if (!exists) {
@@ -361,13 +361,13 @@ void hom_calc_skilltree_sub(homun_data &hd, std::vector<s_homun_skill_tree_entry
 void hom_calc_skilltree(homun_data *hd) {
 	nullpo_retv(hd);
 
-	std::shared_ptr<s_homunculus_db> homun_current = homunculus_db.homun_search(hd->homunculus.class_);
+	s_homunculus_db* homun_current = homunculus_db.homun_search(hd->homunculus.class_);
 
 	// If the current class can't be loaded, then for sure there's no prev_class!
 	if (homun_current == nullptr)
 		return;
 
-	std::shared_ptr<s_homunculus_db> homun = homunculus_db.homun_search(hd->homunculus.prev_class);
+	s_homunculus_db* homun = homunculus_db.homun_search(hd->homunculus.prev_class);
 
 	/* load previous homunculus form skills first. */
 	if (homun != nullptr) {
@@ -407,7 +407,7 @@ short hom_checkskill(struct homun_data *hd,uint16 skill_id)
 * @return Skill Level
 */
 int32 hom_skill_tree_get_max(int32 skill_id, int32 b_class){
-	std::shared_ptr<s_homunculus_db> homun = homunculus_db.homun_search(b_class);
+	s_homunculus_db* homun = homunculus_db.homun_search(b_class);
 
 	if (homun == nullptr)
 		return 0;
@@ -427,7 +427,7 @@ int32 hom_skill_tree_get_max(int32 skill_id, int32 b_class){
  * @return Level required or 0 if invalid
  **/
 uint16 hom_skill_get_min_level(int32 class_, uint16 skill_id) {
-	std::shared_ptr<s_homunculus_db> homun = homunculus_db.homun_search(class_);
+	s_homunculus_db* homun = homunculus_db.homun_search(class_);
 
 	if (homun == nullptr)
 		return 0;
@@ -493,7 +493,7 @@ int32 hom_levelup(struct homun_data *hd)
 
 	/// When homunculus is homunculus S, we check to see if we need to apply previous class stats
 	if(m_class&HOM_S && hd->homunculus.level < battle_config.hom_S_growth_level) {
-		std::shared_ptr<s_homunculus_db> homun_s_db = homunculus_db.homun_search(hd->homunculus.prev_class);
+		s_homunculus_db* homun_s_db = homunculus_db.homun_search(hd->homunculus.prev_class);
 
 		if (homun_s_db == nullptr) {
 			ShowError("hom_levelup: Failed to find database entry for %d.\n", hd->homunculus.prev_class);
@@ -576,7 +576,7 @@ int32 hom_levelup(struct homun_data *hd)
 * @reutrn Fails if the class cannot be changed, otherwise true
 */
 static bool hom_change_class(struct homun_data *hd, int32 class_) {
-	std::shared_ptr<s_homunculus_db> homun = homunculus_db.homun_search(class_);
+	s_homunculus_db* homun = homunculus_db.homun_search(class_);
 
 	if (homun == nullptr)
 		return false;
@@ -1045,7 +1045,7 @@ void hom_alloc(map_session_data *sd, struct s_homunculus *hom)
 
 	Assert((sd->status.hom_id == 0 || sd->hd == 0) || sd->hd->master == sd);
 
-	std::shared_ptr<s_homunculus_db> homun_db = homunculus_db.homun_search(hom->class_);
+	s_homunculus_db* homun_db = homunculus_db.homun_search(hom->class_);
 
 	if (homun_db == nullptr) {
 		ShowError("hom_alloc: unknown class [%d] for homunculus '%s', requesting deletion.\n", hom->class_, hom->name);
@@ -1244,7 +1244,7 @@ bool hom_create_request(map_session_data *sd, int32 class_)
 {
 	nullpo_ret(sd);
 
-	std::shared_ptr<s_homunculus_db> homun_db = homunculus_db.homun_search(class_);
+	s_homunculus_db* homun_db = homunculus_db.homun_search(class_);
 
 	if (homun_db == nullptr)
 		return false;
@@ -1522,7 +1522,7 @@ uint64 HomunculusDatabase::parseBodyNode(const ryml::NodeRef &node) {
 	}
 
 	int32 class_id = static_cast<int32>(class_tmp);
-	std::shared_ptr<s_homunculus_db> hom = this->find(class_id);
+	std::shared_ptr<s_homunculus_db> hom = this->find_shared(class_id);
 	bool exists = hom != nullptr;
 
 	if (!exists) {
@@ -1573,7 +1573,7 @@ uint64 HomunculusDatabase::parseBodyNode(const ryml::NodeRef &node) {
 		if (!this->asString(node, "Food", food))
 			return 0;
 
-		std::shared_ptr<item_data> item = item_db.search_aegisname(food.c_str());
+		item_data* item = item_db.search_aegisname(food.c_str());
 
 		if (item == nullptr) {
 			this->invalidWarning(node["Food"], "Invalid homunculus Food %s, skipping.\n", food.c_str());
@@ -2019,15 +2019,15 @@ uint64 HomunculusDatabase::parseBodyNode(const ryml::NodeRef &node) {
  * @param class_: Homun class to look up
  * @return Shared pointer of homunculus on success, otherwise nullptr
  */
-std::shared_ptr<s_homunculus_db> HomunculusDatabase::homun_search(int32 class_) {
-	std::shared_ptr<s_homunculus_db> hom = homunculus_db.find(class_);
+s_homunculus_db* HomunculusDatabase::homun_search(int32 class_) {
+	s_homunculus_db* hom = homunculus_db.find(class_);
 
 	if (hom != nullptr) {
 		return hom;
 	}
 
 	for (const auto &homit : homunculus_db) {
-		hom = homit.second;
+		hom = homit.second.get();
 
 		if (hom->evo_class == class_) {
 			return hom;

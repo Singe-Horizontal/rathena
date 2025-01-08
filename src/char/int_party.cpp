@@ -34,14 +34,14 @@ struct party_data {
 static std::unordered_map<int32, std::shared_ptr<struct party_data>> party_db;
 
 int32 mapif_party_broken(int32 party_id,int32 flag);
-int32 party_check_empty( std::shared_ptr<struct party_data> p );
+int32 party_check_empty( struct party_data* p );
 int32 mapif_parse_PartyLeave(int32 fd, int32 party_id, uint32 account_id, uint32 char_id, char *name, enum e_party_member_withdraw type);
-int32 party_check_exp_share( std::shared_ptr<struct party_data> p );
+int32 party_check_exp_share( struct party_data* p );
 int32 mapif_party_optionchanged(int32 fd,struct party *p, uint32 account_id, int32 flag);
-int32 party_check_family_share( std::shared_ptr<struct party_data> p );
+int32 party_check_family_share( struct party_data* p );
 
 //Updates party's level range and unsets even share if broken.
-static int32 int_party_check_lv( std::shared_ptr<struct party_data> p ){
+static int32 int_party_check_lv( struct party_data* p ){
 	int32 i;
 	uint32 lv;
 	p->min_lv = UINT_MAX;
@@ -66,7 +66,7 @@ static int32 int_party_check_lv( std::shared_ptr<struct party_data> p ){
 	return 1;
 }
 //Calculates the state of a party.
-void int_party_calc_state( std::shared_ptr<struct party_data> p ){
+void int_party_calc_state( struct party_data* p ){
 	int32 i;
 	p->min_lv = UINT_MAX;
 	p->max_lv = 0;
@@ -189,7 +189,7 @@ int32 inter_party_tosql(struct party *p, int32 flag, int32 index)
 }
 
 // Read party from mysql
-std::shared_ptr<struct party_data> inter_party_fromsql( int32 party_id ){
+struct party_data* inter_party_fromsql( int32 party_id ){
 	int32 leader_id = 0;
 	int32 leader_char = 0;
 	struct party_member* m;
@@ -204,10 +204,10 @@ std::shared_ptr<struct party_data> inter_party_fromsql( int32 party_id ){
 		return nullptr;
 
 	//Load from memory
-	std::shared_ptr<struct party_data> p = util::umap_find( party_db, party_id );
+	auto p = util::umap_find_shared( party_db, party_id );
 
 	if( p != nullptr ){
-		return p;
+		return p.get();
 	}
 
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `party_id`, `name`,`exp`,`item`, `leader_id`, `leader_char` FROM `%s` WHERE `party_id`='%d'", schema_config.party_db, party_id) )
@@ -253,11 +253,11 @@ std::shared_ptr<struct party_data> inter_party_fromsql( int32 party_id ){
 		ShowInfo("Party loaded (%d - %s).\n", party_id, p->party.name);
 
 	//init state
-	int_party_calc_state(p);
+	int_party_calc_state(p.get());
 
 	party_db[p->party.party_id] = p;
 
-	return p;
+	return p.get();
 }
 
 int32 inter_party_sql_init(void)
@@ -279,10 +279,10 @@ void inter_party_sql_final(void)
 }
 
 // Search for the party according to its name
-std::shared_ptr<struct party_data> search_partyname( char* str ){
+struct party_data* search_partyname( char* str ){
 	char esc_name[NAME_LENGTH*2+1];
 	char* data;
-	std::shared_ptr<struct party_data> p = nullptr;
+	struct party_data* p = nullptr;
 
 	Sql_EscapeStringLen(sql_handle, esc_name, str, safestrnlen(str, NAME_LENGTH));
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `party_id` FROM `%s` WHERE `name`='%s'", schema_config.party_db, esc_name) )
@@ -297,7 +297,7 @@ std::shared_ptr<struct party_data> search_partyname( char* str ){
 	return p;
 }
 
-int32 party_check_family_share( std::shared_ptr<struct party_data> p ){
+int32 party_check_family_share( struct party_data* p ){
 	int32 i;
 	const char* map = nullptr;
 	if (!p->family)
@@ -337,12 +337,12 @@ int32 party_check_family_share( std::shared_ptr<struct party_data> p ){
 }
 
 // Returns whether this party can keep having exp share or not.
-int32 party_check_exp_share( std::shared_ptr<struct party_data> p ){
+int32 party_check_exp_share( struct party_data* p ){
 	return (p->party.count < 2 || p->max_lv - p->min_lv <= party_share_level || party_check_family_share(p));
 }
 
 // Is there any member in the party?
-int32 party_check_empty( std::shared_ptr<struct party_data> p ){
+int32 party_check_empty( struct party_data* p ){
 	int32 i;
 
 	if( p == nullptr || p->party.party_id == 0 ){
@@ -504,9 +504,8 @@ int32 mapif_party_message(int32 party_id,uint32 account_id,char *mes,int32 len, 
 // Create Party
 int32 mapif_parse_CreateParty(int32 fd, char *name, int32 item, int32 item2, struct party_member *leader)
 {
-	std::shared_ptr<struct party_data> p = search_partyname( name );
 
-	if( p != nullptr ){
+	if( search_partyname( name ) ){
 		mapif_party_created(fd,leader->account_id,leader->char_id,nullptr);
 		return 0;
 	}
@@ -533,7 +532,7 @@ int32 mapif_parse_CreateParty(int32 fd, char *name, int32 item, int32 item2, str
 		}
 	}
 
-	p = std::make_shared<struct party_data>();
+	auto p = std::make_shared<struct party_data>();
 
 	safestrncpy(p->party.name,name,NAME_LENGTH);
 	p->party.exp=0;
@@ -546,7 +545,7 @@ int32 mapif_parse_CreateParty(int32 fd, char *name, int32 item, int32 item2, str
 	p->party.party_id=-1;//New party.
 	if (inter_party_tosql(&p->party,PS_CREATE|PS_ADDMEMBER,0)) {
 		//Add party to db
-		int_party_calc_state(p);
+		int_party_calc_state(p.get());
 		party_db[p->party.party_id] = p;
 		mapif_party_info(fd, &p->party, 0);
 		mapif_party_created(fd,leader->account_id,leader->char_id,&p->party);
@@ -561,7 +560,7 @@ int32 mapif_parse_CreateParty(int32 fd, char *name, int32 item, int32 item2, str
 // Party information request
 void mapif_parse_PartyInfo(int32 fd, int32 party_id, uint32 char_id)
 {
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if( p != nullptr ){
 		mapif_party_info(fd, &p->party, char_id);
@@ -575,7 +574,7 @@ int32 mapif_parse_PartyAddMember(int32 fd, int32 party_id, struct party_member *
 {
 	int32 i;
 
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if( p == nullptr || p->size == MAX_PARTY ){
 		mapif_party_memberadded(fd, party_id, member->account_id, member->char_id, 1);
@@ -613,7 +612,7 @@ int32 mapif_parse_PartyChangeOption(int32 fd,int32 party_id,uint32 account_id,in
 {
 	int32 flag = 0;
 
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if(!p)
 		return 0;
@@ -635,7 +634,7 @@ int32 mapif_parse_PartyLeave(int32 fd, int32 party_id, uint32 account_id, uint32
 {
 	int32 i,j=-1;
 
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	// Party does not exists?
 	if( p == nullptr ){
@@ -686,7 +685,7 @@ int32 mapif_parse_PartyLeave(int32 fd, int32 party_id, uint32 account_id, uint32
 int32 mapif_parse_PartyChangeMap( int32 fd, int32 party_id, uint32 account_id, uint32 char_id, int32 online, uint32 lv, const char* map ){
 	int32 i;
 
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if( p == nullptr ){
 		return 0;
@@ -743,7 +742,7 @@ int32 mapif_parse_PartyChangeMap( int32 fd, int32 party_id, uint32 account_id, u
 //Request party dissolution
 int32 mapif_parse_BreakParty(int32 fd,int32 party_id)
 {
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if(!p)
 		return 0;
@@ -760,7 +759,7 @@ int32 mapif_parse_PartyMessage(int32 fd,int32 party_id,uint32 account_id,char *m
 
 int32 mapif_parse_PartyLeaderChange(int32 fd,int32 party_id,uint32 account_id,uint32 char_id)
 {
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if(!p)
 		return 0;
@@ -790,7 +789,7 @@ int32 mapif_parse_PartyShareLevel(int32 fd,uint32 share_lvl)
 
 	// Update online parties
 	for( const auto& pair : party_db ){
-		std::shared_ptr<struct party_data> p = pair.second;
+		struct party_data* p = pair.second.get();
 
 		if( p->party.count > 1 ){
 			int_party_calc_state( p );
@@ -857,7 +856,7 @@ int32 inter_party_CharOnline(uint32 char_id, int32 party_id)
 	if (party_id == 0)
 		return 0; //No party...
 
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if(!p) {
 		ShowError("Character %d's party %d not found!\n", char_id, party_id);
@@ -904,7 +903,7 @@ int32 inter_party_CharOffline(uint32 char_id, int32 party_id) {
 		return 0; //No party...
 
 	//Character has a party, set character offline and check if they were the only member online
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if( p == nullptr ){
 		return 0;
@@ -935,7 +934,7 @@ int32 inter_party_charname_changed(int32 party_id, uint32 char_id, char *name)
 {
 	int32 i;
 
-	std::shared_ptr<struct party_data> p = inter_party_fromsql( party_id );
+	struct party_data* p = inter_party_fromsql( party_id );
 
 	if( p == nullptr || p->party.party_id == 0 ){
 		ShowError("inter_party_charname_changed: Can't find party %d.\n", party_id);

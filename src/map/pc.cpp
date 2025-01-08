@@ -109,7 +109,7 @@ uint64 AttendanceDatabase::parseBodyNode(const ryml::NodeRef& node){
 		return 0;
 	}
 
-	std::shared_ptr<s_attendance_period> attendance_period = this->find( start );
+	auto attendance_period = this->find_shared( start );
 	bool exists = attendance_period != nullptr;
 
 	if( !exists ){
@@ -155,7 +155,7 @@ uint64 AttendanceDatabase::parseBodyNode(const ryml::NodeRef& node){
 		bool collision = false;
 
 		for( std::pair<const uint32,std::shared_ptr<s_attendance_period>>& pair : *this ){
-			std::shared_ptr<s_attendance_period> period = pair.second;
+			s_attendance_period* period = pair.second.get();
 
 			if( exists && period->start == attendance_period->start ){
 				// Dont compare to yourself
@@ -194,7 +194,7 @@ uint64 AttendanceDatabase::parseBodyNode(const ryml::NodeRef& node){
 
 			day -= 1;
 
-			std::shared_ptr<s_attendance_reward> reward = util::map_find( attendance_period->rewards, day );
+			auto reward = util::map_find_shared( attendance_period->rewards, day );
 			bool reward_exists = reward != nullptr;
 
 			if( !reward_exists ){
@@ -283,7 +283,7 @@ uint64 ReputationDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	std::shared_ptr<s_reputation> reputation = this->find( id );
+	std::shared_ptr<s_reputation> reputation = this->find_shared( id );
 	bool exists = reputation != nullptr;
 
 	if( !exists ){
@@ -391,7 +391,7 @@ uint64 ReputationGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_reputationgroup> group = this->find(id);
+	std::shared_ptr<s_reputationgroup> group = this->find_shared(id);
 	bool exists = group != nullptr;
 
 	if (!exists) {
@@ -455,7 +455,7 @@ void pc_reputation_generate() {
 	auto reputeInfo = nlohmann::json::object();
 	for (const auto& pair : reputation_db) {
 		auto id = pair.first;
-		auto rep = pair.second;
+		auto rep = pair.second.get();
 		nlohmann::json node;
 		switch (rep->visibility) {
 		case s_reputation::e_visibility::ALWAYS:
@@ -494,7 +494,7 @@ void pc_reputation_generate() {
 	auto reputeGroupInfo = nlohmann::json::object();
 	for (const auto& pair : reputationgroup_db) {
 		auto id = pair.first;
-		auto group = pair.second;
+		auto group = pair.second.get();
 		nlohmann::json node;
 
 		node["ID"] = group->script_name;
@@ -544,7 +544,7 @@ uint64 PenaltyDatabase::parseBodyNode(const ryml::NodeRef& node){
 
 	e_penalty_type type = static_cast<e_penalty_type>( constant_value );
 
-	std::shared_ptr<s_penalty> penalty = this->find( type );
+	auto penalty = this->find_shared( type );
 	bool exists = penalty != nullptr;
 
 	if( !exists ){
@@ -1539,7 +1539,7 @@ void pc_setequipindex(map_session_data *sd)
 //{
 //	int32 i;
 //	struct item *item = &sd->inventory.u.items_inventory[eqindex];
-//	std::shared_ptr<item_data> data;
+//	item_data* data;
 //
 //	//Crafted/made/hatched items.
 //	if (itemdb_isspecial(item->card[0]))
@@ -1951,7 +1951,7 @@ bool pc_lastpoint_special( map_session_data& sd ){
 		return true;
 	}
 
-	std::shared_ptr<s_instance_data> instance_data = util::umap_find( instances, sd.status.last_point_instanceid );
+	s_instance_data* instance_data = util::umap_find( instances, sd.status.last_point_instanceid );
 
 	if( instance_data == nullptr ){
 		// Instance does not exist anymore, return the player to his savepoint
@@ -2455,7 +2455,7 @@ static int32 pc_calc_skillpoint(map_session_data* sd)
 
 	for(i = 1; i < MAX_SKILL; i++) {
 		if( sd->status.skill[i].id && sd->status.skill[i].lv > 0) {
-			std::shared_ptr<s_skill_db> skill = skill_db.find(sd->status.skill[i].id);
+			s_skill_db* skill = skill_db.find(sd->status.skill[i].id);
 
 			if ((!skill->inf2[INF2_ISQUEST] || battle_config.quest_skill_learn) &&
 				(!skill->inf2[INF2_ISWEDDING] || skill->inf2[INF2_ISSPIRIT]) //Do not count wedding/link skills. [Skotlex]
@@ -2583,7 +2583,7 @@ void pc_calc_skilltree(map_session_data *sd)
 
 	// Removes Taekwon Ranker skill bonus
 	if ((sd->class_&MAPID_UPPERMASK) != MAPID_TAEKWON) {
-		std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(JOB_TAEKWON);
+		s_skill_tree* tree = skill_tree_db.find(JOB_TAEKWON);
 	
 		if (tree != nullptr && !tree->skills.empty()) {
 			for (const auto &it : tree->skills) {
@@ -2603,7 +2603,7 @@ void pc_calc_skilltree(map_session_data *sd)
 	pc_grant_allskills(sd, false);
 
 	int32 flag;
-	std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(job_id);
+	s_skill_tree* tree = skill_tree_db.find(job_id);
 
 	do {
 		flag = 0;
@@ -2620,7 +2620,7 @@ void pc_calc_skilltree(map_session_data *sd)
 
 			if (!battle_config.skillfree) {
 				// Checking required skills
-				std::shared_ptr<s_skill_tree_entry> entry = skillsit.second;
+				s_skill_tree_entry* entry = skillsit.second.get();
 
 				if (entry != nullptr && !entry->need.empty()) {
 					for (const auto &it : entry->need) {
@@ -2662,7 +2662,7 @@ void pc_calc_skilltree(map_session_data *sd)
 			}
 
 			if (!fail) {
-				std::shared_ptr<s_skill_db> skill = skill_db.find(skid);
+				s_skill_db* skill = skill_db.find(skid);
 
 				if (!sd->status.skill[sk_idx].lv && (
 					(skill->inf2[INF2_ISQUEST] && !battle_config.quest_skill_learn) ||
@@ -2691,7 +2691,7 @@ void pc_calc_skilltree(map_session_data *sd)
 		- (c > 0) to avoid grant Novice Skill Tree in case of Skill Reset (need more logic)
 		- (sd->status.skill_point == 0) to wait until all skill points are assigned to avoid problems with Job Change quest. */
 
-		std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(job_id);
+		s_skill_tree* tree = skill_tree_db.find(job_id);
 
 		if (tree != nullptr && !tree->skills.empty()) {
 			for (const auto &it : tree->skills) {
@@ -2743,7 +2743,7 @@ static void pc_check_skilltree(map_session_data *sd)
 		ShowError("pc_check_skilltree: Unable to normalize job %d for character %s (%d:%d)\n", sd->status.class_, sd->status.name, sd->status.account_id, sd->status.char_id);
 		return;
 	}
-	std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(c);
+	s_skill_tree* tree = skill_tree_db.find(c);
 	if (tree == nullptr || tree->skills.empty())
 		return;
 
@@ -2759,7 +2759,7 @@ static void pc_check_skilltree(map_session_data *sd)
 				continue;
 
 			// Checking required skills
-			std::shared_ptr<s_skill_tree_entry> entry = skillsit.second;
+			s_skill_tree_entry* entry = skillsit.second.get();
 
 			if (entry != nullptr && !entry->need.empty()) {
 				for (const auto &it : entry->need) {
@@ -2789,7 +2789,7 @@ static void pc_check_skilltree(map_session_data *sd)
 			if (sd->status.base_level < entry->baselv || sd->status.job_level < entry->joblv)
 				continue;
 
-			std::shared_ptr<s_skill_db> skill = skill_db.find(skid);
+			s_skill_db* skill = skill_db.find(skid);
 
 			if( !sd->status.skill[sk_idx].lv && (
 				(skill->inf2[INF2_ISQUEST] && !battle_config.quest_skill_learn) ||
@@ -2827,7 +2827,7 @@ uint64 pc_calc_skilltree_normalize_job_sub( map_session_data *sd ){
 
 	if( sd->class_ & MAPID_SUMMONER ){
 		// Novice's skill points for basic skill.
-		std::shared_ptr<s_job_info> summoner_job = job_db.find( JOB_SUMMONER );
+		s_job_info* summoner_job = job_db.find( JOB_SUMMONER );
 
 		int32 summoner_skills = summoner_job->max_job_level - 1;
 
@@ -2838,7 +2838,7 @@ uint64 pc_calc_skilltree_normalize_job_sub( map_session_data *sd ){
 		skill_point -= summoner_skills;
 	}else{
 		// Novice's skill points for basic skill.
-		std::shared_ptr<s_job_info> novice_job = job_db.find( JOB_NOVICE );
+		s_job_info* novice_job = job_db.find( JOB_NOVICE );
 
 		int32 novice_skills = novice_job->max_job_level - 1;
 
@@ -3306,9 +3306,9 @@ s_autobonus::~s_autobonus(){
  * @param onskill: Skill used to trigger autobonus
  * @return True on success or false otherwise
  */
-bool pc_addautobonus(std::vector<std::shared_ptr<s_autobonus>> &bonus, const char *script, short rate, uint32 dur, uint16 flag, const char *other_script, uint32 pos, bool onskill){
+bool pc_addautobonus(std::vector<std::shared_ptr<s_autobonus>>& bonus, const char *script, short rate, uint32 dur, uint16 flag, const char *other_script, uint32 pos, bool onskill){
 	// Check if the same bonus already exists
-	for( std::shared_ptr<s_autobonus> autobonus : bonus ){
+	for( auto& autobonus : bonus ){
 		// Compare based on position and bonus script
 		if( autobonus->pos == pos && strcmp( script, autobonus->bonus_script ) == 0 ){
 			return false;
@@ -3333,7 +3333,7 @@ bool pc_addautobonus(std::vector<std::shared_ptr<s_autobonus>> &bonus, const cha
 		}
 	}
 
-	std::shared_ptr<s_autobonus> entry = std::make_shared<s_autobonus>();
+	auto entry = std::make_shared<s_autobonus>();
 
 	if (rate < -10000 || rate > 10000)
 		ShowWarning("pc_addautobonus: Item bonus rate %d exceeds -10000~10000 range, capping.\n", rate);
@@ -3361,7 +3361,7 @@ void pc_delautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobon
 	std::vector<std::shared_ptr<s_autobonus>>::iterator it = bonus.begin();
 
 	while( it != bonus.end() ){
-		std::shared_ptr<s_autobonus> b = *it;
+		s_autobonus* b = it->get();
 
 		if( b->active != INVALID_TIMER && restore && b->bonus_script != nullptr ){
 			uint32 equip_pos_idx = 0;
@@ -3394,7 +3394,7 @@ void pc_delautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobon
  * @param sd: Player data
  * @param autobonus: Autobonus to run
  */
-void pc_exeautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobonus>> *bonus, std::shared_ptr<s_autobonus> autobonus)
+void pc_exeautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobonus>> *bonus, std::shared_ptr<s_autobonus>& autobonus)
 {
 	if (autobonus->active != INVALID_TIMER)
 		delete_timer(autobonus->active, pc_endautobonus);
@@ -3421,12 +3421,12 @@ void pc_exeautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobon
  */
 TIMER_FUNC(pc_endautobonus){
 	map_session_data *sd = map_id2sd(id);
-	std::vector<std::shared_ptr<s_autobonus>> *bonus = (std::vector<std::shared_ptr<s_autobonus>> *)data;
+	std::vector<s_autobonus*> *bonus = (std::vector<s_autobonus*> *)data;
 
 	nullpo_ret(sd);
 	nullpo_ret(bonus);
 
-	for( std::shared_ptr<s_autobonus> autobonus : *bonus ){
+	for( s_autobonus* autobonus : *bonus ){
 		if( autobonus->active == tid ){
 			autobonus->active = INVALID_TIMER;
 			break;
@@ -6647,7 +6647,7 @@ int32 pc_show_steal(struct block_list *bl,va_list ap)
 	sd=va_arg(ap,map_session_data *);
 	itemid=va_arg(ap,int32);
 
-	std::shared_ptr<item_data> id = item_db.find(itemid);
+	item_data* id = item_db.find(itemid);
 
 	if(id == nullptr)
 		sprintf(output,"%s stole an Unknown Item (id: %u).",sd->status.name, itemid);
@@ -6988,7 +6988,7 @@ enum e_setpos pc_setpos(map_session_data* sd, unsigned short mapindex, int32 x, 
 
 	if( sd->status.guild_id > 0 && mapdata->getMapFlag(MF_GVG_CASTLE) )
 	{	// Increased guild castle regen [Valaris]
-		std::shared_ptr<guild_castle> gc = castle_db.mapindex2gc(sd->mapindex);
+		guild_castle* gc = castle_db.mapindex2gc(sd->mapindex);
 		if(gc && gc->guild_id == sd->status.guild_id)
 			sd->regen.state.gc = 1;
 	}
@@ -8427,7 +8427,7 @@ void pc_lostexp(map_session_data *sd, t_exp base_exp, t_exp job_exp) {
  * @return Max Base Level
  */
 uint32 JobDatabase::get_maxBaseLv(uint16 job_id) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 
 	return job ? job->max_base_level : 0;
 }
@@ -8447,7 +8447,7 @@ uint32 pc_maxbaselv(map_session_data *sd){
  * @return Max Job Level
  */
 uint32 JobDatabase::get_maxJobLv(uint16 job_id) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 
 	return job ? job->max_job_level : 0;
 }
@@ -8488,7 +8488,7 @@ bool pc_is_maxjoblv(map_session_data *sd) {
  * @return Base EXP
  */
 t_exp JobDatabase::get_baseExp(uint16 job_id, uint32 level) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 
 	return job ? job->base_exp[level - 1] : 0;
 }
@@ -8514,7 +8514,7 @@ t_exp pc_nextbaseexp(map_session_data *sd){
  * @return Job EXP
  */
 t_exp JobDatabase::get_jobExp(uint16 job_id, uint32 level) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 
 	return job ? job->job_exp[level - 1] : 0;
 }
@@ -8539,7 +8539,7 @@ t_exp pc_nextjobexp(map_session_data *sd){
  * @return Max weight base
  */
 int32 JobDatabase::get_maxWeight(uint16 job_id) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 
 	return job ? job->max_weight_base : 0;
 }
@@ -8598,7 +8598,7 @@ int32 pc_setstat(map_session_data* sd, int32 type, int32 val)
  * @return Total number of status points at specific base level.
  */
 uint32 PlayerStatPointDatabase::get_table_point(uint16 level) {
-	std::shared_ptr<s_statpoint_entry> entry = this->find( level );
+	auto entry = this->find_shared( level );
 
 	if( entry != nullptr ){
 		return entry->statpoints;
@@ -8630,7 +8630,7 @@ uint32 PlayerStatPointDatabase::pc_gets_status_point(uint16 level) {
 * @return Total number of trait points at specific base level.
 */
 uint32 PlayerStatPointDatabase::get_trait_table_point(uint16 level) {
-	std::shared_ptr<s_statpoint_entry> entry = this->find( level );
+	auto entry = this->find_shared( level );
 
 	if( entry != nullptr ){
 		return entry->traitpoints;
@@ -9062,7 +9062,7 @@ int32 pc_allskillup(map_session_data *sd)
 
 	if (!pc_grant_allskills(sd, true)) {
 		uint16 sk_id;
-		std::shared_ptr<s_skill_tree> tree = skill_tree_db.find(sd->status.class_);
+		s_skill_tree* tree = skill_tree_db.find(sd->status.class_);
 
 		if (tree != nullptr && !tree->skills.empty()) {
 			for (const auto &skillsit : tree->skills) {
@@ -9072,7 +9072,7 @@ int32 pc_allskillup(map_session_data *sd)
 				if (sk_idx == 0)
 					continue;
 
-				std::shared_ptr<s_skill_db> skill = skill_db.find(sk_id);
+				s_skill_db* skill = skill_db.find(sk_id);
 
 				if (
 					(skill->inf2[INF2_ISQUEST] && !battle_config.quest_skill_learn) ||
@@ -9986,7 +9986,7 @@ int32 pc_dead(map_session_data *sd,struct block_list *src)
 		return 1|8;
 	}
 	else if( sd->bg_id ) {
-		std::shared_ptr<s_battleground_data> bg = util::umap_find(bg_team_db, sd->bg_id);
+		s_battleground_data* bg = util::umap_find(bg_team_db, sd->bg_id);
 
 		if (bg) {
 			if (bg->cemetery.map > 0) { // Respawn by BG
@@ -11847,11 +11847,11 @@ int32 pc_load_combo(map_session_data *sd) {
 				if (!sd->inventory.u.items_inventory[idx].card[j])
 					continue;
 
-				std::shared_ptr<item_data> data = item_db.find(sd->inventory.u.items_inventory[idx].card[j]);
+				item_data* data = item_db.find(sd->inventory.u.items_inventory[idx].card[j]);
 
 				if (data != nullptr) {
 					if (!data->combos.empty())
-						ret += pc_checkcombo(sd, data.get());
+						ret += pc_checkcombo(sd, data);
 				}
 			}
 		}
@@ -11946,7 +11946,7 @@ bool pc_equipitem(map_session_data *sd,short n,int32 req_pos,bool equipswitch)
 			if (!sd->inventory.u.items_inventory[n].card[i])
 				continue;
 
-			std::shared_ptr<item_data> card_data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
+			item_data* card_data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
 
 			if (card_data) {
 				int32 card_pos = card_data->equip;
@@ -12094,11 +12094,11 @@ bool pc_equipitem(map_session_data *sd,short n,int32 req_pos,bool equipswitch)
 			if (!sd->inventory.u.items_inventory[n].card[i])
 				continue;
 
-			std::shared_ptr<item_data> data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
+			item_data* data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
 
 			if (data != nullptr) {
 				if (!data->combos.empty())
-					pc_checkcombo(sd, data.get());
+					pc_checkcombo(sd, data);
 			}
 		}
 	}
@@ -12120,10 +12120,10 @@ bool pc_equipitem(map_session_data *sd,short n,int32 req_pos,bool equipswitch)
 			for( i = 0; i < MAX_SLOTS; i++ ) {
 				if (!sd->inventory.u.items_inventory[n].card[i])
 					continue;
-				std::shared_ptr<item_data> data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
+				item_data* data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
 
 				if ( data != nullptr ) {
-					if (data->equip_script && (pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) || !itemdb_isNoEquip(data.get(), sd->bl.m))) {
+					if (data->equip_script && (pc_has_permission(sd,PC_PERM_USE_ALL_EQUIPMENT) || !itemdb_isNoEquip(data, sd->bl.m))) {
 						current_equip_card_id = sd->inventory.u.items_inventory[n].card[i];
 						run_script(data->equip_script,0,sd->bl.id,fake_nd->bl.id);
 					}
@@ -12187,11 +12187,11 @@ static void pc_unequipitem_sub(map_session_data *sd, int32 n, int32 flag) {
 				if (!sd->inventory.u.items_inventory[n].card[i])
 					continue;
 
-				std::shared_ptr<item_data> data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
+				item_data* data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
 
 				if (data != nullptr) {
 					if (!data->combos.empty()) {
-						if (pc_removecombo(sd, data.get()))
+						if (pc_removecombo(sd, data))
 							status_calc = true;
 					}
 				}
@@ -12220,7 +12220,7 @@ static void pc_unequipitem_sub(map_session_data *sd, int32 n, int32 flag) {
 				if (!sd->inventory.u.items_inventory[n].card[i])
 					continue;
 
-				std::shared_ptr<item_data> data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
+				item_data* data = item_db.find(sd->inventory.u.items_inventory[n].card[i]);
 
 				if (data != nullptr) {
 					if (data->unequip_script) {
@@ -13182,7 +13182,7 @@ void pc_delspiritcharm(map_session_data *sd, int32 count, int32 type)
  * @param type: 1 - EXP, 2 - Item Drop
  * @return Penalty rate
  */
-uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::shared_ptr<s_mob_db> mob, mob_data* md ){
+uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, s_mob_db* mob, mob_data* md ){
 	// No player was attached, we don't use any modifier (100 = rates are not touched)
 	if( sd == nullptr ){
 		return 100;
@@ -13209,7 +13209,7 @@ uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::sha
 
 	int32 level_difference = monster_level - sd->status.base_level;
 
-	std::shared_ptr<s_penalty> penalty = penalty_db.find( type );
+	s_penalty* penalty = penalty_db.find( type );
 
 	if( penalty != nullptr ){
 		return penalty->rate[ level_difference + MAX_LEVEL - 1 ];
@@ -13261,8 +13261,8 @@ int32 pc_split_atoui(char* str, uint32* val, char sep, int32 max)
 }
 
 
-std::shared_ptr<s_skill_tree_entry> SkillTreeDatabase::get_skill_data(int32 class_, uint16 skill_id) {
-	std::shared_ptr<s_skill_tree> tree = this->find(class_);
+s_skill_tree_entry* SkillTreeDatabase::get_skill_data(int32 class_, uint16 skill_id) {
+	auto tree = this->find_shared(class_);
 
 	if (tree != nullptr)
 		return util::umap_find(tree->skills, skill_id);
@@ -13294,7 +13294,7 @@ uint64 SkillTreeDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	}
 	uint16 job_id = static_cast<uint16>(constant);
 
-	std::shared_ptr<s_skill_tree> tree = this->find(job_id);
+	std::shared_ptr<s_skill_tree> tree = this->find_shared(job_id);
 	bool exists = tree != nullptr;
 
 	if (!exists)
@@ -13496,13 +13496,13 @@ void SkillTreeDatabase::loadingFinished() {
 		if (data.second->inherit_job.empty())
 			continue;
 
-		std::shared_ptr<s_skill_tree> skill_tree = std::make_shared<s_skill_tree>();
+		auto skill_tree = std::make_shared<s_skill_tree>();
 
 		uint32 baselv_max = job_db.get_maxBaseLv(data.first);
 		uint32 joblv_max = job_db.get_maxJobLv(data.first);
 
 		for (const auto &inherit_job : data.second->inherit_job) {
-			std::shared_ptr<s_skill_tree> tree = this->find(inherit_job);
+			auto tree = this->find_shared(inherit_job);
 			if (tree == nullptr || tree->skills.empty())
 				continue;
 
@@ -13516,7 +13516,7 @@ void SkillTreeDatabase::loadingFinished() {
 					skill_tree->skills[it.first] = it.second;
 				else
 					skill_tree->skills.insert({ it.first, it.second });
-				std::shared_ptr<s_skill_tree_entry> skill = skill_tree->skills[it.first];
+				s_skill_tree_entry* skill = skill_tree->skills[it.first].get();
 
 				if (skill->baselv > baselv_max) {
 					ShowWarning("SkillTreeDatabase: Skill %s (%hu)'s base level requirement %hu exceeds job %s's max base level %d. Capping skill base level.\n",
@@ -13569,7 +13569,7 @@ void SkillTreeDatabase::loadingFinished() {
  * @author [Cydh]
  */
 static uint32 pc_calc_basehp(uint16 level, uint16 job_id) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 	double base_hp = 35 + level * (job->hp_increase / 100.);
 
 #ifndef RENEWAL
@@ -13591,7 +13591,7 @@ static uint32 pc_calc_basehp(uint16 level, uint16 job_id) {
  * @author [Playtester]
  */
 static uint32 pc_calc_basesp(uint16 level, uint16 job_id) {
-	std::shared_ptr<s_job_info> job = job_db.find(job_id);
+	s_job_info* job = job_db.find(job_id);
 	double base_sp = 10 + floor(level * (job->sp_increase / 100.));
 
 	switch (job_id) {
@@ -13640,7 +13640,7 @@ uint64 JobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				return 0;
 			}
 
-			std::shared_ptr<s_job_info> job = job_db.find(static_cast<uint16>(job_id));
+			auto job = job_db.find_shared(static_cast<uint16>(job_id));
 			bool exists = job != nullptr;
 
 			if (!exists) {
@@ -13994,7 +13994,7 @@ void JobDatabase::loadingFinished() {
 		if (job_id == JOB_WEDDING || job_id == JOB_XMAS || job_id == JOB_SUMMER || job_id == JOB_HANBOK || job_id == JOB_OKTOBERFEST || job_id == JOB_SUMMER2)
 			continue; // Classes that do not need exp tables.
 
-		std::shared_ptr<s_job_info> job = jobIt.second;
+		s_job_info* job = jobIt.second.get();
 		uint16 maxBaseLv = job->max_base_level, maxJobLv = job->max_job_level;
 
 		if (!maxBaseLv)
@@ -14141,7 +14141,7 @@ static bool pc_readdb_job_noenter_map( char *str[], size_t columns, size_t curre
 		return false;
 	}
 
-	std::shared_ptr<s_job_info> job = job_db.find(class_);
+	s_job_info* job = job_db.find(class_);
 
 	if (job == nullptr) {
 		ShowError("pc_readdb_job_noenter_map: Job %d data not initialized.\n", class_);
@@ -14174,7 +14174,7 @@ uint64 PlayerStatPointDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_statpoint_entry> entry = this->find( level );
+	auto entry = this->find_shared( level );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -14222,7 +14222,7 @@ uint64 PlayerStatPointDatabase::parseBodyNode(const ryml::NodeRef& node) {
  */
 void PlayerStatPointDatabase::loadingFinished(){
 	const uint16 trait_start_level = 200;
-	std::shared_ptr<s_statpoint_entry> level_one = this->find( 1 );
+	auto level_one = this->find_shared( 1 );
 
 	if( level_one == nullptr ){
 		if( battle_config.use_statpoint_table ){
@@ -14248,7 +14248,7 @@ void PlayerStatPointDatabase::loadingFinished(){
 
 	std::shared_ptr<s_statpoint_entry> last_level = level_one;
 	for( uint16 level = 2; level <= MAX_LEVEL; level++ ){
-		std::shared_ptr<s_statpoint_entry> entry = this->find( level );
+		auto entry = this->find_shared( level );
 		bool exists = entry != nullptr;
 
 		if( !exists ){
@@ -14945,7 +14945,7 @@ void pc_cell_basilica(map_session_data *sd) {
 uint16 pc_maxparameter(map_session_data *sd, e_params param) {
 	nullpo_retr(0, sd);
 
-	std::shared_ptr<s_job_info> job = job_db.find(pc_mapid2jobid(sd->class_,sd->status.sex));
+	s_job_info* job = job_db.find(pc_mapid2jobid(sd->class_,sd->status.sex));
 
 	if( job == nullptr || param == PARAM_MAX ){
 		return 0;
@@ -15177,7 +15177,7 @@ bool pc_job_can_entermap(enum e_job jobid, int32 m, int32 group_lv) {
 	if (!pcdb_checkid(jobid))
 		return false;
 
-	std::shared_ptr<s_job_info> job = job_db.find(jobid);
+	s_job_info* job = job_db.find(jobid);
 
 	if (!job->noenter_map.zone || group_lv > job->noenter_map.group_lv)
 		return true;
@@ -15270,11 +15270,11 @@ void pc_set_costume_view(map_session_data *sd) {
 		clif_changelook(&sd->bl, LOOK_ROBE, sd->status.robe);
 }
 
-std::shared_ptr<s_attendance_period> pc_attendance_period(){
+s_attendance_period* pc_attendance_period(){
 	uint32 date = date_get(DT_YYYYMMDD);
 
 	for( std::pair<const uint32,std::shared_ptr<s_attendance_period>>& pair : attendance_db ){
-		std::shared_ptr<s_attendance_period> period = pair.second;
+		s_attendance_period* period = pair.second.get();
 
 		if( period->start <= date && period->end >= date ){
 			return period;
@@ -15299,7 +15299,7 @@ static inline bool pc_attendance_rewarded_today( map_session_data* sd ){
 }
 
 int32 pc_attendance_counter( map_session_data* sd ){
-	std::shared_ptr<s_attendance_period> period = pc_attendance_period();
+	s_attendance_period* period = pc_attendance_period();
 
 	// No running attendance period
 	if( period == nullptr ){
@@ -15340,7 +15340,7 @@ void pc_attendance_claim_reward( map_session_data* sd ){
 
 	attendance_counter += 1;
 
-	std::shared_ptr<s_attendance_period> period = pc_attendance_period();
+	s_attendance_period* period = pc_attendance_period();
 
 	if( period == nullptr ){
 		return;
@@ -15356,7 +15356,7 @@ void pc_attendance_claim_reward( map_session_data* sd ){
 	if( save_settings&CHARSAVE_ATTENDANCE )
 		chrif_save(sd, CSAVE_NORMAL);
 
-	std::shared_ptr<s_attendance_reward> reward = period->rewards[attendance_counter - 1];
+	s_attendance_reward* reward = period->rewards[attendance_counter - 1].get();
 
 	struct mail_message msg;
 
@@ -15467,7 +15467,7 @@ void pc_macro_captcha_register(map_session_data &sd, uint16 image_size, const ch
 		return;
 	}
 
-	std::shared_ptr<s_captcha_data> cd = std::make_shared<s_captcha_data>();
+	auto cd = std::make_shared<s_captcha_data>();
 	sd.captcha_upload.cd = cd;
 
 	cd->image_size = image_size;
@@ -15555,7 +15555,7 @@ TIMER_FUNC(pc_macro_detector_timeout) {
 void pc_macro_detector_process_answer(map_session_data &sd, const char captcha_answer[CAPTCHA_ANSWER_SIZE]) {
 	nullpo_retv(captcha_answer);
 
-	const std::shared_ptr<s_captcha_data> cd = sd.macro_detect.cd;
+	const auto cd = sd.macro_detect.cd;
 
 	// Has no captcha request
 	if (cd == nullptr) {
@@ -15659,7 +15659,7 @@ void pc_macro_reporter_process(map_session_data &sd, int32 reporter_account_id) 
 		return;
 
 	// Pick a random image from the database.
-	const std::shared_ptr<s_captcha_data> cd = captcha_db.random();
+	const auto cd = captcha_db.random();
 
 	// Set macro detection data.
 	sd.macro_detect.cd = cd;
@@ -15681,7 +15681,7 @@ void pc_macro_reporter_process(map_session_data &sd, int32 reporter_account_id) 
  * @param filepath: Image file location
  * @param cd: Captcha data
  */
-bool pc_macro_read_captcha_db_loadbmp(const std::string &filepath, std::shared_ptr<s_captcha_data> cd) {
+bool pc_macro_read_captcha_db_loadbmp(const std::string &filepath, s_captcha_data* cd) {
 	if (cd == nullptr)
 		return false;
 
@@ -15732,7 +15732,7 @@ uint64 CaptchaDatabase::parseBodyNode(const ryml::NodeRef &node) {
 	if (!this->asUInt16(node, "Id", index))
 		return 0;
 
-	std::shared_ptr<s_captcha_data> cd = captcha_db.find(index);
+	auto cd = captcha_db.find_shared(index);
 	bool exists = cd != nullptr;
 
 	if (!exists) {
@@ -15749,7 +15749,7 @@ uint64 CaptchaDatabase::parseBodyNode(const ryml::NodeRef &node) {
 		if (!this->asString(node, "Filename", filename))
 			return 0;
 
-		if (!pc_macro_read_captcha_db_loadbmp(filename, cd)) {
+		if (!pc_macro_read_captcha_db_loadbmp(filename, cd.get())) {
 			this->invalidWarning(node["Filename"], "Failed to parse BMP image, skipping...\n");
 			return 0;
 		}

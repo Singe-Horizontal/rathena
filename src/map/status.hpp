@@ -91,7 +91,7 @@ struct s_refine_info{
 class RefineDatabase : public TypesafeYamlDatabase<uint16, s_refine_info>{
 private:
 	bool calculate_refine_info( const struct item_data& data, e_refine_type& refine_type, uint16& level );
-	std::shared_ptr<s_refine_level_info> findLevelInfoSub( const struct item_data& data, struct item& item, uint16 refine );
+	s_refine_level_info* findLevelInfoSub( const struct item_data& data, struct item& item, uint16 refine );
 
 public:
 	RefineDatabase() : TypesafeYamlDatabase( "REFINE_DB", 2, 1 ){
@@ -102,8 +102,8 @@ public:
 	uint64 parseBodyNode( const ryml::NodeRef& node ) override;
 
 	// Additional
-	std::shared_ptr<s_refine_level_info> findLevelInfo( const struct item_data& data, struct item& item );
-	std::shared_ptr<s_refine_level_info> findCurrentLevelInfo( const struct item_data& data, struct item& item );
+	s_refine_level_info* findLevelInfo( const struct item_data& data, struct item& item );
+	s_refine_level_info* findCurrentLevelInfo( const struct item_data& data, struct item& item );
 };
 
 extern RefineDatabase refine_db;
@@ -194,7 +194,7 @@ public:
 	void loadingFinished() override;
 
 	// Additional
-	std::shared_ptr<s_enchantgradelevel> findCurrentLevelInfo( const struct item_data& data, struct item& item );
+	s_enchantgradelevel* findCurrentLevelInfo( const struct item_data& data, struct item& item );
 };
 
 extern EnchantgradeDatabase enchantgrade_db;

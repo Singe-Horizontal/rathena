@@ -91,7 +91,7 @@ struct homun_data {
 	struct status_data base_status, battle_status;
 	status_change sc;
 	struct regen_data regen;
-	std::shared_ptr<s_homunculus_db> homunculusDB;	//[orn]
+	s_homunculus_db* homunculusDB;	//[orn]
 	struct s_homunculus homunculus;	//[orn]
 
 	int32 masterteleport_timer;
@@ -193,7 +193,7 @@ public:
 	uint64 parseBodyNode(const ryml::NodeRef& node);
 
 	// Additional
-	std::shared_ptr<s_homunculus_db> homun_search(int32 class_);
+	s_homunculus_db* homun_search(int32 class_);
 };
 
 extern HomunculusDatabase homunculus_db;

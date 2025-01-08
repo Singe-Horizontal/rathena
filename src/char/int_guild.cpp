@@ -41,12 +41,12 @@ static std::unordered_map<int32, std::shared_ptr<struct guild_castle>> castle_db
 
 int32 mapif_parse_GuildLeave(int32 fd,int32 guild_id,uint32 account_id,uint32 char_id,int32 flag,const char *mes);
 int32 mapif_guild_broken(int32 guild_id,int32 flag);
-bool guild_check_empty( std::shared_ptr<CharGuild> g );
-int32 guild_calcinfo( std::shared_ptr<CharGuild> g );
+bool guild_check_empty( CharGuild* g );
+int32 guild_calcinfo( CharGuild* g );
 int32 mapif_guild_basicinfochanged(int32 guild_id,int32 type,const void *data,int32 len);
 int32 mapif_guild_info( int32 fd, const struct mmo_guild &g );
 int32 inter_guild_tosql( mmo_guild &g, int32 flag );
-int32 guild_checkskill( std::shared_ptr<CharGuild> g, int32 id );
+int32 guild_checkskill( CharGuild* g, int32 id );
 
 TIMER_FUNC(guild_save_timer){
 	static int32 last_id = 0; //To know in which guild we were.
@@ -56,7 +56,7 @@ TIMER_FUNC(guild_save_timer){
 		state = 1;
 
 	for( auto it = guild_db.begin(); it != guild_db.end(); ){
-		std::shared_ptr<CharGuild> g = it->second;
+		CharGuild* g = it->second.get();
 
 		if( state == 0 && g->guild.guild_id == last_id )
 			state++; //Save next guild in the list.
@@ -333,7 +333,7 @@ int32 inter_guild_tosql( mmo_guild &g, int32 flag ){
 }
 
 // Read guild from sql
-std::shared_ptr<CharGuild> inter_guild_fromsql( int32 guild_id ){
+CharGuild* inter_guild_fromsql( int32 guild_id ){
 	char* data;
 	size_t len;
 	char* p;
@@ -343,10 +343,10 @@ std::shared_ptr<CharGuild> inter_guild_fromsql( int32 guild_id ){
 		return nullptr;
 	}
 
-	auto g = util::umap_find( guild_db, guild_id );
+	auto g = util::umap_find_shared( guild_db, guild_id );
 
 	if( g != nullptr ){
-		return g;
+		return g.get();
 	}
 
 #ifdef NOISY
@@ -533,7 +533,7 @@ std::shared_ptr<CharGuild> inter_guild_fromsql( int32 guild_id ){
 	if (charserv_config.save_log)
 		ShowInfo("Guild loaded (%d - %s)\n", guild_id, g->guild.name);
 
-	return g;
+	return g.get();
 }
 
 /**
@@ -563,7 +563,7 @@ uint16 inter_guild_storagemax(int32 guild_id)
 }
 
 // `guild_castle` (`castle_id`, `guild_id`, `economy`, `defense`, `triggerE`, `triggerD`, `nextTime`, `payTime`, `createTime`, `visibleC`, `visibleG0`, `visibleG1`, `visibleG2`, `visibleG3`, `visibleG4`, `visibleG5`, `visibleG6`, `visibleG7`)
-int32 inter_guildcastle_tosql( std::shared_ptr<struct guild_castle> gc ){
+int32 inter_guildcastle_tosql( struct guild_castle* gc ){
 	StringBuf buf;
 	int32 i;
 
@@ -585,15 +585,15 @@ int32 inter_guildcastle_tosql( std::shared_ptr<struct guild_castle> gc ){
 }
 
 // Read guild_castle from SQL
-std::shared_ptr<struct guild_castle> inter_guildcastle_fromsql( int32 castle_id ){
+struct guild_castle* inter_guildcastle_fromsql( int32 castle_id ){
 	char *data;
 	int32 i;
 	StringBuf buf;
 
-	std::shared_ptr<struct guild_castle> gc = util::umap_find( castle_db, castle_id );
+	auto gc = util::umap_find_shared( castle_db, castle_id );
 
 	if( gc != nullptr ){
-		return gc;
+		return gc.get();
 	}
 
 	StringBuf_Init(&buf);
@@ -634,7 +634,7 @@ std::shared_ptr<struct guild_castle> inter_guildcastle_fromsql( int32 castle_id 
 	if (charserv_config.save_log)
 		ShowInfo("Loaded guild castle (%d - guild %d)\n", castle_id, gc->guild_id);
 
-	return gc;
+	return gc.get();
 }
 
 
@@ -778,7 +778,7 @@ uint64 GuildExpDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	std::shared_ptr<s_guild_exp_db> guild_exp = this->find(level);
+	std::shared_ptr<s_guild_exp_db> guild_exp = this->find_shared(level);
 	bool exists = guild_exp != nullptr;
 
 	if (!exists) {
@@ -813,7 +813,7 @@ void inter_guild_sql_init(void) {
 void inter_guild_sql_final(void)
 {
 	for( const auto& pair : guild_db ){
-		auto guild = pair.second;
+		auto guild = pair.second.get();
 
 		if( guild->save_flag&GS_MASK ){
 			inter_guild_tosql( guild->guild, guild->save_flag&GS_MASK );
@@ -853,7 +853,7 @@ int32 search_guildname(char *str)
 }
 
 // Check if guild is empty
-bool guild_check_empty( std::shared_ptr<CharGuild> g ){
+bool guild_check_empty( CharGuild* g ){
 	int32 i;
 	ARR_FIND( 0, g->guild.max_member, i, g->guild.member[i].account_id > 0 );
 	//Let the calling function handle the guild removal in case they need
@@ -862,17 +862,17 @@ bool guild_check_empty( std::shared_ptr<CharGuild> g ){
 }
 
 t_exp GuildExpDatabase::get_nextexp(uint16 level) {
-	std::shared_ptr<s_guild_exp_db> guild_exp = guild_exp_db.find(level);
+	s_guild_exp_db* guild_exp = guild_exp_db.find(level);
 
 	return ((guild_exp == nullptr) ? 0 : guild_exp->exp);
 }
 
-int32 guild_checkskill( std::shared_ptr<CharGuild> g, int32 id ){
+int32 guild_checkskill( CharGuild* g, int32 id ){
 	int32 idx = id - GD_SKILLBASE;
 	return idx < 0 || idx >= MAX_GUILDSKILL ? 0 : g->guild.skill[idx].lv;
 }
 
-int32 guild_calcinfo( std::shared_ptr<CharGuild> g ){
+int32 guild_calcinfo( CharGuild* g ){
 	int32 i,c;
 	struct mmo_guild before = g->guild; // Save guild current values
 
@@ -1174,8 +1174,8 @@ int32 mapif_guild_castle_dataload(int32 fd, int32 sz, int32 *castle_ids)
 	WFIFOW(fd, 0) = 0x3840;
 	WFIFOW(fd, 2) = len;
 	for (i = 0; i < num; i++) {
-		std::shared_ptr<struct guild_castle> gc = inter_guildcastle_fromsql( *(castle_ids++) );
-		memcpy( WFIFOP( fd, 4 + i * sizeof( struct guild_castle ) ), gc.get(), sizeof( struct guild_castle ) );
+		struct guild_castle* gc = inter_guildcastle_fromsql( *(castle_ids++) );
+		memcpy( WFIFOP( fd, 4 + i * sizeof( struct guild_castle ) ), gc, sizeof( struct guild_castle ) );
 	}
 	WFIFOSET(fd, len);
 	return 0;
@@ -1705,7 +1705,7 @@ int32 mapif_parse_GuildSkillUp(int32 fd,int32 guild_id,uint16 skill_id,uint32 ac
 }
 
 //Manual deletion of an alliance when partnering guild does not exists. [Skotlex]
-int32 mapif_parse_GuildDeleteAlliance( std::shared_ptr<CharGuild> &g, int32 guild_id, uint32 account_id1, uint32 account_id2, int32 flag ){
+int32 mapif_parse_GuildDeleteAlliance( CharGuild* &g, int32 guild_id, uint32 account_id1, uint32 account_id2, int32 flag ){
 	int32 i;
 	char name[NAME_LENGTH];
 
@@ -1734,7 +1734,7 @@ int32 mapif_parse_GuildDeleteAlliance( std::shared_ptr<CharGuild> &g, int32 guil
 int32 mapif_parse_GuildAlliance(int32 fd,int32 guild_id1,int32 guild_id2,uint32 account_id1,uint32 account_id2,int32 flag)
 {
 	// Could speed up
-	std::shared_ptr<CharGuild> g[2];
+	CharGuild* g[2];
 	int32 j,i;
 	g[0] = inter_guild_fromsql(guild_id1);
 	g[1] = inter_guild_fromsql(guild_id2);
@@ -1825,7 +1825,7 @@ int32 mapif_parse_GuildCastleDataLoad(int32 fd, int32 len, int32 *castle_ids)
 
 int32 mapif_parse_GuildCastleDataSave(int32 fd, int32 castle_id, int32 index, int32 value)
 {
-	std::shared_ptr<struct guild_castle> gc = inter_guildcastle_fromsql( castle_id );
+	struct guild_castle* gc = inter_guildcastle_fromsql( castle_id );
 
 	if( gc == nullptr ){
 		ShowError("mapif_parse_GuildCastleDataSave: castle id=%d not found\n", castle_id);

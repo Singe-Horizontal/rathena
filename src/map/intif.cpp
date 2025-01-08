@@ -2186,7 +2186,7 @@ void intif_parse_achievements(int32 fd)
 			CREATE(sd->achievement_data.achievements, struct achievement, num_received);
 
 		for (i = 0; i < num_received; i++) {
-			std::shared_ptr<s_achievement_db> adb = achievement_db.find( received[i].achievement_id );
+			s_achievement_db* adb = achievement_db.find( received[i].achievement_id );
 
 			if (!adb) {
 				ShowError("intif_parse_achievements: Achievement %d not found in achievement_db.\n", received[i].achievement_id);
@@ -3603,7 +3603,7 @@ void intif_parse_StorageInfo_recv(int32 fd) {
 
 	for( int32 i = 0; i < count; i++ ){
 		struct s_storage_table* ptr = (struct s_storage_table*)RFIFOP( fd, 4 + size * i );
-		std::shared_ptr<struct s_storage_table> storage = std::make_shared<struct s_storage_table>();
+		auto storage = std::make_shared<struct s_storage_table>();
 
 		safestrncpy( storage->name, ptr->name, sizeof( storage->name ) );
 		safestrncpy( storage->table, ptr->table, sizeof( storage->table ) );

@@ -475,7 +475,7 @@ public:
 	uint32 login_id1, login_id2;
 	uint64 class_;	//This is the internal job ID used by the map server to simplify comparisons/queries/etc. [Skotlex]
 	int32 group_id;
-	std::shared_ptr<s_player_group> group;
+	s_player_group* group;
 	std::bitset<PC_PERM_MAX> permissions; // group permissions have to be copied, because they might be adjusted by atcommand addperm
 	int32 count_rewarp; //count how many time we being rewarped
 
@@ -1459,8 +1459,8 @@ bool pc_adoption(map_session_data *p1_sd, map_session_data *p2_sd, map_session_d
 
 void pc_updateweightstatus(map_session_data *sd);
 
-bool pc_addautobonus(std::vector<std::shared_ptr<s_autobonus>> &bonus, const char *script, short rate, uint32 dur, uint16 atk_type, const char *o_script, uint32 pos, bool onskill);
-void pc_exeautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobonus>> *bonus, std::shared_ptr<s_autobonus> autobonus);
+bool pc_addautobonus(std::vector<std::shared_ptr<s_autobonus>>& bonus, const char *script, short rate, uint32 dur, uint16 atk_type, const char *o_script, uint32 pos, bool onskill);
+void pc_exeautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobonus>> *bonus, std::shared_ptr<s_autobonus>& autobonus);
 TIMER_FUNC(pc_endautobonus);
 void pc_delautobonus(map_session_data &sd, std::vector<std::shared_ptr<s_autobonus>> &bonus, bool restore);
 
@@ -1629,7 +1629,7 @@ public:
 	void loadingFinished() override;
 
 	// Additional
-	std::shared_ptr<s_skill_tree_entry> get_skill_data(int32 class_, uint16 skill_id);
+	s_skill_tree_entry* get_skill_data(int32 class_, uint16 skill_id);
 };
 
 extern SkillTreeDatabase skill_tree_db;
@@ -1732,7 +1732,7 @@ void pc_show_questinfo_reinit(map_session_data *sd);
 bool pc_job_can_entermap(enum e_job jobid, int32 m, int32 group_lv);
 
 #if defined(RENEWAL_DROP) || defined(RENEWAL_EXP)
-uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, std::shared_ptr<s_mob_db> mob, mob_data* md = nullptr );
+uint16 pc_level_penalty_mod( map_session_data* sd, e_penalty_type type, s_mob_db* mob, mob_data* md = nullptr );
 #endif
 
 bool pc_attendance_enabled();

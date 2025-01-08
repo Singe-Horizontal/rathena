@@ -34,7 +34,7 @@ int32 inter_clan_removemember_tosql(uint32 account_id, uint32 char_id){
 	}
 }
 
-std::shared_ptr<struct clan> inter_clan_fromsql(int32 clan_id){
+struct clan* inter_clan_fromsql(int32 clan_id){
 	char* data;
 	size_t len;
 	int32 i;
@@ -42,10 +42,10 @@ std::shared_ptr<struct clan> inter_clan_fromsql(int32 clan_id){
 	if( clan_id <= 0 )
 		return nullptr;
 
-	std::shared_ptr<struct clan> clan = util::umap_find( clan_db, clan_id );
+	std::shared_ptr<struct clan> clan = util::umap_find_shared( clan_db, clan_id );
 
 	if( clan ){
-		return clan;
+		return clan.get();
 	}
 
 	if( SQL_ERROR == Sql_Query(sql_handle, "SELECT `name`, `master`, `mapname`, `max_member` FROM `%s` WHERE `clan_id`='%d'", schema_config.clan_table, clan_id) ){
@@ -95,7 +95,7 @@ std::shared_ptr<struct clan> inter_clan_fromsql(int32 clan_id){
 	if (charserv_config.save_log)
 		ShowInfo("Clan loaded (%d - %s)\n", clan_id, clan->name);
 
-	return clan;
+	return clan.get();
 }
 
 int32 mapif_clan_info( int32 fd ){
@@ -107,9 +107,9 @@ int32 mapif_clan_info( int32 fd ){
 	WFIFOW( fd, 2 ) = static_cast<int16>( length );
 
 	for( const auto& pair : clan_db ){
-		std::shared_ptr<struct clan> clan = pair.second;
+		struct clan* clan = pair.second.get();
 
-		memcpy( WFIFOP( fd, offset ), clan.get(), sizeof( struct clan ) );
+		memcpy( WFIFOP( fd, offset ), clan, sizeof( struct clan ) );
 		offset += sizeof( struct clan );
 	}
 
@@ -138,7 +138,7 @@ static int32 mapif_parse_clan_message( int32 fd ){
 	return 0;
 }
 
-static void mapif_clan_refresh_onlinecount( int32 fd, std::shared_ptr<struct clan> clan ){
+static void mapif_clan_refresh_onlinecount( int32 fd, struct clan* clan ){
 	unsigned char buf[8];
 
 	WBUFW(buf,0) = 0x38A2;
@@ -149,7 +149,7 @@ static void mapif_clan_refresh_onlinecount( int32 fd, std::shared_ptr<struct cla
 }
 
 static void mapif_parse_clan_member_left( int32 fd ){
-	std::shared_ptr<struct clan> clan = util::umap_find( clan_db, static_cast<int32>( RFIFOL( fd, 2 ) ) );
+	struct clan* clan = util::umap_find( clan_db, static_cast<int32>( RFIFOL( fd, 2 ) ) );
 
 	// Unknown clan
 	if( clan == nullptr ){
@@ -164,7 +164,7 @@ static void mapif_parse_clan_member_left( int32 fd ){
 }
 
 static void mapif_parse_clan_member_joined( int32 fd ){
-	std::shared_ptr<struct clan> clan = util::umap_find( clan_db, static_cast<int32>( RFIFOL( fd, 2 ) ) );
+	struct clan* clan = util::umap_find( clan_db, static_cast<int32>( RFIFOL( fd, 2 ) ) );
 
 	// Unknown clan
 	if( clan == nullptr ){

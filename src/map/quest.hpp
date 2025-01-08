@@ -80,7 +80,7 @@ void quest_update_objective(map_session_data *sd, struct mob_data* md);
 int32 quest_update_status(map_session_data *sd, int32 quest_id, e_quest_state status);
 int32 quest_check(map_session_data *sd, int32 quest_id, e_quest_check_type type);
 
-std::shared_ptr<s_quest_db> quest_search(int32 quest_id);
+s_quest_db* quest_search(int32 quest_id);
 
 void do_init_quest(void);
 void do_final_quest(void);

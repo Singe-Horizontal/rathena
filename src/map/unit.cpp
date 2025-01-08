@@ -1232,7 +1232,7 @@ int32 unit_blown(struct block_list* bl, int32 dx, int32 dy, int32 count, enum e_
 
 			if(su) {
 				if (su->group && skill_get_unit_flag(su->group->skill_id, UF_KNOCKBACKGROUP))
-					skill_unit_move_unit_group(su->group, bl->m, dx, dy);
+					skill_unit_move_unit_group(su->group.get(), bl->m, dx, dy);
 				else
 					skill_unit_move_unit(bl, nx, ny);
 			} else
@@ -1750,7 +1750,7 @@ int32 unit_skilluse_id2(struct block_list *src, int32 target_id, uint16 skill_id
 		sc = nullptr; // Unneeded
 
 	int32 inf = skill_get_inf(skill_id);
-	std::shared_ptr<s_skill_db> skill = skill_db.find(skill_id);
+	s_skill_db* skill = skill_db.find(skill_id);
 
 	if (!skill)
 		return 0;
@@ -3669,7 +3669,7 @@ int32 unit_free(struct block_list *bl, clr_type clrtype)
 			}
 
 			if( md->guardian_data ) {
-				std::shared_ptr<guild_castle> gc = md->guardian_data->castle;
+				guild_castle* gc = md->guardian_data->castle;
 
 				if( md->guardian_data->number >= 0 && md->guardian_data->number < MAX_GUARDIANS )
 					gc->guardian[md->guardian_data->number].id = 0;

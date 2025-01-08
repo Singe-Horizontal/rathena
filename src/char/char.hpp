@@ -296,7 +296,7 @@ int32 char_search_mapserver( const std::string& map, uint32 ip, uint16 port );
 int32 char_lan_subnetcheck(uint32 ip);
 
 int32 char_count_users(void);
-void char_db_setoffline( std::shared_ptr<struct online_char_data> character, int32 server );
+void char_db_setoffline( struct online_char_data* character, int32 server );
 void char_set_char_online(int32 map_id, uint32 char_id, uint32 account_id);
 void char_set_char_offline(uint32 char_id, uint32 account_id);
 void char_set_all_offline(int32 id);

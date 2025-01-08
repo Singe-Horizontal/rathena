@@ -95,7 +95,7 @@ online_char_data::online_char_data( uint32 account_id ){
 }
 
 void char_set_charselect(uint32 account_id) {
-	std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), account_id );
+	std::shared_ptr<struct online_char_data> character = util::umap_find_shared( char_get_onlinedb(), account_id );
 
 	if( character == nullptr ){
 		character = std::make_shared<struct online_char_data>( account_id );
@@ -124,7 +124,7 @@ void char_set_char_online(int32 map_id, uint32 char_id, uint32 account_id) {
 		Sql_ShowDebug(sql_handle);
 
 	//Check to see for online conflicts
-	std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), account_id );
+	std::shared_ptr<struct online_char_data> character = util::umap_find_shared( char_get_onlinedb(), account_id );
 
 	if( character != nullptr ){
 		if( character->char_id != -1 && character->server > -1 && character->server != map_id ){
@@ -151,7 +151,7 @@ void char_set_char_online(int32 map_id, uint32 char_id, uint32 account_id) {
 		map_server[character->server].users++;
 
 	//Set char online in guild cache. If char is in memory, use the guild id on it, otherwise seek it.
-	std::shared_ptr<struct mmo_charstatus> cp = util::umap_find( char_get_chardb(), char_id );
+	struct mmo_charstatus* cp = util::umap_find( char_get_chardb(), char_id );
 
 	inter_guild_CharOnline(char_id, cp?cp->guild_id:-1);
 
@@ -167,7 +167,7 @@ void char_set_char_offline(uint32 char_id, uint32 account_id){
 	}
 	else
 	{
-		std::shared_ptr<struct mmo_charstatus> cp = util::umap_find( char_get_chardb(), char_id );
+		struct mmo_charstatus* cp = util::umap_find( char_get_chardb(), char_id );
 
 		inter_guild_CharOffline(char_id, cp?cp->guild_id:-1);
 		if (cp)
@@ -177,7 +177,7 @@ void char_set_char_offline(uint32 char_id, uint32 account_id){
 			Sql_ShowDebug(sql_handle);
 	}
 
-	std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), account_id );
+	struct online_char_data* character = util::umap_find( char_get_onlinedb(), account_id );
 
 	// We don't free yet to avoid aCalloc/aFree spamming during char change. [Skotlex]
 	if( character != nullptr ){	
@@ -207,7 +207,7 @@ void char_set_char_offline(uint32 char_id, uint32 account_id){
 	}
 }
 
-void char_db_setoffline( std::shared_ptr<struct online_char_data> character, int32 server ){
+void char_db_setoffline( struct online_char_data* character, int32 server ){
 	if (server == -1) {
 		character->char_id = -1;
 		character->server = -1;
@@ -219,7 +219,7 @@ void char_db_setoffline( std::shared_ptr<struct online_char_data> character, int
 		character->server = -2; //In some map server that we aren't connected to.
 }
 
-void char_db_kickoffline( std::shared_ptr<struct online_char_data> character, int32 server_id ){
+void char_db_kickoffline( struct online_char_data* character, int32 server_id ){
 	if (server_id > -1 && character->server != server_id)
 		return;
 
@@ -237,7 +237,7 @@ void char_set_all_offline(int32 id){
 		ShowNotice("Sending users of map-server %d offline.\n",id);
 
 	for( const auto& pair : char_get_onlinedb() ){
-		char_db_kickoffline( pair.second, id );
+		char_db_kickoffline( pair.second.get(), id );
 	}
 
 	if (id >= 0 || !chlogif_isconnected())
@@ -264,7 +264,7 @@ int32 char_mmo_char_tosql(uint32 char_id, struct mmo_charstatus* p){
 
 	if (char_id!=p->char_id) return 0;
 
-	std::shared_ptr<struct mmo_charstatus> cp = util::umap_find( char_get_chardb(), char_id );
+	std::shared_ptr<struct mmo_charstatus> cp = util::umap_find_shared( char_get_chardb(), char_id );
 
 	if( cp == nullptr ){
 		cp = std::make_shared<struct mmo_charstatus>();
@@ -1221,7 +1221,7 @@ int32 char_mmo_char_fromsql(uint32 char_id, struct mmo_charstatus* p, bool load_
 	if (charserv_config.save_log)
 		ShowInfo("Loaded char (%d - %s): %s\n", char_id, p->name, StringBuf_Value(&msg_buf)); //ok. all data load successfully!
 
-	std::shared_ptr<struct mmo_charstatus> cp = util::umap_find( char_get_chardb(), char_id );
+	std::shared_ptr<struct mmo_charstatus> cp = util::umap_find_shared( char_get_chardb(), char_id );
 
 	if( cp == nullptr ){
 		cp = std::make_shared<struct mmo_charstatus>();
@@ -1956,7 +1956,7 @@ void char_set_session_flag_(int32 account_id, int32 val, bool set) {
 }
 
 void char_auth_ok(int32 fd, struct char_session_data *sd) {
-	std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), sd->account_id );
+	struct online_char_data* character = util::umap_find( char_get_onlinedb(), sd->account_id );
 
 	// Check if character is not online already. [Skotlex]
 	if( character != nullptr ){
@@ -2175,7 +2175,7 @@ bool char_pincode_decrypt( uint32 userSeed, char* pin ){
 //replies/disconnect the player we tried to kick. [Skotlex]
 //------------------------------------------------
 TIMER_FUNC(char_chardb_waiting_disconnect){
-	std::shared_ptr<struct online_char_data> character = util::umap_find( char_get_onlinedb(), static_cast<uint32>( id ) );
+	struct online_char_data* character = util::umap_find( char_get_onlinedb(), static_cast<uint32>( id ) );
 
 	// Mark it offline due to timeout.
 	if( character != nullptr && character->waiting_disconnect == tid ){	
@@ -2187,7 +2187,7 @@ TIMER_FUNC(char_chardb_waiting_disconnect){
 
 TIMER_FUNC(char_online_data_cleanup){
 	for( auto it = char_get_onlinedb().begin(); it != char_get_onlinedb().end(); ){
-		std::shared_ptr<struct online_char_data> character = it->second;
+		struct online_char_data* character = it->second.get();
 
 		// Character still connected
 		if( character->fd != -1 ){

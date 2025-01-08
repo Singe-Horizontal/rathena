@@ -187,7 +187,7 @@ struct pet_data {
 	struct view_data vd;
 	struct s_pet pet;
 	struct status_data status;
-	std::shared_ptr<s_mob_db> db;
+	s_mob_db* db;
 	int32 pet_hungry_timer;
 	int32 target_id;
 	struct {
@@ -207,7 +207,7 @@ struct pet_data {
 	int32 masterteleport_timer;
 	map_session_data *master;
 
-	std::shared_ptr<s_pet_db> get_pet_db() {
+	s_pet_db* get_pet_db() {
 		return pet_db.find(this->pet.class_);
 	}
 
@@ -230,7 +230,7 @@ void pet_set_intimate(struct pet_data *pd, int32 value);
 int32 pet_target_check(struct pet_data *pd,struct block_list *bl,int32 type);
 void pet_unlocktarget(struct pet_data *pd);
 int32 pet_sc_check(map_session_data *sd, int32 type); //Skotlex
-std::shared_ptr<s_pet_db> pet_db_search(int32 key, enum e_pet_itemtype type);
+s_pet_db* pet_db_search(int32 key, enum e_pet_itemtype type);
 int32 pet_hungry_timer_delete(struct pet_data *pd);
 bool pet_data_init(map_session_data *sd, struct s_pet *pet);
 bool pet_return_egg( map_session_data *sd, struct pet_data *pd );
