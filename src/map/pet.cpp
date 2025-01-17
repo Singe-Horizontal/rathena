@@ -432,7 +432,7 @@ uint64 PetDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto evolution = util::umap_find_shared( pet->evolution_data, targetId );
+			std::shared_ptr<s_pet_evo_data> evolution = util::umap_find_shared( pet->evolution_data, targetId );
 			bool evolution_exists = evolution != nullptr;
 
 			if( !evolution_exists ){
@@ -1225,7 +1225,7 @@ void pet_catch_process_start( map_session_data& sd, t_itemid item_id, e_pet_catc
 		clif_displaymessage(sd.fd, msg_txt(&sd, 669)); // You can't catch any pet on this map.
 		return;
 	}
-	auto process = util::umap_find_shared( pet_catchprocesses, sd.status.char_id );
+	std::shared_ptr<s_pet_catch_process> process = util::umap_find_shared( pet_catchprocesses, sd.status.char_id );
 
 	if( process == nullptr ){
 		process = std::make_shared<s_pet_catch_process>();
@@ -1962,7 +1962,7 @@ static TIMER_FUNC(pet_delay_item_drop){
 		return 0;
 	}
 
-	for( auto& ditem : list->items ){
+	for (std::shared_ptr<s_item_drop>& ditem : list->items ){
 		map_addflooritem(&ditem->item_data,ditem->item_data.amount,
 			list->m,list->x,list->y,
 			list->first_charid,list->second_charid,list->third_charid,4,0);
@@ -2403,7 +2403,7 @@ bool pet_addautobonus(std::vector<std::shared_ptr<s_petautobonus>> &bonus, const
 	if (rate < -10000 || rate > 10000)
 		ShowWarning("pet_addautobonus: Bonus rate %d exceeds -10000~10000 range, capping.\n", rate);
 
-	auto entry = std::make_shared<s_petautobonus>();
+	std::shared_ptr<s_petautobonus> entry = std::make_shared<s_petautobonus>();
 
 	entry->rate = cap_value(rate, -10000, 10000);
 	entry->duration = dur;
@@ -2470,7 +2470,7 @@ TIMER_FUNC(pet_endautobonus) {
 	nullpo_ret(sd);
 	nullpo_ret(bonus);
 
-	for (auto& autobonus : *bonus){
+	for (std::shared_ptr<s_petautobonus>& autobonus : *bonus){
 		if (autobonus->timer == tid) {
 			autobonus->timer = INVALID_TIMER;
 			break;

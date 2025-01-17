@@ -109,7 +109,7 @@ uint64 AttendanceDatabase::parseBodyNode(const ryml::NodeRef& node){
 		return 0;
 	}
 
-	auto attendance_period = this->find_shared( start );
+	std::shared_ptr<s_attendance_period> attendance_period = this->find_shared( start );
 	bool exists = attendance_period != nullptr;
 
 	if( !exists ){
@@ -194,7 +194,7 @@ uint64 AttendanceDatabase::parseBodyNode(const ryml::NodeRef& node){
 
 			day -= 1;
 
-			auto reward = util::map_find_shared( attendance_period->rewards, day );
+			std::shared_ptr<s_attendance_reward> reward = util::map_find_shared( attendance_period->rewards, day );
 			bool reward_exists = reward != nullptr;
 
 			if( !reward_exists ){
@@ -494,7 +494,7 @@ void pc_reputation_generate() {
 	auto reputeGroupInfo = nlohmann::json::object();
 	for (const auto& pair : reputationgroup_db) {
 		auto id = pair.first;
-		auto group = pair.second.get();
+		std::shared_ptr<s_skill_unit_group> group = pair.second.get();
 		nlohmann::json node;
 
 		node["ID"] = group->script_name;
@@ -544,7 +544,7 @@ uint64 PenaltyDatabase::parseBodyNode(const ryml::NodeRef& node){
 
 	e_penalty_type type = static_cast<e_penalty_type>( constant_value );
 
-	auto penalty = this->find_shared( type );
+	std::shared_ptr<s_penalty> penalty = this->find_shared( type );
 	bool exists = penalty != nullptr;
 
 	if( !exists ){
@@ -3308,7 +3308,7 @@ s_autobonus::~s_autobonus(){
  */
 bool pc_addautobonus(std::vector<std::shared_ptr<s_autobonus>>& bonus, const char *script, short rate, uint32 dur, uint16 flag, const char *other_script, uint32 pos, bool onskill){
 	// Check if the same bonus already exists
-	for( auto& autobonus : bonus ){
+	for (std::shared_ptr<s_autobonus>& autobonus : bonus ){
 		// Compare based on position and bonus script
 		if( autobonus->pos == pos && strcmp( script, autobonus->bonus_script ) == 0 ){
 			return false;
@@ -8598,7 +8598,7 @@ int32 pc_setstat(map_session_data* sd, int32 type, int32 val)
  * @return Total number of status points at specific base level.
  */
 uint32 PlayerStatPointDatabase::get_table_point(uint16 level) {
-	auto entry = this->find_shared( level );
+	std::shared_ptr<s_statpoint_entry> entry = this->find_shared( level );
 
 	if( entry != nullptr ){
 		return entry->statpoints;
@@ -8630,7 +8630,7 @@ uint32 PlayerStatPointDatabase::pc_gets_status_point(uint16 level) {
 * @return Total number of trait points at specific base level.
 */
 uint32 PlayerStatPointDatabase::get_trait_table_point(uint16 level) {
-	auto entry = this->find_shared( level );
+	std::shared_ptr<s_statpoint_entry> entry = this->find_shared( level );
 
 	if( entry != nullptr ){
 		return entry->traitpoints;
@@ -13262,7 +13262,7 @@ int32 pc_split_atoui(char* str, uint32* val, char sep, int32 max)
 
 
 s_skill_tree_entry* SkillTreeDatabase::get_skill_data(int32 class_, uint16 skill_id) {
-	auto tree = this->find_shared(class_);
+	std::shared_ptr<s_skill_tree> tree = this->find_shared(class_);
 
 	if (tree != nullptr)
 		return util::umap_find(tree->skills, skill_id);
@@ -13502,7 +13502,7 @@ void SkillTreeDatabase::loadingFinished() {
 		uint32 joblv_max = job_db.get_maxJobLv(data.first);
 
 		for (const auto &inherit_job : data.second->inherit_job) {
-			auto tree = this->find_shared(inherit_job);
+			std::shared_ptr<s_skill_tree> tree = this->find_shared(inherit_job);
 			if (tree == nullptr || tree->skills.empty())
 				continue;
 
@@ -13640,7 +13640,7 @@ uint64 JobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				return 0;
 			}
 
-			auto job = job_db.find_shared(static_cast<uint16>(job_id));
+			std::shared_ptr<s_job_info> job = job_db.find_shared(static_cast<uint16>(job_id));
 			bool exists = job != nullptr;
 
 			if (!exists) {
@@ -14174,7 +14174,7 @@ uint64 PlayerStatPointDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	auto entry = this->find_shared( level );
+	std::shared_ptr<s_statpoint_entry> entry = this->find_shared( level );
 	bool exists = entry != nullptr;
 
 	if( !exists ){
@@ -14222,7 +14222,7 @@ uint64 PlayerStatPointDatabase::parseBodyNode(const ryml::NodeRef& node) {
  */
 void PlayerStatPointDatabase::loadingFinished(){
 	const uint16 trait_start_level = 200;
-	auto level_one = this->find_shared( 1 );
+	std::shared_ptr<s_statpoint_entry> level_one = this->find_shared( 1 );
 
 	if( level_one == nullptr ){
 		if( battle_config.use_statpoint_table ){
@@ -14248,7 +14248,7 @@ void PlayerStatPointDatabase::loadingFinished(){
 
 	std::shared_ptr<s_statpoint_entry> last_level = level_one;
 	for( uint16 level = 2; level <= MAX_LEVEL; level++ ){
-		auto entry = this->find_shared( level );
+		std::shared_ptr<s_statpoint_entry> entry = this->find_shared( level );
 		bool exists = entry != nullptr;
 
 		if( !exists ){
@@ -15555,7 +15555,7 @@ TIMER_FUNC(pc_macro_detector_timeout) {
 void pc_macro_detector_process_answer(map_session_data &sd, const char captcha_answer[CAPTCHA_ANSWER_SIZE]) {
 	nullpo_retv(captcha_answer);
 
-	const auto cd = sd.macro_detect.cd;
+	std::shared_ptr<s_captcha_data> cd = sd.macro_detect.cd;
 
 	// Has no captcha request
 	if (cd == nullptr) {
@@ -15659,7 +15659,7 @@ void pc_macro_reporter_process(map_session_data &sd, int32 reporter_account_id) 
 		return;
 
 	// Pick a random image from the database.
-	const auto cd = captcha_db.random();
+	std::shared_ptr<s_captcha_data> cd = captcha_db.random();
 
 	// Set macro detection data.
 	sd.macro_detect.cd = cd;
@@ -15732,7 +15732,7 @@ uint64 CaptchaDatabase::parseBodyNode(const ryml::NodeRef &node) {
 	if (!this->asUInt16(node, "Id", index))
 		return 0;
 
-	auto cd = captcha_db.find_shared(index);
+	std::shared_ptr<s_captcha_data> cd = captcha_db.find_shared(index);
 	bool exists = cd != nullptr;
 
 	if (!exists) {

@@ -17183,7 +17183,7 @@ void clif_cashshop_list( map_session_data& sd ){
 		p->count = 0;
 		p->tabNum = tab->tab;
 
-		for( auto& item : tab->items ){
+		for (std::shared_ptr<s_cash_item>& item : tab->items ){
 			p->items[p->count].itemId = client_nameid( item->nameid );
 			p->items[p->count].price = item->price;
 #ifdef ENABLE_CASHSHOP_PREVIEW_PATCH
@@ -23122,7 +23122,7 @@ void clif_parse_barter_buy( int32 fd, map_session_data* sd ){
 
 	// Make sure each shop index and target item id is only used once
 	for( int32 i = 0; i < entries; i++ ){
-		auto item = util::map_find_shared( barter->items, (uint16)p->list[i].shopIndex );
+		std::shared_ptr<s_npc_barter_item> item = util::map_find_shared( barter->items, (uint16)p->list[i].shopIndex );
 
 		// Invalid shop index
 		if( item == nullptr ){
@@ -23288,7 +23288,7 @@ void clif_parse_barter_extended_buy( int32 fd, map_session_data* sd ){
 
 	// Make sure each shop index and target item id is only used once
 	for( int32 i = 0; i < entries; i++ ){
-		auto item = util::map_find_shared( barter->items, (uint16)p->list[i].shopIndex );
+		std::shared_ptr<s_npc_barter_item> item = util::map_find_shared( barter->items, (uint16)p->list[i].shopIndex );
 
 		// Invalid shop index
 		if( item == nullptr ){

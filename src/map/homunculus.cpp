@@ -76,7 +76,7 @@ uint64 HomExpDatabase::parseBodyNode(const ryml::NodeRef& node) {
 		return 0;
 	}
 
-	auto homun_exp = this->find_shared(level);
+	std::shared_ptr<s_homun_exp_db> homun_exp = this->find_shared(level);
 	bool exists = homun_exp != nullptr;
 
 	if (!exists) {

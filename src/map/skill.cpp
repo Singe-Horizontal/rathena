@@ -10626,7 +10626,7 @@ int32 skill_castend_nodamage_id (struct block_list *src, struct block_list *bl, 
 			int8 dy[9] = { 0, 0, 1,-1, 1,-1,-1, 1, 0};
 			uint8 j = 0, calls = 0, called = 0;
 			// i don't know if it actually summons in a circle, but oh well. ;P
-			auto g = sd?sd->guild.get():guild_search(status_get_guild_id(src));
+			MapGuild* g = sd?sd->guild.get():guild_search(status_get_guild_id(src));
 			if (!g)
 				break;
 
@@ -14713,7 +14713,7 @@ int32 skill_castend_pos2(struct block_list* src, int32 x, int32 y, uint16 skill_
 		break;
 
 	case SC_FEINTBOMB: {
-			auto group = skill_unitsetting(src,skill_id,skill_lv,x,y,0); // Set bomb on current Position
+			std::shared_ptr<s_skill_unit_group> group = skill_unitsetting(src,skill_id,skill_lv,x,y,0); // Set bomb on current Position
 
 			if( group == nullptr || group->unit == nullptr ) {
 				if (sd)
@@ -20530,7 +20530,7 @@ s_skill_unit_group* skill_locate_element_field(struct block_list *bl)
 	if (ud == nullptr)
 		return nullptr;
 
-	for (const auto& su : ud->skillunits) {
+	for (const std::shared_ptr<s_skill_unit_group>& su : ud->skillunits) {
 		switch (su->skill_id) {
 			case SA_DELUGE:
 			case SA_VOLCANO:

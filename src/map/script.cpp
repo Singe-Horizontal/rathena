@@ -4630,7 +4630,7 @@ void script_add_petautobonus(const std::string &autobonus) {
 		script_code *script = parse_script(autobonus.c_str(), "petautobonus", 0, 0);
 
 		if (script != nullptr) {
-			auto bonus = std::make_shared<s_pet_autobonus_wrapper>();
+			std::shared_ptr<s_pet_autobonus_wrapper> bonus = std::make_shared<s_pet_autobonus_wrapper>();
 
 			bonus->script = script;
 

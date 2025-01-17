@@ -493,7 +493,7 @@ bool vending_searchall(map_session_data* sd, const struct s_search_store_search*
 			return false;
 		}
 
-		auto ssitem = std::make_shared<s_search_store_info_item>();
+		std::shared_ptr<s_search_store_info_item> ssitem = std::make_shared<s_search_store_info_item>();
 
 		ssitem->store_id = sd->vender_id;
 		ssitem->account_id = sd->status.account_id;

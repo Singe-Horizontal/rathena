@@ -3603,7 +3603,7 @@ void intif_parse_StorageInfo_recv(int32 fd) {
 
 	for( int32 i = 0; i < count; i++ ){
 		struct s_storage_table* ptr = (struct s_storage_table*)RFIFOP( fd, 4 + size * i );
-		auto storage = std::make_shared<struct s_storage_table>();
+		std::shared_ptr<struct s_storage_table> storage = std::make_shared<struct s_storage_table>();
 
 		safestrncpy( storage->name, ptr->name, sizeof( storage->name ) );
 		safestrncpy( storage->table, ptr->table, sizeof( storage->table ) );

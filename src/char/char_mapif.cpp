@@ -376,7 +376,7 @@ int32 chmapif_parse_regmapuser(int32 fd, int32 id){
 			uint32 aid = RFIFOL(fd,6+i*8);
 			uint32 cid = RFIFOL(fd,6+i*8+4);
 
-			auto character = util::umap_find_shared( char_get_onlinedb(), aid );
+			std::shared_ptr<online_char_data> character = util::umap_find_shared( char_get_onlinedb(), aid );
 
 			if( character != nullptr ){
 				if( character->server > -1 && character->server != id ){
@@ -478,7 +478,7 @@ int32 chmapif_parse_authok(int32 fd){
 			chmapif_charselres(fd,account_id,0);
 		}else{
 			// create temporary auth entry
-			auto node = std::make_shared<struct auth_node>();
+			std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
 
 			node->account_id = account_id;
 			node->char_id = 0;
@@ -644,7 +644,7 @@ int32 chmapif_parse_reqchangemapserv(int32 fd){
 			char_data->sex = RFIFOB( fd, offset + 10 );
 
 			// create temporary auth entry
-			auto node = std::make_shared<struct auth_node>();
+			std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
 
 			node->account_id = aid;
 			node->char_id = char_id;
@@ -658,7 +658,7 @@ int32 chmapif_parse_reqchangemapserv(int32 fd){
 
 			char_get_authdb()[node->account_id] = node;
 
-			auto data = util::umap_find_shared( char_get_onlinedb(), aid );
+			std::shared_ptr<online_char_data> data = util::umap_find_shared( char_get_onlinedb(), aid );
 
 			if( data == nullptr ){
 				data = std::make_shared<struct online_char_data>( aid );

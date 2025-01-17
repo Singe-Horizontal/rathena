@@ -1076,7 +1076,7 @@ uint64 ElementalDatabase::parseBodyNode(const ryml::NodeRef& node) {
 
 			e_elemental_skillmode mode = static_cast<e_elemental_skillmode>(constant);
 
-			auto entry = util::umap_find_shared(elemental->skill, mode);
+			std::shared_ptr<s_elemental_skill> entry = util::umap_find_shared(elemental->skill, mode);
 			bool mode_exists = entry != nullptr;
 
 			if (!mode_exists)

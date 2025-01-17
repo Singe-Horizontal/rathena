@@ -904,7 +904,7 @@ uint64 InterServerDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	auto storage_table = this->find_shared( id );
+	std::shared_ptr<s_storage_table> storage_table = this->find_shared( id );
 	bool existing = storage_table != nullptr;
 
 	if( !existing ){
@@ -1218,7 +1218,7 @@ int32 mapif_parse_WisRequest(int32 fd)
 			// Whether the failure of previous wisp/page transmission (timeout)
 			check_ttl_wisdata();
 
-			auto wd = std::make_shared<struct WisData>();
+			std::shared_ptr<struct WisData> wd = std::make_shared<struct WisData>();
 
 			wd->id = ++wisid;
 			wd->fd = fd;

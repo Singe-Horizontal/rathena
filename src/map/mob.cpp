@@ -2224,7 +2224,7 @@ void mob_setdropitem_option( item& item, s_mob_drop& mobdrop ){
  * Initializes the delay drop structure for mob-dropped items.
  *------------------------------------------*/
 static std::shared_ptr<s_item_drop> mob_setdropitem(s_mob_drop& mobdrop, int32 qty, unsigned short mob_id ){
-	auto drop = std::make_shared<s_item_drop>();
+	std::shared_ptr<s_item_drop> drop = std::make_shared<s_item_drop>();
 
 	drop->item_data = { 0 };
 	drop->item_data.nameid = mobdrop.nameid;
@@ -2240,7 +2240,7 @@ static std::shared_ptr<s_item_drop> mob_setdropitem(s_mob_drop& mobdrop, int32 q
  * Initializes the delay drop structure for mob-looted items.
  *------------------------------------------*/
 static std::shared_ptr<s_item_drop> mob_setlootitem( s_mob_lootitem& item, unsigned short mob_id ){
-	auto drop = std::make_shared<s_item_drop>();
+	std::shared_ptr<s_item_drop> drop = std::make_shared<s_item_drop>();
 
 	memcpy( &drop->item_data, &item, sizeof( struct item ) );
 
@@ -2267,7 +2267,7 @@ void mob_process_drop_list(s_item_drop_list* list, bool loot)
 	if (loot)
 		dir = DIR_NORTH;
 
-	for (auto& ditem : list->items) {
+	for (std::shared_ptr<s_item_drop>& ditem : list->items) {
 		map_addflooritem(&ditem->item_data, ditem->item_data.amount,
 			list->m, list->x, list->y,
 			list->first_charid, list->second_charid, list->third_charid, 4, ditem->mob_id, !loot, dir, BL_CHAR|BL_PET);
@@ -2906,7 +2906,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 
 	// Looted items have an independent drop position and also don't show special effects when dropped
 	// So we need put them into a separate list
-	auto lootlist = std::make_shared<s_item_drop_list>();
+	std::shared_ptr<s_item_drop_list> lootlist = std::make_shared<s_item_drop_list>();
 	lootlist->m = md->bl.m;
 	lootlist->x = md->bl.x;
 	lootlist->y = md->bl.y;
@@ -2917,7 +2917,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 	// Process items looted by the mob
 	if (md->lootitems) {
 		for (i = 0; i < md->lootitem_count; i++) {
-			auto ditem = mob_setlootitem(md->lootitems[i], md->mob_id);
+			std::shared_ptr<s_item_drop> ditem = mob_setlootitem(md->lootitems[i], md->mob_id);
 			mob_item_drop(md, lootlist.get(), ditem, 1, 10000, homkillonly || merckillonly);
 		}
 	}
@@ -2978,7 +2978,7 @@ int32 mob_dead(struct mob_data *md, struct block_list *src, int32 type)
 						mobdrop.rate = entry->adj_rate * drop_rate / 10000;
 					}
 
-					auto ditem = mob_setdropitem(mobdrop, 1, md->mob_id);
+					std::shared_ptr<s_item_drop> ditem = mob_setdropitem(mobdrop, 1, md->mob_id);
 
 					mob_item_drop(md, dlist.get(), ditem, 0, mobdrop.rate, homkillonly || merckillonly);
 				}
@@ -5097,7 +5097,7 @@ uint64 MobDatabase::parseBodyNode(const ryml::NodeRef& node) {
 }
 
 void MobDatabase::loadingFinished() {
-	for (auto& mobdata : *this) {
+	for (const std::pair<uint32,std::shared_ptr<s_mob_db>>& mobdata : *this) {
 		s_mob_db* mob = mobdata.second.get();
 
 		switch (mob->status.class_) {
@@ -5845,7 +5845,7 @@ uint64 MobSummonDatabase::parseBodyNode(const ryml::NodeRef& node) {
 				continue;
 			}
 
-			auto entry = util::umap_find_shared(summon->list, mob_id);
+			std::shared_ptr<s_randomsummon_entry> entry = util::umap_find_shared(summon->list, mob_id);
 
 			if (entry == nullptr) {
 				entry = std::make_shared<s_randomsummon_entry>();
@@ -6020,7 +6020,7 @@ static bool mob_parse_row_mobskilldb( char** str, size_t columns, size_t current
 		return false;
 
 	// Looking for existing entry
-	auto skill = util::umap_find_shared(mob_skill_db, mob_id);
+	std::shared_ptr<s_mob_skill_db> skill = util::umap_find_shared(mob_skill_db, mob_id);
 
 	if (skill == nullptr)
 		skill = std::make_shared<s_mob_skill_db>();
@@ -6582,7 +6582,7 @@ bool MapDropDatabase::parseDrop( const ryml::NodeRef& node, std::unordered_map<u
 		return false;
 	}
 
-	auto drop = util::umap_find_shared( drops, index );
+	std::shared_ptr<s_mob_drop> drop = util::umap_find_shared( drops, index );
 	bool exists = drop != nullptr;
 
 	if( !exists ){

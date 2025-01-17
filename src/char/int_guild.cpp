@@ -343,7 +343,7 @@ CharGuild* inter_guild_fromsql( int32 guild_id ){
 		return nullptr;
 	}
 
-	auto g = util::umap_find_shared( guild_db, guild_id );
+	std::shared_ptr<CharGuild> g = util::umap_find_shared( guild_db, guild_id );
 
 	if( g != nullptr ){
 		return g.get();
@@ -590,7 +590,7 @@ struct guild_castle* inter_guildcastle_fromsql( int32 castle_id ){
 	int32 i;
 	StringBuf buf;
 
-	auto gc = util::umap_find_shared( castle_db, castle_id );
+	std::shared_ptr<guild_castle> gc = util::umap_find_shared( castle_db, castle_id );
 
 	if( gc != nullptr ){
 		return gc.get();
@@ -813,7 +813,7 @@ void inter_guild_sql_init(void) {
 void inter_guild_sql_final(void)
 {
 	for( const auto& pair : guild_db ){
-		auto guild = pair.second.get();
+		CharGuild* guild = pair.second.get();
 
 		if( guild->save_flag&GS_MASK ){
 			inter_guild_tosql( guild->guild, guild->save_flag&GS_MASK );

@@ -204,7 +204,7 @@ struct party_data* inter_party_fromsql( int32 party_id ){
 		return nullptr;
 
 	//Load from memory
-	auto p = util::umap_find_shared( party_db, party_id );
+	std::shared_ptr<party_data> p = util::umap_find_shared( party_db, party_id );
 
 	if( p != nullptr ){
 		return p.get();
@@ -532,7 +532,7 @@ int32 mapif_parse_CreateParty(int32 fd, char *name, int32 item, int32 item2, str
 		}
 	}
 
-	auto p = std::make_shared<struct party_data>();
+	std::shared_ptr<party_data> p = std::make_shared<party_data>();
 
 	safestrncpy(p->party.name,name,NAME_LENGTH);
 	p->party.exp=0;

@@ -2091,7 +2091,7 @@ bool battle_can_hit_gvg_target(struct block_list *src,struct block_list *bl,uint
 		if ((status_bl_has_mode(bl,MD_SKILLIMMUNE) || (class_ == MOBID_EMPERIUM && !skill_get_inf2(skill_id, INF2_TARGETEMPERIUM))) && flag&BF_SKILL) //Skill immunity.
 			return false;
 		if( src->type != BL_MOB || mob_is_clone( ((struct mob_data*)src)->mob_id ) ){
-			auto g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild_search_shared(status_get_guild_id(src));
+			std::shared_ptr<MapGuild> g = src->type == BL_PC ? ((TBL_PC *)src)->guild : guild_search_shared(status_get_guild_id(src));
 
 			if (class_ == MOBID_EMPERIUM && (!g || guild_checkskill(g->guild, GD_APPROVAL) <= 0 ))
 				return false;

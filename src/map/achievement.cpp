@@ -111,7 +111,7 @@ uint64 AchievementDatabase::parseBodyNode(const ryml::NodeRef& node){
 				continue;
 			}
 
-			auto target = rathena::util::map_find_shared( achievement->targets, targetId );
+			std::shared_ptr<achievement_target> target = rathena::util::map_find_shared( achievement->targets, targetId );
 			bool targetExists = target != nullptr;
 
 			if( !targetExists ){
@@ -408,7 +408,7 @@ uint64 AchievementLevelDatabase::parseBodyNode( const ryml::NodeRef& node ){
 	// Make it zero based
 	level -= 1;
 
-	auto ptr = this->find_shared( level );
+	std::shared_ptr<s_achievement_level> ptr = this->find_shared( level );
 	bool exists = ptr != nullptr;
 
 	if( !exists ){

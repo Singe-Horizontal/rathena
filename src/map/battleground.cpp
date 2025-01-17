@@ -409,8 +409,8 @@ uint64 BattlegroundDatabase::parseBodyNode(const ryml::NodeRef& node) {
  */
 s_battleground_type* bg_search_name(const char *name)
 {
-	for (const auto &entry : battleground_db) {
-		auto& bg = entry.second;
+	for (auto &entry : battleground_db) {
+		std::shared_ptr<s_battleground_type>& bg = entry.second;
 
 		if (!stricmp(bg->name.c_str(), name))
 			return bg.get();

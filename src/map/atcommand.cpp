@@ -133,7 +133,7 @@ uint64 AtcommandAliasDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	auto info = this->find_shared( command );
+	std::shared_ptr<s_atcommand_alias_info> info = this->find_shared( command );
 	bool exists = info != nullptr;
 
 	if( !exists ){

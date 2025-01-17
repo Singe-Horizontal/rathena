@@ -662,7 +662,7 @@ int32 instance_create(int32 owner_id, const char *name, e_instance_mode mode) {
 		return -4;
 
 	int32 instance_id = instance_count++;
-	auto entry = std::make_shared<s_instance_data>();
+	std::shared_ptr<s_instance_data> entry = std::make_shared<s_instance_data>();
 
 	entry->id = db->id;
 	entry->owner_id = owner_id;

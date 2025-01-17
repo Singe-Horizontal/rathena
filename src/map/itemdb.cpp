@@ -52,7 +52,7 @@ uint64 ItemDatabase::parseBodyNode(const ryml::NodeRef& node) {
 	if (!this->asUInt32(node, "Id", nameid))
 		return 0;
 
-	auto item = this->find_shared(nameid);
+	std::shared_ptr<item_data> item = this->find_shared(nameid);
 	bool exists = item != nullptr;
 
 	if (!exists) {
@@ -1201,7 +1201,7 @@ void ItemDatabase::loadingFinished(){
 
 	if( !this->exists( ITEMID_DUMMY ) ){
 		// Create dummy item
-		auto dummy_item = std::make_shared<item_data>();
+		std::shared_ptr<item_data> dummy_item = std::make_shared<item_data>();
 
 		dummy_item->nameid = ITEMID_DUMMY;
 		dummy_item->weight = 1;
@@ -1587,7 +1587,7 @@ uint64 LaphineSynthesisDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto requirement = util::umap_find_shared( entry->requirements, id->nameid );
+			std::shared_ptr<s_laphine_synthesis_requirement> requirement = util::umap_find_shared( entry->requirements, id->nameid );
 			bool requirement_exists = requirement != nullptr;
 
 			if( !requirement_exists ){
@@ -1939,7 +1939,7 @@ uint64 ItemReformDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				base_itemid = id->nameid;
 			}
 
-			auto base = util::umap_find_shared( entry->base_items, base_itemid );
+			std::shared_ptr<s_item_reform_base> base = util::umap_find_shared( entry->base_items, base_itemid );
 			bool base_exists = base != nullptr;
 
 			if( !base_exists ){
@@ -2404,7 +2404,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto enchant_slot = util::umap_find_shared( enchant->slots, slot );
+			std::shared_ptr<s_item_enchant_slot> enchant_slot = util::umap_find_shared( enchant->slots, slot );
 			bool slot_exists = enchant_slot != nullptr;
 
 			if( !slot_exists ){
@@ -2489,7 +2489,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					auto enchants_for_enchantgrade = util::umap_find_shared( enchant_slot->normal.enchants, enchantgrade );
+					std::shared_ptr<s_item_enchant_normal> enchants_for_enchantgrade = util::umap_find_shared( enchant_slot->normal.enchants, enchantgrade );
 					bool enchants_for_enchantgrade_exists = enchants_for_enchantgrade != nullptr;
 
 					if( !enchants_for_enchantgrade_exists ){
@@ -2512,7 +2512,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 								return 0;
 							}
 
-							auto enchant = util::umap_find_shared( enchants_for_enchantgrade->enchants, enchant_item->nameid );
+							std::shared_ptr<s_item_enchant_normal_sub> enchant = util::umap_find_shared( enchants_for_enchantgrade->enchants, enchant_item->nameid );
 							bool enchant_exists = enchant != nullptr;
 
 							if( !enchant_exists ){
@@ -2561,7 +2561,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					auto enchant = util::umap_find_shared( enchant_slot->perfect.enchants, enchant_item->nameid );
+					std::shared_ptr<s_item_enchant_perfect> enchant = util::umap_find_shared( enchant_slot->perfect.enchants, enchant_item->nameid );
 					bool enchant_exists = enchant != nullptr;
 
 					if( !enchant_exists ){
@@ -2613,7 +2613,7 @@ uint64 ItemEnchantDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					auto enchant_upgrade = util::umap_find_shared( enchant_slot->upgrade.enchants, enchant_item->nameid );
+					std::shared_ptr<s_item_enchant_upgrade> enchant_upgrade = util::umap_find_shared( enchant_slot->upgrade.enchants, enchant_item->nameid );
 					bool enchant_upgrade_exists = enchant_upgrade != nullptr;
 
 					if( !enchant_upgrade_exists ){
@@ -2730,7 +2730,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto group = util::umap_find_shared( entry->groups, groupIndex );
+			std::shared_ptr<s_item_package_group> group = util::umap_find_shared( entry->groups, groupIndex );
 			bool group_exists = group != nullptr;
 
 			if( !group_exists ){
@@ -2756,7 +2756,7 @@ uint64 ItemPackageDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					return 0;
 				}
 
-				auto package_item = util::umap_find_shared( group->items, id->nameid );
+				std::shared_ptr<s_item_package_item> package_item = util::umap_find_shared( group->items, id->nameid );
 				bool package_item_exists = package_item != nullptr;
 
 				if( !package_item_exists ){
@@ -3349,7 +3349,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 			if (!this->asUInt16(subit, "SubGroup", subgroup))
 				continue;
 
-			auto random = util::umap_find_shared(group->random, subgroup);
+			std::shared_ptr<s_item_group_random> random = util::umap_find_shared(group->random, subgroup);
 			bool random_exists = random != nullptr;
 
 			if (!random_exists) {
@@ -3398,7 +3398,7 @@ uint64 ItemGroupDatabase::parseBodyNode(const ryml::NodeRef& node) {
 					continue;
 				}
 
-				auto entry = util::umap_find_shared(random->data, index);
+				std::shared_ptr<s_item_group_entry> entry = util::umap_find_shared(random->data, index);
 				bool entry_exists = entry != nullptr;
 
 				if (!entry_exists) {
@@ -4581,7 +4581,7 @@ void s_random_opt_group::apply( struct item& item ){
 				continue;
 			}
 
-			auto option = util::vector_random( this->random_options );
+			std::shared_ptr<s_random_opt_group_entry> option = util::vector_random( this->random_options );
 
 			if ( rnd_chance<uint16>(option->chance, 10000) ){
 				apply_sub( item.option[i], option.get() );

@@ -146,7 +146,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto levels_info = util::umap_find_shared( info->levels, level );
+			std::shared_ptr<s_refine_levels_info> levels_info = util::umap_find_shared( info->levels, level );
 			bool levels_exists = levels_info != nullptr;
 
 			if( !levels_exists ){
@@ -171,7 +171,7 @@ uint64 RefineDatabase::parseBodyNode( const ryml::NodeRef& node ){
 					// Database is 1 based, code is 0 based
 					refine_level -= 1;
 
-					auto level_info = util::umap_find_shared( levels_info->levels, refine_level );
+					std::shared_ptr<s_refine_level_info> level_info = util::umap_find_shared( levels_info->levels, refine_level );
 					bool level_exists = level_info != nullptr;
 
 					if( !level_exists ){
@@ -413,7 +413,7 @@ s_refine_level_info* RefineDatabase::findLevelInfoSub( const struct item_data& d
 		return nullptr;
 	}
 
-	auto info = this->find_shared( type );
+	std::shared_ptr<s_refine_info> info = this->find_shared( type );
 
 	if( info == nullptr ){
 		return nullptr;
@@ -600,7 +600,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		return 0;
 	}
 
-	auto enchantgrade = this->find_shared( itemtype );
+	std::shared_ptr<s_enchantgrade> enchantgrade = this->find_shared( itemtype );
 	bool exists = enchantgrade != nullptr;
 
 	if( !exists ){
@@ -645,7 +645,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 
 			e_enchantgrade gradeLevel = (e_enchantgrade)constant_value;
 
-			auto grade = util::map_find_shared( grades, gradeLevel );
+			std::shared_ptr<s_enchantgradelevel> grade = util::map_find_shared( grades, gradeLevel );
 			bool gradeExists = grade != nullptr;
 
 			if( !gradeExists ){
@@ -818,7 +818,7 @@ uint64 EnchantgradeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					auto option = util::map_find_shared( grade->options, optionIndex );
+					std::shared_ptr<s_enchantgradeoption> option = util::map_find_shared( grade->options, optionIndex );
 					bool optionExists = option != nullptr;
 
 					if( !optionExists ){

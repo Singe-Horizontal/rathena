@@ -544,7 +544,7 @@ uint64 BarterDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto item = util::map_find_shared( barter->items, index );
+			std::shared_ptr<s_npc_barter_item> item = util::map_find_shared( barter->items, index );
 			bool item_exists = item != nullptr;
 
 			if( !item_exists ){
@@ -621,7 +621,7 @@ uint64 BarterDatabase::parseBodyNode( const ryml::NodeRef& node ){
 						return 0;
 					}
 
-					auto requirement = util::map_find_shared( item->requirements, requirement_index );
+					std::shared_ptr<s_npc_barter_requirement> requirement = util::map_find_shared( item->requirements, requirement_index );
 					bool requirement_exists = requirement != nullptr;
 
 					if( !requirement_exists ){

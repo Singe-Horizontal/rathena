@@ -231,7 +231,7 @@ void PlayerGroupDatabase::loadingFinished(){
 				continue;
 			}
 
-			auto group = this->find_shared( entry.first );
+			std::shared_ptr<s_player_group> group = this->find_shared( entry.first );
 
 			auto it = entry.second.begin();
 

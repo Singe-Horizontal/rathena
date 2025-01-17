@@ -209,7 +209,7 @@ void inter_auctions_fromsql(void)
 	while( SQL_SUCCESS == Sql_NextRow(sql_handle) )
 	{
 		struct item *item;
-		auto auction = std::make_shared<struct auction_data>();
+		std::shared_ptr<struct auction_data> auction = std::make_shared<struct auction_data>();
 
 		Sql_GetData(sql_handle, 0, &data, nullptr); auction->auction_id = atoi(data);
 		Sql_GetData(sql_handle, 1, &data, nullptr); auction->seller_id = atoi(data);

@@ -76,7 +76,7 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 		std::shared_ptr<s_cash_item> cash_item = nullptr;
 		bool cash_item_exists = false;
 
-		for( auto& cash_it : entry->items ){
+		for (std::shared_ptr<s_cash_item>& cash_it : entry->items ){
 			if( cash_it->nameid == item->nameid ){
 				cash_item = cash_it;
 				cash_item_exists = true;
@@ -120,13 +120,13 @@ uint64 CashShopDatabase::parseBodyNode( const ryml::NodeRef& node ){
 }
 
 s_cash_item* CashShopDatabase::findItemInTab( e_cash_shop_tab tab, t_itemid nameid ){
-	auto cash_tab = this->find_shared( static_cast<uint16>( tab ) );
+	std::shared_ptr<s_cash_item_tab> cash_tab = this->find_shared( static_cast<uint16>( tab ) );
 
 	if( cash_tab == nullptr ){
 		return nullptr;
 	}
 
-	for( auto& cash_it : cash_tab->items ){
+	for (std::shared_ptr<s_cash_item>& cash_it : cash_tab->items ){
 		if( cash_it->nameid == nameid ){
 			return cash_it.get();
 		}

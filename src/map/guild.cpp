@@ -150,7 +150,7 @@ uint64 GuildSkillTreeDatabase::parseBodyNode( const ryml::NodeRef& node ){
 				return 0;
 			}
 
-			auto requirement = util::umap_find_shared( skill->need, requiredSkillId );
+			std::shared_ptr<s_guild_skill_requirement> requirement = util::umap_find_shared( skill->need, requiredSkillId );
 			bool requirement_exists = requirement != nullptr;
 
 			if( !requirement_exists ){
@@ -831,7 +831,7 @@ int32 guild_recv_info(const struct mmo_guild &sg) {
 	map_session_data *sd;
 	bool guild_new = false;
 
-	auto g = guild_search_shared(sg.guild_id);
+	std::shared_ptr<MapGuild> g = guild_search_shared(sg.guild_id);
 
 	if (!g) {
 		g = std::make_shared<MapGuild>();
@@ -1077,7 +1077,7 @@ bool guild_reply_invite( map_session_data& sd, int32 guild_id, int32 flag ){
 //- Player must be authed and must belong to a guild before invoking this method
 void guild_member_joined(map_session_data *sd) {
 	int32 i;
-	auto g = guild_search_shared(sd->status.guild_id);
+	std::shared_ptr<MapGuild> g = guild_search_shared(sd->status.guild_id);
 	if (!g) {
 		guild_request_info(sd->status.guild_id);
 		return;
@@ -1109,7 +1109,7 @@ void guild_member_joined(map_session_data *sd) {
  *----------------------------------------*/
 int32 guild_member_added(int32 guild_id,uint32 account_id,uint32 char_id,int32 flag) {
 	map_session_data *sd= map_id2sd(account_id),*sd2;
-	auto g = guild_search_shared(guild_id);
+	std::shared_ptr<MapGuild> g = guild_search_shared(guild_id);
 
 	if (!g)
 		return 0;
@@ -1802,7 +1802,7 @@ void guild_guildaura_refresh(map_session_data *sd, uint16 skill_id, uint16 skill
 
 	status_change_end(&sd->bl, type);
 
-	auto group = skill_unitsetting(&sd->bl,skill_id,skill_lv,sd->bl.x,sd->bl.y,0);
+	std::shared_ptr<s_skill_unit_group> group = skill_unitsetting(&sd->bl,skill_id,skill_lv,sd->bl.x,sd->bl.y,0);
 
 	if( group )
 		sc_start4(nullptr,&sd->bl,type,100,(battle_config.guild_aura&16)?0:skill_lv,0,0,group->group_id,600000);//duration doesn't matter these status never end with val4
@@ -2341,7 +2341,7 @@ int32 guild_break( map_session_data& sd, const char* name ){
 	if( ( ud = unit_bl2ud( &sd.bl ) ) ){
 		std::vector<std::shared_ptr<s_skill_unit_group>> group;
 
-		for (const auto& su : ud->skillunits) {
+		for (std::shared_ptr<s_skill_unit_group>& su : ud->skillunits) {
 			switch (su->skill_id) {
 				case GD_LEADERSHIP:
 				case GD_GLORYWOUNDS:

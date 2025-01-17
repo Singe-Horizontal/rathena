@@ -958,7 +958,7 @@ int32 chclif_parse_select_accessible_map( int32 fd, struct char_session_data* sd
 	chclif_send_map_data( fd, cd, ipl, mapserver );
 
 	// create temporary auth entry
-	auto node = std::make_shared<struct auth_node>();
+	std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
 
 	node->account_id = sd->account_id;
 	node->char_id = cd->char_id;
@@ -1128,7 +1128,7 @@ int32 chclif_parse_charselect(int32 fd, struct char_session_data* sd,uint32 ipl)
 		chclif_send_map_data( fd, cd, ipl, i );
 
 		// create temporary auth entry
-		auto node = std::make_shared<struct auth_node>();
+		std::shared_ptr<struct auth_node> node = std::make_shared<struct auth_node>();
 
 		node->account_id = sd->account_id;
 		node->char_id = cd->char_id;
