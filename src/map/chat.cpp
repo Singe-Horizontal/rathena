@@ -31,7 +31,7 @@ static struct chat_data* chat_createchat(struct block_list* bl, const char* titl
 	nullpo_retr(nullptr, bl);
 
 	cd = (struct chat_data *) aMalloc(sizeof(struct chat_data));
-
+	new(cd) chat_data();
 	safestrncpy(cd->title, title, sizeof(cd->title));
 	safestrncpy(cd->pass, pass, sizeof(cd->pass));
 	cd->pub = pub;
@@ -53,10 +53,10 @@ static struct chat_data* chat_createchat(struct block_list* bl, const char* titl
 	cd->next = cd->prev = nullptr;
 
 	if( cd->id == 0 ) {
+		cd->~chat_data();
 		aFree(cd);
-		cd = nullptr;
+		return nullptr;
 	}
-
 	map_addiddb(cd);
 
 	if( bl->type != BL_NPC )

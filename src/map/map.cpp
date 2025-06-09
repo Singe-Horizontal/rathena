@@ -242,41 +242,16 @@ void map_destroyblock( block_list* bl ){
 			// Do not call the destructor here, it will be done in chrif_auth_delete
 			//static_cast<map_session_data*>( bl )->~map_session_data();
 			break;
-
 		case BL_MOB:
-			static_cast<mob_data*>( bl )->~mob_data();
-			break;
-
 		case BL_PET:
-			static_cast<pet_data*>( bl )->~pet_data();
-			break;
-
 		case BL_HOM:
-			static_cast<homun_data*>( bl )->~homun_data();
-			break;
-
 		case BL_MER:
-			static_cast<s_mercenary_data*>( bl )->~s_mercenary_data();
-			break;
-
 		case BL_ITEM:
-			static_cast<flooritem_data*>( bl )->~flooritem_data();
-			break;
-
 		case BL_SKILL:
-			static_cast<skill_unit*>( bl )->~skill_unit();
-			break;
-
 		case BL_NPC:
-			static_cast<npc_data*>( bl )->~npc_data();
-			break;
-
 		case BL_CHAT:
-			static_cast<chat_data*>( bl )->~chat_data();
-			break;
-
 		case BL_ELEM:
-			static_cast<s_elemental_data*>( bl )->~s_elemental_data();
+			bl->~block_list();
 			break;
 
 		default:
@@ -2017,6 +1992,7 @@ int32 map_addflooritem(struct item *item, int32 amount, int16 m, int16 x, int16 
 	}
 
 	CREATE(fitem, struct flooritem_data, 1);
+	new(fitem) flooritem_data();
 	fitem->type=BL_ITEM;
 	fitem->prev = fitem->next = nullptr;
 	fitem->m=m;
@@ -2024,6 +2000,7 @@ int32 map_addflooritem(struct item *item, int32 amount, int16 m, int16 x, int16 
 	fitem->y=y;
 	fitem->id = map_get_new_object_id();
 	if (fitem->id==0) {
+		fitem->~flooritem_data();
 		aFree(fitem);
 		return 0;
 	}
