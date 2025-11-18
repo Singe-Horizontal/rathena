@@ -131,8 +131,9 @@ extern std::vector<std::shared_ptr<s_battleground_queue>> bg_queues;
 std::shared_ptr<s_battleground_type> bg_search_name(const char *name);
 std::shared_ptr<s_battleground_queue> bg_search_queue(int32 queue_id);
 void bg_send_dot_remove(map_session_data *sd);
-int32 bg_team_get_id(block_list *bl);
-map_session_data *bg_getavailablesd(s_battleground_data *bg);
+int32 bg_team_get_id(const block_list *bl);
+map_session_data* bg_getavailablesd(s_battleground_data *bg);
+const map_session_data* bg_getavailablesd(const s_battleground_data* bg);
 
 bool bg_queue_reservation(const char *name, bool state, bool ended);
 #define bg_queue_reserve(name, end) (bg_queue_reservation(name, true, end))

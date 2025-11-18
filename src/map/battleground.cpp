@@ -439,7 +439,7 @@ std::shared_ptr<s_battleground_queue> bg_search_queue(int32 queue_id)
  * @param bg: Battleground data
  * @return map_session_data
  */
-map_session_data* bg_getavailablesd(s_battleground_data *bg)
+map_session_data* bg_getavailablesd(s_battleground_data* bg)
 {
 	nullpo_retr(nullptr, bg);
 
@@ -449,6 +449,10 @@ map_session_data* bg_getavailablesd(s_battleground_data *bg)
 	}
 
 	return nullptr;
+}
+
+const map_session_data* bg_getavailablesd(const s_battleground_data* bg){
+	return bg_getavailablesd(const_cast<s_battleground_data*>(bg));
 }
 
 /**
@@ -679,20 +683,20 @@ int32 bg_create(uint16 mapindex, s_battleground_team* team)
  * @param bl: Object
  * @return Battleground ID
  */
-int32 bg_team_get_id(block_list *bl)
+int32 bg_team_get_id(const block_list *bl)
 {
 	nullpo_ret(bl);
 
 	switch( bl->type ) {
 		case BL_PC:
-			return ((TBL_PC*)bl)->bg_id;
+			return (reinterpret_cast<const map_session_data*>(bl))->bg_id;
 		case BL_PET:
-			if( ((TBL_PET*)bl)->master )
-				return ((TBL_PET*)bl)->master->bg_id;
+			if(reinterpret_cast<const pet_data*>(bl)->master)
+				return reinterpret_cast<const pet_data*>(bl)->master->bg_id;
 			break;
 		case BL_MOB: {
-			map_session_data *msd;
-			mob_data *md = (TBL_MOB*)bl;
+			const map_session_data *msd;
+			const mob_data *md = reinterpret_cast<const mob_data*>(bl);
 
 			if( md->special_state.ai && (msd = map_id2sd(md->master_id)) != nullptr )
 				return msd->bg_id;
@@ -700,15 +704,15 @@ int32 bg_team_get_id(block_list *bl)
 			return md->bg_id;
 		}
 		case BL_HOM:
-			if( ((TBL_HOM*)bl)->master )
-				return ((TBL_HOM*)bl)->master->bg_id;
+			if(reinterpret_cast<const homun_data*>(bl)->master)
+				return reinterpret_cast<const homun_data*>(bl)->master->bg_id;
 			break;
 		case BL_MER:
-			if( ((TBL_MER*)bl)->master )
-				return ((TBL_MER*)bl)->master->bg_id;
+			if(reinterpret_cast<const s_mercenary_data*>(bl)->master )
+				return reinterpret_cast<const s_mercenary_data*>(bl)->master->bg_id;
 			break;
 		case BL_SKILL:
-			return ((TBL_SKILL*)bl)->group->bg_id;
+			return reinterpret_cast<const skill_unit*>(bl)->group->bg_id;
 	}
 
 	return 0;

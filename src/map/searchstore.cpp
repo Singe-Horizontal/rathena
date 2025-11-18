@@ -224,7 +224,7 @@ void searchstore_query(map_session_data& sd, e_searchstore_searchtype type, uint
  * @param sd : player requesting
  * @return : true : more items to search, false : no more items
  */
-bool searchstore_querynext(map_session_data& sd)
+bool searchstore_querynext(const map_session_data& sd)
 {
 	if( !sd.searchstore.items.empty() && ( sd.searchstore.items.size()-1 )/SEARCHSTORE_RESULTS_PER_PAGE > sd.searchstore.pages )
 		return true;

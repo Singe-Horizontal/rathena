@@ -210,6 +210,10 @@ struct pet_data : public block_list {
 		return pet_db.find(this->pet.class_);
 	}
 
+	const std::shared_ptr<const s_pet_db> get_pet_db() const{
+		return const_cast<pet_data*>(this)->get_pet_db();
+	}
+
 	int32 get_pet_walk_speed() {
 		switch (battle_config.pet_walk_speed) {
 			default:
@@ -226,7 +230,7 @@ struct pet_data : public block_list {
 bool pet_create_egg(map_session_data *sd, t_itemid item_id);
 int32 pet_hungry_val(pet_data *pd);
 void pet_set_intimate(pet_data *pd, int32 value);
-int32 pet_target_check(pet_data *pd,block_list *bl,int32 type);
+int32 pet_target_check(pet_data *pd,const block_list *bl,int32 type);
 void pet_unlocktarget(pet_data *pd);
 int32 pet_sc_check(map_session_data *sd, int32 type); //Skotlex
 std::shared_ptr<s_pet_db> pet_db_search(int32 key, enum e_pet_itemtype type);

@@ -374,7 +374,7 @@ struct view_data * mob_get_viewdata(int32 mob_id)
 	return &db->vd;
 }
 
-e_mob_bosstype s_mob_db::get_bosstype(){
+e_mob_bosstype s_mob_db::get_bosstype() const{
 	if( status_has_mode( &this->status, MD_MVP ) ){
 		return BOSSTYPE_MVP;
 	}else if( this->status.class_ == CLASS_BOSS ){
@@ -384,7 +384,7 @@ e_mob_bosstype s_mob_db::get_bosstype(){
 	}
 }
 
-e_mob_bosstype mob_data::get_bosstype(){
+e_mob_bosstype mob_data::get_bosstype() const{
 	if( status_has_mode( &this->status, MD_MVP ) ){
 		return BOSSTYPE_MVP;
 	}else if( this->status.class_ == CLASS_BOSS ){

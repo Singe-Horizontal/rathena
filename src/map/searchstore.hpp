@@ -93,7 +93,7 @@ struct s_search_store_info {
 
 bool searchstore_open(map_session_data& sd, uint16 uses, e_searchstore_effecttype effect, int16 mapid);
 void searchstore_query(map_session_data& sd, e_searchstore_searchtype type, uint32 min_price, uint32 max_price, const struct PACKET_CZ_SEARCH_STORE_INFO_item* itemlist, uint32 item_count, const struct PACKET_CZ_SEARCH_STORE_INFO_item* cardlist, uint32 card_count);
-bool searchstore_querynext(map_session_data& sd);
+bool searchstore_querynext(const map_session_data& sd);
 void searchstore_next(map_session_data& sd);
 void searchstore_clear(map_session_data& sd);
 void searchstore_close(map_session_data& sd);

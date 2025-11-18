@@ -744,7 +744,7 @@ int32 pet_attackskill(pet_data *pd, int32 target_id)
  * @param type: pet's attack rate type
  * @return 0
  */
-int32 pet_target_check(pet_data *pd,block_list *bl,int32 type)
+int32 pet_target_check(pet_data *pd,const block_list *bl,int32 type)
 {
 	nullpo_ret(pd);
 
